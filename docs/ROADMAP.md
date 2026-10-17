@@ -44,7 +44,8 @@ ensamblador (`sound/*.s`).
 - [ ] 60 FPS de lógica / interpolación
 - [ ] Segunda pantalla de la AYN Thor: mapa o estado de Samus
 - [ ] Vibración
-- [ ] Builds EU/JP
+- [x] Build EU (APK propio, CI con las dos regiones)
+- [ ] Build JP
 
 ## No soportado
 

@@ -22,6 +22,7 @@ static SDL_Renderer* sRenderer;
 static SDL_Texture* sTexture;
 static SDL_Gamepad* sGamepad;
 static char* sPrefPath;
+static char sRegionSuffix[8]; // "" for US, "_eu" / "_jp" otherwise
 static char sSavePath[1024];
 static char sConfigPath[1024];
 static const char* sRomArgPath; // mzm [path/to/rom.gba]
@@ -148,7 +149,13 @@ bool Port_HostInit(const PortHostConfig* cfg)
     }
 
     sPrefPath = SDL_GetPrefPath("mzm-android", "mzm");
-    SDL_snprintf(sSavePath, sizeof(sSavePath), "%smzm.sav", sPrefPath ? sPrefPath : "");
+    // Each region keeps its own save and ROM copy: on PC all builds share this
+    // folder. The US build keeps the original names.
+    const char* suffix = SDL_strcmp(Port_RomRegionName(), "US") == 0 ? "" : Port_RomRegionName();
+    SDL_snprintf(sRegionSuffix, sizeof(sRegionSuffix), "%s%s", suffix[0] ? "_" : "", suffix);
+    for (char* c = sRegionSuffix; *c; c++)
+        *c = (char)SDL_tolower(*c);
+    SDL_snprintf(sSavePath, sizeof(sSavePath), "%smzm%s.sav", sPrefPath ? sPrefPath : "", sRegionSuffix);
     SDL_snprintf(sConfigPath, sizeof(sConfigPath), "%ssettings.ini", sPrefPath ? sPrefPath : "");
     PortConfig_Defaults(&sConfig);
     if (!PortConfig_Load(&sConfig, sConfigPath))
@@ -423,7 +430,7 @@ uint8_t* Port_HostLoadRom(size_t* size, const char* error)
     char nextToExe[1024];
     int n = 0;
 
-    SDL_snprintf(sRomCachePath, sizeof(sRomCachePath), "%srom.gba", sPrefPath ? sPrefPath : "");
+    SDL_snprintf(sRomCachePath, sizeof(sRomCachePath), "%srom%s.gba", sPrefPath ? sPrefPath : "", sRegionSuffix);
     {
         // Upstream's file name for the dump: mzm_us_baserom.gba, next to the exe.
         char region[8];

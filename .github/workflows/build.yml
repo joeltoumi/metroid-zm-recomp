@@ -8,15 +8,19 @@ on:
 
 jobs:
   linux:
-    name: Linux (headless smoke test)
+    name: Linux (headless smoke test, ${{ matrix.region }})
     runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        region: [us, eu]
     steps:
       - uses: actions/checkout@v5
       - name: Install tools
         run: sudo apt-get update && sudo apt-get install -y ninja-build
       - name: Configure
         # clang, like the Android NDK: it rejects implicit declarations, GCC does not.
-        run: cmake -B build -G Ninja -DMZM_HOST=headless -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang
+        run: cmake -B build -G Ninja -DMZM_HOST=headless -DMZM_REGION=${{ matrix.region }} -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang
       - name: Build
         run: cmake --build build
       - name: Smoke test (no game data)
@@ -57,5 +61,5 @@ jobs:
       - uses: actions/upload-artifact@v5
         with:
           name: mzm-android-apk
-          path: android/app/build/outputs/apk/release/*.apk
+          path: android/app/build/outputs/apk/*/release/*.apk
           if-no-files-found: error

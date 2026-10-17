@@ -469,7 +469,7 @@ static const u16 sFullLinesFrenchOam_2[OAM_DATA_SIZE(8)] = {
     OAM_ENTRY(-18, 0, OAM_DIMS_32x8, OAM_NO_FLIP, 0x1c8, 1, 0)
 };
 
-static const u16 sEndingImageOam_NewRecordFrench[OAM_DATA_SIZE(4)] = {
+const u16 sEndingImageOam_NewRecordFrench[OAM_DATA_SIZE(4)] = {
     4,
     OAM_ENTRY(-34, -16, OAM_DIMS_32x16, OAM_NO_FLIP, 0x16, 5, 0),
     OAM_ENTRY(-2, -16, OAM_DIMS_32x16, OAM_NO_FLIP, 0x1a, 5, 0),
@@ -747,7 +747,7 @@ static const u16 sFullLinesItalianOam_5[OAM_DATA_SIZE(6)] = {
     OAM_ENTRY(-52, 0, OAM_DIMS_16x8, OAM_NO_FLIP, 0x203, 1, 0)
 };
 
-static const u16 sEndingImageOam_NewRecordItalian[OAM_DATA_SIZE(6)] = {
+const u16 sEndingImageOam_NewRecordItalian[OAM_DATA_SIZE(6)] = {
     6,
     OAM_ENTRY(-27, -16, OAM_DIMS_32x16, OAM_NO_FLIP, 0x16, 5, 0),
     OAM_ENTRY(5, -16, OAM_DIMS_16x16, OAM_NO_FLIP, 0x1a, 5, 0),
@@ -958,7 +958,7 @@ static const u16 sFullLinesSpanishOam_2[OAM_DATA_SIZE(7)] = {
     OAM_ENTRY(-18, 0, OAM_DIMS_8x8, OAM_NO_FLIP, 0x1c8, 1, 0)
 };
 
-static const u16 sEndingImageOam_NewRecordSpanish[OAM_DATA_SIZE(6)] = {
+const u16 sEndingImageOam_NewRecordSpanish[OAM_DATA_SIZE(6)] = {
     6,
     OAM_ENTRY(-26, -16, OAM_DIMS_32x16, OAM_NO_FLIP, 0x16, 5, 0),
     OAM_ENTRY(6, -16, OAM_DIMS_16x16, OAM_NO_FLIP, 0x1a, 5, 0),
@@ -1131,7 +1131,7 @@ static const u16 sFullLinesGermanOam_2[OAM_DATA_SIZE(6)] = {
     OAM_ENTRY(79, -16, OAM_DIMS_8x16, OAM_NO_FLIP, 0x194, 1, 0)
 };
 
-static const u16 sEndingImageOam_NewRecordGerman[OAM_DATA_SIZE(6)] = {
+const u16 sEndingImageOam_NewRecordGerman[OAM_DATA_SIZE(6)] = {
     6,
     OAM_ENTRY(-26, -16, OAM_DIMS_32x16, OAM_NO_FLIP, 0x16, 5, 0),
     OAM_ENTRY(6, -16, OAM_DIMS_16x16, OAM_NO_FLIP, 0x1a, 5, 0),

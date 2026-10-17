@@ -7,8 +7,8 @@ No es un emulador: el código C del juego se compila directamente para ARM64 /
 x86-64 y la "consola" (vídeo, DMA, interrupciones, BIOS) la pone una capa fina
 en `port/`.
 
-> **Estado: en desarrollo temprano.** El juego compila y arranca en nativo; el
-> sonido todavía no funciona y falta validar todo el recorrido con la ROM real.
+> **Estado: en desarrollo temprano.** El juego compila, arranca y suena en
+> nativo; falta validar todo el recorrido con la ROM real.
 > Ver [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Necesitas tu propia ROM

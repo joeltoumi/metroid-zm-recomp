@@ -24,6 +24,30 @@ static void unk_2030(struct PsgSoundData* pSound, struct TrackVariables* pVariab
 
 static u16 GetNoteDelay(struct TrackVariables* pVariables, u8 param_2, u8 param_3);
 
+#ifdef PLATFORM_PC
+// On the GBA gUnk_300376C sits right before gPsgSounds in IWRAM, so indexes
+// 1-4 of it are the 4 PSG channels. Natively the variables aren't adjacent.
+#define PSG_SOUND_FOR_CHANNEL(channel) (&gPsgSounds[((channel) - 1) & 3])
+#else // !PLATFORM_PC
+#define PSG_SOUND_FOR_CHANNEL(channel) (&gUnk_300376C[(channel)])
+#endif // PLATFORM_PC
+
+#ifdef PLATFORM_PC
+// Noise notes outside sNoiseTable's range read the neighbouring tables in the
+// ROM (sClockTable before it, sCgb3Vol after it); keep reading the same bytes.
+static u8 PortNoiseTableAt(s32 index)
+{
+    if (index < 0)
+        return index >= -(s32)ARRAY_SIZE(sClockTable) ? sClockTable[ARRAY_SIZE(sClockTable) + index] : 0;
+    if (index >= (s32)ARRAY_SIZE(sNoiseTable))
+    {
+        index -= ARRAY_SIZE(sNoiseTable);
+        return index < (s32)ARRAY_SIZE(sCgb3Vol) ? sCgb3Vol[index] : 0;
+    }
+    return sNoiseTable[index];
+}
+#endif // PLATFORM_PC
+
 /**
  * @brief 10c4 | 394 | To document
  * 
@@ -146,6 +170,15 @@ void UpdateMusic(void)
 
         gMusicInfo.currentSoundChannel++;
         pVariables = pChannel->pVariables;
+#ifdef PLATFORM_PC
+        // A channel can outlive its track (echo after the release): the GBA
+        // then reads and writes the BIOS area through the NULL pointer.
+        if (pVariables == NULL)
+        {
+            static struct TrackVariables sNoVariables;
+            pVariables = &sNoVariables;
+        }
+#endif // PLATFORM_PC
 
         while (pChannel->unk_13 != 0)
         {
@@ -1237,7 +1270,7 @@ static void unk_1f90(struct TrackData* pTrack, struct TrackVariables* pVariables
     else
         var_0 = pTrack->unk_3 + pVariables->priority;
 
-    pSound = &gUnk_300376C[pVariables->channel & 7];
+    pSound = PSG_SOUND_FOR_CHANNEL(pVariables->channel & 7);
     if (pSound->unk_0 == 0 ||
         (var_0 >= pSound->unk_16 &&
         (var_0 != pSound->unk_16 ||
@@ -1263,7 +1296,7 @@ static void unk_1fe0(struct TrackData* pTrack, struct TrackVariables* pVariables
     else
         var_0 = pTrack->unk_3 + pVariables->priority;
 
-    pSound = &gUnk_300376C[pVariables->channel & 7];
+    pSound = PSG_SOUND_FOR_CHANNEL(pVariables->channel & 7);
     if (pSound->unk_0 == 0 ||
         (var_0 >= pSound->unk_16 &&
         (var_0 != pSound->unk_16 ||
@@ -1303,6 +1336,10 @@ static void unk_2030(struct PsgSoundData* pSound, struct TrackVariables* pVariab
         var_0 = 0;
 
     pSound->maybe_noteDelay = GetNoteDelay(pVariables, var_0, pVariables->unk_18);
+#ifdef PLATFORM_PC
+    // The GBA writes to address 0x4C (ignored by the BIOS region) when free
+    if (pSound->pVariables != NULL)
+#endif // PLATFORM_PC
     pSound->pVariables->pSoundPsg = NULL;
     pSound->pVariables = pVariables;
     pSound->unk_F |= 2;
@@ -1359,7 +1396,11 @@ static u16 GetNoteDelay(struct TrackVariables* pVariables, u8 param_2, u8 param_
     }
     else
     {
+#ifdef PLATFORM_PC
+        delay = PortNoiseTableAt(param_2 - 0x15) | (u8)(u32)pVariables->pSample1;
+#else // !PLATFORM_PC
         delay = sNoiseTable[param_2 - 0x15] | (u8)(u32)pVariables->pSample1;
+#endif // PLATFORM_PC
     }
     
     return delay;

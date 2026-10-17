@@ -112,7 +112,12 @@ void DoSoundAction(u32 action)
     if (action & SOUND_ACTION_MAX_CHANNELS_FLAG)
     {
         gMusicInfo.maxSoundChannels = (action & SOUND_ACTION_MAX_CHANNELS_FLAG) >> SOUND_ACTION_MAX_CHANNELS_SHIFT;
+#ifdef PLATFORM_PC
+        // The GBA loop also clears one byte past the array (outside gMusicInfo)
+        for (i = ARRAY_SIZE(gMusicInfo.soundChannels) - 1; i >= 0 ; i--)
+#else // !PLATFORM_PC
         for (i = ARRAY_SIZE(gMusicInfo.soundChannels); i >= 0 ; i--)
+#endif // PLATFORM_PC
         {
             gMusicInfo.soundChannels[i].unk_0 = 0;
         }

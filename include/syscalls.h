@@ -63,7 +63,13 @@ struct WaveData {
     /* s8 data[size+1]; */
 };
 
+#ifdef PLATFORM_PC
+// The control word's fill flag is bit 24: a u16 parameter would drop it
+// (agbcc passes the full register to the BIOS).
+void CpuFastSet(void *src, void *dst, u32 size);
+#else // !PLATFORM_PC
 void CpuFastSet(void *src, void *dst, u16 size);
+#endif // PLATFORM_PC
 void CpuSet(void *src, void *dst, u32 size);
 s32 DivarmDiv(s32 number, s32 denom);
 s32 DivarmMod(s32 denom, s32 number);

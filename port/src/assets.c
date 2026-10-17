@@ -5,6 +5,8 @@
 // ROM at compile time is zero-filled and registered by the generated wrappers
 // (tools/port/gen_assets.py). At startup Port_LoadRom() checks the ROM is the
 // exact dump this build expects (SHA-1) and copies each block into place.
+// A copy of the whole ROM is also kept for the sound engine, which reads the
+// music data in place (Port_RomPointer).
 #include "port.h"
 #include "port_assets.h"
 
@@ -21,6 +23,9 @@ typedef struct AssetChunk {
     PortAsset* assets;
     unsigned long count;
 } AssetChunk;
+
+static uint8_t* sRom;
+static size_t sRomSize;
 
 static AssetChunk* sChunks;
 static size_t sChunkCount;
@@ -39,6 +44,15 @@ void Port_RegisterAssets(PortAsset* assets, unsigned long count)
     sChunks[sChunkCount].assets = assets;
     sChunks[sChunkCount].count = count;
     sChunkCount++;
+}
+
+const void* Port_RomPointer(unsigned int gbaAddress)
+{
+    const uint32_t offset = gbaAddress - 0x08000000u;
+
+    if (gbaAddress < 0x08000000u || offset >= sRomSize)
+        return NULL;
+    return sRom + offset;
 }
 
 const char* Port_RomRegionName(void)
@@ -98,6 +112,15 @@ PortRomStatus Port_LoadRom(const uint8_t* rom, size_t size)
         }
     }
     Port_Log("ROM %s OK: %lu assets, %zu KiB copied", MZM_ROM_REGION_NAME, assets, total / 1024);
+
+    // The sound engine plays the ROM's track scripts and samples in place.
+    free(sRom);
+    sRom = malloc(size);
+    if (!sRom)
+        Port_Fatal("out of memory (ROM copy)");
+    memcpy(sRom, rom, size);
+    sRomSize = size;
+    Port_SoundInit(sRom, (unsigned int)size);
     return PORT_ROM_OK;
 }
 

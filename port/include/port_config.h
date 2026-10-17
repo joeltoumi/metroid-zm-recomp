@@ -43,6 +43,8 @@ typedef struct PortConfig {
     bool vsync;
     bool integerScaling;
     bool smoothScaling;
+    // [audio]
+    int volume; // percent, 0 = muted
     // [input]
     int touchControls;
     int touchOpacity; // percent

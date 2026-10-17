@@ -10,7 +10,8 @@
 //   2. Visible scanlines 0..159 rendered by the software PPU. Before each
 //      line, the previous line's HBlank events run (HBlank DMA, HBlank IRQ)
 //      plus the VCount-match IRQ, so raster effects work.
-//   3. Present the frame, read input, wait for the next tick.
+//   3. Sound: play the frame's audio (DirectSound FIFOs + PSG).
+//   4. Present the frame, read input, wait for the next tick.
 #include "port.h"
 #include "port_game.h"
 
@@ -188,7 +189,10 @@ void Port_RunFrame(void)
     // 2. Draw the frame. PreLine() replays scanline 0..159 events.
     frame = Port_PpuRenderFrame();
 
-    // 3. Present + input + pacing.
+    // 3. Sound.
+    Port_ApuRunFrame();
+
+    // 4. Present + input + pacing.
     if (!Port_HostPresent(frame, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT))
         Port_RequestQuit();
     UpdateKeys();

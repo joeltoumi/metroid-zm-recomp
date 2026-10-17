@@ -44,6 +44,24 @@ unsigned short Port_PollVCount(void);
 /* Called after the game writes save memory, so the host can persist it. */
 void Port_SramWritten(void);
 
+/* The player's ROM stays in memory: the sound engine reads its track scripts,
+ * voicegroups and samples in place. Translates a GBA ROM address
+ * (0x08xxxxxx) to the host copy, or returns NULL if it is outside the ROM. */
+const void* Port_RomPointer(unsigned int gbaAddress);
+
+/* Game side of the sound port (port/game/audio_engine.c). */
+struct Voice;
+/* Builds the sound tables that hold ROM pointers (called once the ROM is
+ * loaded). */
+void Port_SoundInit(const unsigned char* rom, unsigned int size);
+/* Host copy of the voicegroup at a GBA address (never NULL). */
+struct Voice* Port_SoundVoicegroup(unsigned int gbaAddress);
+/* The next 16 samples sound DMA 1/2 would feed to FIFO A/B. Returns 0 when
+ * the sound engine hasn't set up its buffers yet. */
+int Port_SoundFifoBlock(const signed char** fifoA, const signed char** fifoB);
+
+void Port_Log(const char* fmt, ...);
+
 #endif /* PLATFORM_PC */
 
 #endif /* PORT_PLATFORM_H */

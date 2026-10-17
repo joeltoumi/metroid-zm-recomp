@@ -3,10 +3,11 @@
 // possible, for automated tests and CI.
 //
 //   mzm_headless [--rom FILE] [--frames N] [--dump-every K] [--out DIR] [--save FILE]
-//                [--press FRAME:KEYS:LEN ...]
+//                [--press FRAME:KEYS:LEN ...] [--wav FILE]
 //
 // Frames are written as PPM images (no dependencies). KEYS is a combination
 // of the letters A B s(elect) S(tart) R(ight) L(eft) U(p) D(own) r l.
+// --wav records the sound output (16-bit stereo, 48 kHz).
 #include "port.h"
 
 #include <errno.h>
@@ -25,6 +26,9 @@ static uint64_t sDumpEvery = 60;
 static const char* sOutDir = "frames";
 static const char* sSavePath = "mzm_headless.sav";
 static const char* sRomPath = "mzm_us_baserom.gba";
+static const char* sWavPath;
+static FILE* sWav;
+static uint32_t sWavFrames;
 static Press sPresses[64];
 static int sPressCount;
 
@@ -69,6 +73,9 @@ bool Port_HostInit(const PortHostConfig* cfg)
         } else if (strcmp(a, "--save") == 0 && v) {
             sSavePath = v;
             i++;
+        } else if (strcmp(a, "--wav") == 0 && v) {
+            sWavPath = v;
+            i++;
         } else if (strcmp(a, "--press") == 0 && v && sPressCount < 64) {
             // FRAME:KEYS:LEN
             Press* p = &sPresses[sPressCount++];
@@ -88,13 +95,52 @@ bool Port_HostInit(const PortHostConfig* cfg)
         Port_Log("can't create %s", sOutDir);
         return false;
     }
+    if (sWavPath) {
+        sWav = fopen(sWavPath, "wb");
+        if (!sWav) {
+            Port_Log("can't create %s", sWavPath);
+            return false;
+        }
+        fseek(sWav, 44, SEEK_SET); // header written at shutdown
+    }
     Port_Log("headless: %llu frames, dump every %llu to %s/", (unsigned long long)sMaxFrames,
              (unsigned long long)sDumpEvery, sOutDir);
     return true;
 }
 
+static void Put32(unsigned char* p, uint32_t v)
+{
+    p[0] = (unsigned char)v;
+    p[1] = (unsigned char)(v >> 8);
+    p[2] = (unsigned char)(v >> 16);
+    p[3] = (unsigned char)(v >> 24);
+}
+
+static void FinishWav(void)
+{
+    unsigned char h[44] = "RIFF....WAVEfmt ";
+    const uint32_t bytes = sWavFrames * 4;
+
+    Put32(h + 4, 36 + bytes);
+    Put32(h + 16, 16);
+    h[20] = 1; // PCM
+    h[22] = 2; // stereo
+    Put32(h + 24, PORT_AUDIO_RATE);
+    Put32(h + 28, PORT_AUDIO_RATE * 4);
+    h[32] = 4;
+    h[34] = 16;
+    memcpy(h + 36, "data", 4);
+    Put32(h + 40, bytes);
+    fseek(sWav, 0, SEEK_SET);
+    fwrite(h, 1, sizeof(h), sWav);
+    fclose(sWav);
+    sWav = NULL;
+}
+
 void Port_HostShutdown(void)
 {
+    if (sWav)
+        FinishWav();
     Port_Log("headless: stopped after %llu frames", (unsigned long long)Port_FrameCount());
 }
 
@@ -136,6 +182,15 @@ uint16_t Port_HostPollKeys(void)
             keys |= sPresses[i].keys;
     }
     return keys;
+}
+
+void Port_HostQueueAudio(const int16_t* samples, int frames)
+{
+    if (!sWav)
+        return;
+    // WAV is little-endian, like every host this builds for.
+    fwrite(samples, sizeof(int16_t) * 2, (size_t)frames, sWav);
+    sWavFrames += (uint32_t)frames;
 }
 
 void Port_HostWaitFrame(void)

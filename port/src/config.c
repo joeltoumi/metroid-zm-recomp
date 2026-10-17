@@ -6,6 +6,8 @@
 //   [video]
 //   window_scale = 4
 //   integer_scaling = true
+//   [audio]
+//   volume = 100                 ; percent, 0 = muted
 //   [input]
 //   touch_controls = auto        ; auto | on | off
 //   [keyboard]
@@ -52,6 +54,7 @@ void PortConfig_Defaults(PortConfig* cfg)
     cfg->vsync = false;
     cfg->integerScaling = false;
     cfg->smoothScaling = false;
+    cfg->volume = 100;
     cfg->touchControls = PORT_TOUCH_AUTO;
     cfg->touchOpacity = 35;
     cfg->stickDeadzone = 40;
@@ -166,6 +169,9 @@ bool PortConfig_Load(PortConfig* cfg, const char* path)
                 cfg->integerScaling = ParseBool(value);
             else if (strcmp(key, "smooth_scaling") == 0)
                 cfg->smoothScaling = ParseBool(value);
+        } else if (strcmp(section, "audio") == 0) {
+            if (strcmp(key, "volume") == 0)
+                cfg->volume = ParseInt(value, 0, 100, cfg->volume);
         } else if (strcmp(section, "input") == 0) {
             if (strcmp(key, "touch_controls") == 0) {
                 if (SDL_strcasecmp(value, "on") == 0)
@@ -212,6 +218,9 @@ bool PortConfig_Save(const PortConfig* cfg, const char* path)
     fprintf(f, "vsync = %s\n", cfg->vsync ? "true" : "false");
     fprintf(f, "integer_scaling = %s\n", cfg->integerScaling ? "true" : "false");
     fprintf(f, "smooth_scaling = %s\n\n", cfg->smoothScaling ? "true" : "false");
+
+    fprintf(f, "[audio]\n");
+    fprintf(f, "volume = %d ; percent, 0 = muted\n\n", cfg->volume);
 
     fprintf(f, "[input]\n");
     fprintf(f, "touch_controls = %s ; auto | on | off\n", touchNames[cfg->touchControls]);

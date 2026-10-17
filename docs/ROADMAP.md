@@ -18,17 +18,16 @@
       selección de partida, primera sala de Brinstar y mapa de pausa
 - [ ] Recorrer el juego y arreglar lo que falle (efectos de raster, modos de
       vídeo, cinemáticas)
+- [ ] Lecturas fuera de rango que detecta AddressSanitizer en la intro
+      (`IntroFuzz`), `InGameHandler`, el minimapa de pausa y las paletas de
+      Samus (en la GBA leen los datos vecinos de la ROM)
 
-## M3 — Sonido
+## M3 — Sonido ✅
 
-El motor de audio de MZM es mayoritariamente C (`src/audio.c`), pero sus
-rutinas internas y los bucles de mezcla siguen en ensamblador ARM
-(`asm/audio_internal.s`, `asm/soundcode.s`) y los datos de las pistas son
-ensamblador (`sound/*.s`).
-
-- [ ] Traducir `asm/audio_internal.s` y `asm/soundcode.s` a C
-- [ ] Convertir `sound/*.s` a datos C (las muestras PCM se cargan de la ROM)
-- [ ] Emular los canales PSG (1-4) y el FIFO A/B; salida por SDL_AudioStream
+- [x] Traducir `asm/audio_internal.s` y `asm/soundcode.s` a C
+- [x] Datos de sonido (`sound/*.s`) leídos de la ROM del jugador
+- [x] Emular los canales PSG (1-4) y el FIFO A/B; salida por SDL_AudioStream
+- [x] Comparado con mGBA (intro y Brinstar, ROM EU)
 
 ## M4 — Menú de opciones en el juego
 

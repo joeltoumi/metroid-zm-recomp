@@ -75,12 +75,14 @@ foreach(src IN LISTS MZM_GAME_SOURCES)
 endforeach()
 
 add_library(mzm_game STATIC ${MZM_GAME_COMPILE_SOURCES} ${MZM_DATA_WRAPPERS}
-    port/game/linker_glue.c)
+    port/game/linker_glue.c
+    port/game/audio_engine.c
+    port/game/sound_data.c)
 # The zero-filled .inc stubs shadow any real `make extract` output.
 target_include_directories(mzm_game PRIVATE "${MZM_GEN_DIR}/stub" "${CMAKE_SOURCE_DIR}/include")
 # Data arrays must be writable to receive the ROM contents (they are mostly
 # zero-initialized, so they land in .bss and cost nothing in the binary).
-set_source_files_properties(${MZM_DATA_WRAPPERS} PROPERTIES COMPILE_DEFINITIONS "const=")
+set_source_files_properties(${MZM_DATA_WRAPPERS} port/game/sound_data.c PROPERTIES COMPILE_DEFINITIONS "const=")
 target_compile_definitions(mzm_game PRIVATE PLATFORM_PC REGION_${MZM_REGION_UPPER})
 if(NOT MZM_BUGFIX)
     target_compile_definitions(mzm_game PRIVATE PORT_NO_BUGFIX)
@@ -109,7 +111,7 @@ add_library(mzm_port STATIC
     port/src/gba_mem.c
     port/src/dma.c
     port/src/bios.c
-    port/src/audio_stubs.c
+    port/src/apu.c
     port/src/frame.c
     port/src/main.c
     port/ppu/src/virtuappu.c

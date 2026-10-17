@@ -103,6 +103,7 @@ int Port_Main(int argc, char** argv)
 
     Port_MemReset();
     Port_DmaReset();
+    Port_ApuReset();
     Port_PpuInit();
 
     // Erased flash reads as 0xFF; the host overwrites it with the save file.

@@ -42,6 +42,34 @@ Al arrancar, `port/src/assets.c` verifica el SHA-1 de la ROM y copia cada
 bloque. `MZM_DEV_SKIP_ROM_CHECK=1` permite arrancar con una imagen falsa
 (solo para el smoke test de CI).
 
+## Sonido
+
+El motor de MZM es casi todo C (`src/audio.c`, `src/audio_wrappers.c`,
+`src/music_wrappers.c`); sus rutinas internas y los bucles de mezcla estaban
+en ensamblador ARM y están traducidos en `port/game/audio_engine.c`,
+manteniendo la aritmética exacta.
+
+Las pistas, los voicegroups y las muestras son datos en ensamblador con
+punteros de 32 bits entre ellos, así que no se copian: la ROM del jugador se
+queda en memoria y el motor lee los scripts y las muestras en su sitio
+(`Port_RomPointer`). Solo se reconstruye lo que cambia de forma en 64 bits:
+
+- `sSoundDataEntries` (punteros a las cabeceras de pista). Su dirección
+  cambia según la región, así que se localiza en la ROM: es la única
+  secuencia de 708 entradas válidas seguidas.
+- Los voicegroups (`struct Voice` ocupa 12 bytes en la GBA y 24 en nativo).
+- Los punteros dentro de los scripts (lista de pistas, GOTO/PATT) se traducen
+  al leerlos.
+
+El hardware lo emula `port/src/apu.c`: cada frame reproduce las muestras que
+la DMA 1/2 llevaría a los FIFO A/B (lanzando la IRQ de DMA 2 cada 16, como la
+consola) y los cuatro canales PSG a partir de sus registros. Sale a 48 kHz
+estéreo por `SDL_AudioStream`; el host headless puede grabarlo con `--wav`.
+
+Se ha comparado con mGBA grabando lo mismo en los dos (intro y Brinstar con
+la ROM europea): la forma de onda coincide (correlación 0,98-0,99 en la
+música de Brinstar) y el volumen también.
+
 ## Guardado
 
 `struct Sram` tiene el mismo tamaño y layout que en la GBA (32 608 bytes). El
@@ -66,6 +94,6 @@ Código de la GBA que no tiene sentido en nativo y se sustituye:
 | `asm/syscalls.s` (BIOS) | `port/src/bios.c` |
 | `src/dma.c` | `port/src/dma.c` |
 | copias de código a RAM (SRAM, sonido, colisiones, haze, HBlank de la huida de Chozodia) | llamadas directas |
-| `asm/audio_internal.s`, `asm/soundcode.s` | `port/src/audio_stubs.c` (silencio, ver M3) |
+| `asm/audio_internal.s`, `asm/soundcode.s` | `port/game/audio_engine.c` (traducción a C) |
 | `MultiBootWaitCycles` (cable link) | no-op |
 | Metroid NES embebido | no incluido |

@@ -3,6 +3,7 @@
 //
 // Video: the 240x160 frame is uploaded to a streaming texture and scaled to
 // the window (aspect-correct, optional integer scaling / smooth filter).
+// Audio: the port's 48 kHz output goes to an SDL audio stream.
 // Input: keyboard, gamepads (the AYN Thor's built-in controls show up as one)
 // and, on touch screens, an on-screen pad drawn over the game.
 // Everything configurable lives in settings.ini in the app's pref folder.
@@ -21,6 +22,7 @@ static SDL_Window* sWindow;
 static SDL_Renderer* sRenderer;
 static SDL_Texture* sTexture;
 static SDL_Gamepad* sGamepad;
+static SDL_AudioStream* sAudio;
 static char* sPrefPath;
 static char sRegionSuffix[8]; // "" for US, "_eu" / "_jp" otherwise
 static char sSavePath[1024];
@@ -177,6 +179,17 @@ bool Port_HostInit(const PortHostConfig* cfg)
     }
     ApplyVideoConfig();
 
+    if (sConfig.volume > 0) {
+        const SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, PORT_AUDIO_RATE };
+        sAudio = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
+        if (sAudio) {
+            SDL_SetAudioStreamGain(sAudio, sConfig.volume / 100.0f);
+            SDL_ResumeAudioStreamDevice(sAudio);
+        } else {
+            Port_Log("no sound: %s", SDL_GetError()); // the game still runs
+        }
+    }
+
 #ifdef __ANDROID__
     sTouchVisible = sConfig.touchControls != PORT_TOUCH_OFF;
 #else
@@ -188,6 +201,8 @@ bool Port_HostInit(const PortHostConfig* cfg)
 
 void Port_HostShutdown(void)
 {
+    if (sAudio)
+        SDL_DestroyAudioStream(sAudio);
     if (sGamepad)
         SDL_CloseGamepad(sGamepad);
     SDL_DestroyTexture(sTexture);
@@ -340,6 +355,17 @@ uint16_t Port_HostPollKeys(void)
     if ((keys & (PORT_KEY_UP | PORT_KEY_DOWN)) == (PORT_KEY_UP | PORT_KEY_DOWN))
         keys &= ~(PORT_KEY_UP | PORT_KEY_DOWN);
     return keys;
+}
+
+void Port_HostQueueAudio(const int16_t* samples, int frames)
+{
+    // At most ~100 ms queued: in fast-forward (or if the device falls behind)
+    // the extra sound is dropped instead of building up a delay.
+    const int maxQueued = PORT_AUDIO_RATE / 10 * 4;
+
+    if (!sAudio || frames <= 0 || SDL_GetAudioStreamQueued(sAudio) > maxQueued)
+        return;
+    SDL_PutAudioStreamData(sAudio, samples, frames * 4);
 }
 
 void Port_HostWaitFrame(void)

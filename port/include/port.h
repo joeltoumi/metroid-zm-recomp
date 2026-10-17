@@ -63,6 +63,11 @@ void Port_DmaReset(void);
 void Port_DmaOnHBlank(void); // run HBlank-timed channels (one scanline)
 void Port_DmaOnVBlank(void); // run VBlank-timed channels
 
+// Sound: plays one frame of DirectSound + PSG output (port/src/apu.c).
+#define PORT_AUDIO_RATE 48000
+void Port_ApuReset(void);
+void Port_ApuRunFrame(void);
+
 void Port_PpuInit(void);
 const uint32_t* Port_PpuRenderFrame(void); // ABGR8888, 240x160, pitch 240
 
@@ -85,6 +90,8 @@ void Port_HostShutdown(void);
 bool Port_HostPresent(const uint32_t* abgr, int width, int height);
 // Pressed keys, as PORT_KEY_* bits (1 = pressed).
 uint16_t Port_HostPollKeys(void);
+// One frame of sound: interleaved stereo, PORT_AUDIO_RATE Hz.
+void Port_HostQueueAudio(const int16_t* samples, int frames);
 // Block until the next 1/59.73 s tick (no-op when running unthrottled).
 void Port_HostWaitFrame(void);
 // The player's ROM. Returns a malloc'd copy of the whole file, or NULL if

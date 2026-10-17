@@ -1,0 +1,35 @@
+#include "data/rooms/tourian_rooms_data.h"
+#include "macros.h"
+
+const u8 sTourian_4_Scrolls[SCROLL_DATA_SIZE(1)] = {
+	9, // Room
+	1, // Number of scrolls
+	
+	// Scroll 0
+	2, 61, // X bounds
+	8, 21, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+};
+
+const u8 sTourian_9_Clipdata[271] = {
+    #include "extracted/data/rooms/tourian/tourian_9_clipdata.gfx.inc"
+};
+
+const u8 sTourian_9_Bg2[602] = {
+    #include "extracted/data/rooms/tourian/tourian_9_bg2.gfx.inc"
+};
+
+const u8 sTourian_9_Bg1[600] = {
+    #include "extracted/data/rooms/tourian/tourian_9_bg1.gfx.inc"
+};
+
+const u8 sTourian_9_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(1)] = {
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sTourian_9_Bg0[250] = {
+    #include "extracted/data/rooms/tourian/tourian_9_bg0.gfx.inc"
+};
+

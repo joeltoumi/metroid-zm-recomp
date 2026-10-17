@@ -1,0 +1,138 @@
+#ifndef SAMUS_H
+#define SAMUS_H
+
+#include "types.h"
+
+#include "constants/clipdata.h"
+#include "constants/samus.h"
+
+#include "structs/samus.h"
+
+void SamusCheckScrewSpeedboosterAffectingEnvironment(struct SamusData* pData, struct SamusPhysics* pPhysics);
+CollisionResult SamusCheckCollisionAtPosition(u16 xPosition, u16 yPosition, u16* pXPosition, u16* pYPosition, SlopeType* pSlope);
+SamusCollisionDetection unk_5604(struct SamusData* pData, struct SamusPhysics* pPhysics, u16 xPosition, u16* pPosition);
+SamusCollisionDetection SamusCheckTopSideCollisionMidAir(struct SamusData* pData, struct SamusPhysics* pPhysics, u16 xPosition, u16* pPosition);
+SamusCollisionDetection SamusCheckWalkingOnSlope(struct SamusData* pData, u16 xPosition);
+SamusCollisionDetection SamusCheckCollisionAbove(struct SamusData* pData, s32 hitbox);
+SamusPose SamusCheckWalkingSidesCollision(struct SamusData* pData, struct SamusPhysics* pPhysics);
+SamusPose unk_5AD8(struct SamusData* pData, struct SamusPhysics* pPhysics);
+SamusPose SamusCheckStandingOnGroundCollision(struct SamusData* pData, struct SamusPhysics* pPhysics);
+SamusPose SamusCheckLandingCollision(struct SamusData* pData, struct SamusPhysics* pPhysics);
+SamusPose SamusCheckTopCollision(struct SamusData* pData, struct SamusPhysics* pPhysics);
+void SamusCheckCollisions(struct SamusData* pData, struct SamusPhysics* pPhysics);
+void SamusCheckSetEnvironmentalEffect(struct SamusData* pData, u32 defaultOffset, WantingEffect request);
+void SamusUpdateEnvironmentalEffect(struct SamusData* pData);
+void SamusSetMidAir(struct SamusData* pData, struct SamusData* pCopy, struct WeaponInfo* pWeapon);
+void SamusSetLandingPose(struct SamusData* pData, struct SamusData* pCopy, struct WeaponInfo* pWeapon);
+void SamusChangeToHurtPose(struct SamusData* pData, struct SamusData* pCopy, struct WeaponInfo* pWeapon);
+void SamusChangeToKnockbackPose(struct SamusData* pData, struct SamusData* pCopy, struct WeaponInfo* pWeapon);
+void SamusCheckCarryFromCopy(struct SamusData* pData, struct SamusData* pCopy, struct WeaponInfo* pWeapon);
+void SamusSetPose(SamusPose pose);
+void SamusCopyData(struct SamusData* pData);
+void SamusUpdatePhysics(struct SamusData* pData);
+s16 SamusChangeVelocityOnSlope(struct SamusData* pData);
+void SamusCopyPalette(const u16* src, s32 offset, s32 nbrColors);
+void SamusUpdate(void);
+void SamusUpdateHitboxMovingDirection(void);
+void SamusCallGfxFunctions(void);
+void SamusCallCheckLowHealth(void);
+void SamusCallUpdateArmCannonPositionOffset(void);
+void SamusBombBounce(u8 direction);
+void SamusAimCannon(struct SamusData* pData);
+u8 SamusCheckFireBeamMissile(struct SamusData* pData, struct WeaponInfo* pWeapon, struct Equipment* pEquipment);
+u8 SamusCheckFirePistol(struct SamusData* pData, struct WeaponInfo* pWeapon);
+void SamusCheckNewProjectile(struct SamusData* pData, struct WeaponInfo* pWeapon, struct Equipment* pEquipment);
+u8 SamusCheckJumping(struct SamusData* pData);
+void SamusSetHighlightedWeapon(struct SamusData* pData, struct WeaponInfo* pWeapon, struct Equipment* pEquipment);
+void SamusSetSpinningPose(struct SamusData* pData, struct Equipment* pEquipment);
+void SamusApplyXAcceleration(s32 acceleration, s32 velocity, struct SamusData* pData);
+u8 SamusTakeHazardDamage(struct SamusData* pData, struct Equipment* pEquipment, struct HazardDamage* pHazard);
+void SamusCheckShinesparking(struct SamusData* pData);
+SamusPose SamusInactivity(struct SamusData* pData);
+SamusAnimState SamusUpdateAnimation(struct SamusData* pData, u8 slowed);
+SamusPose SamusRunning(struct SamusData* pData);
+SamusPose SamusRunningGfx(struct SamusData* pData);
+SamusPose SamusStanding(struct SamusData* pData);
+SamusPose SamusStandingGfx(struct SamusData* pData);
+SamusPose SamusTurningAround(struct SamusData* pData);
+SamusPose SamusTurningAroundGfx(struct SamusData* pData);
+SamusPose SamusShootingGfx(struct SamusData* pData);
+SamusPose SamusCrouching(struct SamusData* pData);
+SamusPose SamusTurningAroundAndCrouching(struct SamusData* pData);
+SamusPose SamusTurningAroundAndCrouchingGfx(struct SamusData* pData);
+SamusPose SamusShootingAndCrouchingGfx(struct SamusData* pData);
+SamusPose SamusSkidding(struct SamusData* pData);
+SamusPose SamusMidAir(struct SamusData* pData);
+SamusPose SamusMidAirGfx(struct SamusData* pData);
+SamusPose SamusTurningAroundMidAir(struct SamusData* pData);
+SamusPose SamusTurningAroundMidAirGfx(struct SamusData* pData);
+SamusPose SamusStartingSpinJumpGfx(struct SamusData* pData);
+SamusPose SamusSpinning(struct SamusData* pData);
+SamusPose SamusSpinningGfx(struct SamusData* pData);
+SamusPose SamusStartingWallJump(struct SamusData* pData);
+SamusPose SamusStartingWallJumpGfx(struct SamusData* pData);
+SamusPose SamusSpaceJumpingGfx(struct SamusData* pData);
+SamusPose SamusScrewAttackingGfx(struct SamusData* pData);
+SamusPose SamusMorphing(struct SamusData* pData);
+SamusPose SamusMorphingGfx(struct SamusData* pData);
+SamusPose SamusMorphball(struct SamusData* pData);
+SamusPose SamusRolling(struct SamusData* pData);
+SamusPose SamusRollingGfx(struct SamusData* pData);
+SamusPose SamusUnmorphing(struct SamusData* pData);
+SamusPose SamusUnmorphingGfx(struct SamusData* pData);
+SamusPose SamusMorphballMidAir(struct SamusData* pData);
+SamusPose SamusHangingOnLedge(struct SamusData* pData);
+SamusPose SamusHangingOnLedgeGfx(struct SamusData* pData);
+SamusPose SamusTurningToAimWhileHanging(struct SamusData* pData);
+SamusPose SamusTurningToAimWhileHangingGfx(struct SamusData* pData);
+SamusPose SamusHidingArmCannonWhileHangingGfx(struct SamusData* pData);
+SamusPose SamusAimingWhileHanging(struct SamusData* pData);
+SamusPose SamusPullingSelfUp(struct SamusData* pData);
+SamusPose SamusPullingSelfUpGfx(struct SamusData* pData);
+SamusPose SamusPullingSelfForward(struct SamusData* pData);
+SamusPose SamusPullingSelfForwardGfx(struct SamusData* pData);
+SamusPose SamusPullingSelfIntoMorphballTunnelGfx(struct SamusData* pData);
+SamusPose SamusUsingAnElevator(struct SamusData* pData);
+SamusPose SamusUsingAnElevatorGfx(struct SamusData* pData);
+SamusPose SamusFacingTheForeground(struct SamusData* pData);
+SamusPose SamusTurningFromFacingForegroundGfx(struct SamusData* pData);
+SamusPose SamusDelayBeforeShinesparkingGfx(struct SamusData* pData);
+SamusPose SamusShinesparking(struct SamusData* pData);
+SamusPose SamusShinesparkingGfx(struct SamusData* pData);
+SamusPose SamusShinesparkCollisionGfx(struct SamusData* pData);
+SamusPose SamusDelayAfterShinesparkingGfx(struct SamusData* pData);
+SamusPose SamusDelayBeforeBallsparking(struct SamusData* pData);
+SamusPose SamusDelayBeforeBallsparkingGfx(struct SamusData* pData);
+SamusPose SamusBallsparkingGfx(struct SamusData* pData);
+SamusPose SamusBallsparkCollisionGfx(struct SamusData* pData);
+SamusPose SamusOnZipline(struct SamusData* pData);
+SamusPose SamusShootingOnZiplineGfx(struct SamusData* pData);
+SamusPose SamusMorphballOnZipline(struct SamusData* pData);
+SamusPose SamusSavingLoadingGame(struct SamusData* pData);
+SamusPose SamusTurningAroundToDownloadMapDataGfx(struct SamusData* pData);
+SamusPose SamusGettingHurt(struct SamusData* pData);
+SamusPose SamusGettingHurtGfx(struct SamusData* pData);
+SamusPose SamusGettingKnockedBack(struct SamusData* pData);
+SamusPose SamusDying(struct SamusData* pData);
+SamusPose SamusCrouchingToCrawlGfx(struct SamusData* pData);
+SamusPose SamusCrawlingStopped(struct SamusData* pData);
+SamusPose SamusStartingToCrawlGfx(struct SamusData* pData);
+SamusPose SamusCrawling(struct SamusData* pData);
+SamusPose SamusCrawlingGfx(struct SamusData* pData);
+SamusPose SamusTurningAroundWhileCrawling(struct SamusData* pData);
+SamusPose SamusTurningAroundWhileCrawlingGfx(struct SamusData* pData);
+SamusPose SamusGrabbingALedgeSuitlessGfx(struct SamusData* pData);
+SamusPose SamusFacingTheBackground(struct SamusData* pData);
+SamusPose SamusTurningFromFacingTheBackgroundGfx(struct SamusData* pData);
+SamusPose SamusTurningToEnterEscapeShipGfx(struct SamusData* pData);
+SamusPose SamusExecutePoseHandler(struct SamusData* pData);
+void SamusUpdateVelocityPosition(struct SamusData* pData);
+void SamusUpdateGraphicsOam(struct SamusData* pData, u8 direction);
+void SamusUpdatePalette(struct SamusData* pData);
+void SamusCheckPlayLowHealthSound(void);
+void SamusUpdateDrawDistanceAndStandingStatus(struct SamusData* pData, struct SamusPhysics* pPhysics);
+void SamusUpdateArmCannonPositionOffset(u8 direction);
+void SamusInit(void);
+void SamusDraw(void);
+
+#endif /* SAMUS_H */

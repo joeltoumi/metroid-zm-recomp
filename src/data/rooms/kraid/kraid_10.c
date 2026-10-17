@@ -1,0 +1,36 @@
+#include "data/rooms/kraid_rooms_data.h"
+#include "macros.h"
+
+const u8 sKraid_5_Scrolls[SCROLL_DATA_SIZE(1)] = {
+	10, // Room
+	1, // Number of scrolls
+	
+	// Scroll 0
+	2, 31, // X bounds
+	2, 17, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+};
+
+const u8 sKraid_10_Clipdata[165] = {
+    #include "extracted/data/rooms/kraid/kraid_10_clipdata.gfx.inc"
+};
+
+const u8 sKraid_10_Bg2[113] = {
+    #include "extracted/data/rooms/kraid/kraid_10_bg2.gfx.inc"
+};
+
+const u8 sKraid_10_Bg1[413] = {
+    #include "extracted/data/rooms/kraid/kraid_10_bg1.gfx.inc"
+};
+
+const u8 sKraid_10_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(6)] = {
+	3, 25, SPRITESET_IDX(0),
+	8, 18, SPRITESET_IDX(1),
+	16, 16, SPRITESET_IDX(2),
+	16, 19, SPRITESET_IDX(2),
+	16, 22, SPRITESET_IDX(2),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+

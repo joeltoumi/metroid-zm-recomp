@@ -1,0 +1,77 @@
+#include "data/rooms/norfair_rooms_data.h"
+#include "macros.h"
+
+const u8 sNorfair_30_Clipdata[420] = {
+    #include "extracted/data/rooms/norfair/norfair_30_clipdata.gfx.inc"
+};
+
+const u8 sNorfair_30_Spriteset2[ENEMY_ROOM_DATA_ARRAY_SIZE(14)] = {
+	5, 41, SPRITESET_IDX(0),
+	5, 114, SPRITESET_IDX(0),
+	6, 23, SPRITESET_IDX(0),
+	6, 68, SPRITESET_IDX(4),
+	6, 74, SPRITESET_IDX(0),
+	6, 85, SPRITESET_IDX(0),
+	7, 46, SPRITESET_IDX(0),
+	8, 25, SPRITESET_IDX(0),
+	9, 123, SPRITESET_IDX(4),
+	10, 35, SPRITESET_IDX(0),
+	11, 41, SPRITESET_IDX(2),
+	11, 56, SPRITESET_IDX(2),
+	11, 114, SPRITESET_IDX(2),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sNorfair_30_Bg2[14] = {
+    #include "extracted/data/rooms/norfair/norfair_30_bg2.gfx.inc"
+};
+
+const u8 sNorfair_30_Spriteset1[ENEMY_ROOM_DATA_ARRAY_SIZE(18)] = {
+	4, 17, SPRITESET_IDX(0),
+	4, 57, SPRITESET_IDX(1),
+	5, 41, SPRITESET_IDX(0),
+	5, 114, SPRITESET_IDX(1),
+	6, 28, SPRITESET_IDX(1),
+	6, 68, SPRITESET_IDX(4),
+	6, 74, SPRITESET_IDX(1),
+	6, 85, SPRITESET_IDX(1),
+	7, 46, SPRITESET_IDX(1),
+	8, 79, SPRITESET_IDX(4),
+	9, 123, SPRITESET_IDX(4),
+	10, 35, SPRITESET_IDX(1),
+	11, 13, SPRITESET_IDX(2),
+	11, 27, SPRITESET_IDX(2),
+	11, 41, SPRITESET_IDX(2),
+	11, 56, SPRITESET_IDX(2),
+	11, 114, SPRITESET_IDX(2),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sNorfair_30_Bg1[1118] = {
+    #include "extracted/data/rooms/norfair/norfair_30_bg1.gfx.inc"
+};
+
+const u8 sNorfair_30_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(17)] = {
+	4, 57, SPRITESET_IDX(0),
+	5, 41, SPRITESET_IDX(0),
+	5, 114, SPRITESET_IDX(0),
+	6, 28, SPRITESET_IDX(0),
+	6, 68, SPRITESET_IDX(4),
+	6, 74, SPRITESET_IDX(1),
+	6, 85, SPRITESET_IDX(1),
+	7, 46, SPRITESET_IDX(0),
+	8, 25, SPRITESET_IDX(0),
+	8, 79, SPRITESET_IDX(4),
+	9, 123, SPRITESET_IDX(4),
+	10, 35, SPRITESET_IDX(0),
+	11, 13, SPRITESET_IDX(2),
+	11, 41, SPRITESET_IDX(2),
+	11, 56, SPRITESET_IDX(2),
+	11, 114, SPRITESET_IDX(2),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sNorfair_30_Bg0[489] = {
+    #include "extracted/data/rooms/norfair/norfair_30_bg0.gfx.inc"
+};
+

@@ -1,0 +1,75 @@
+#include "data/rooms/ridley_rooms_data.h"
+#include "macros.h"
+
+const u8 sRidley_18_Clipdata[345] = {
+    #include "extracted/data/rooms/ridley/ridley_18_clipdata.gfx.inc"
+};
+
+const u8 sRidley_18_Spriteset2[ENEMY_ROOM_DATA_ARRAY_SIZE(14)] = {
+	5, 118, SPRITESET_IDX(3),
+	5, 147, SPRITESET_IDX(0),
+	7, 163, SPRITESET_IDX(0),
+	8, 67, SPRITESET_IDX(0),
+	9, 27, SPRITESET_IDX(4),
+	9, 50, SPRITESET_IDX(4),
+	9, 87, SPRITESET_IDX(4),
+	9, 94, SPRITESET_IDX(4),
+	9, 144, SPRITESET_IDX(4),
+	9, 167, SPRITESET_IDX(4),
+	10, 42, SPRITESET_IDX(5),
+	10, 111, SPRITESET_IDX(4),
+	10, 124, SPRITESET_IDX(4),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sRidley_18_Bg2[14] = {
+    #include "extracted/data/rooms/ridley/ridley_18_bg2.gfx.inc"
+};
+
+const u8 sRidley_18_Spriteset1[ENEMY_ROOM_DATA_ARRAY_SIZE(16)] = {
+	5, 118, SPRITESET_IDX(3),
+	8, 67, SPRITESET_IDX(1),
+	8, 118, SPRITESET_IDX(1),
+	9, 27, SPRITESET_IDX(5),
+	9, 50, SPRITESET_IDX(5),
+	9, 87, SPRITESET_IDX(5),
+	9, 94, SPRITESET_IDX(5),
+	9, 144, SPRITESET_IDX(5),
+	9, 152, SPRITESET_IDX(5),
+	9, 159, SPRITESET_IDX(5),
+	9, 167, SPRITESET_IDX(5),
+	10, 35, SPRITESET_IDX(5),
+	10, 42, SPRITESET_IDX(5),
+	10, 111, SPRITESET_IDX(5),
+	10, 124, SPRITESET_IDX(5),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sRidley_18_Bg1[1642] = {
+    #include "extracted/data/rooms/ridley/ridley_18_bg1.gfx.inc"
+};
+
+const u8 sRidley_18_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(17)] = {
+	5, 118, SPRITESET_IDX(3),
+	5, 153, SPRITESET_IDX(3),
+	8, 33, SPRITESET_IDX(1),
+	8, 67, SPRITESET_IDX(0),
+	8, 118, SPRITESET_IDX(1),
+	9, 27, SPRITESET_IDX(4),
+	9, 50, SPRITESET_IDX(4),
+	9, 87, SPRITESET_IDX(5),
+	9, 94, SPRITESET_IDX(4),
+	9, 144, SPRITESET_IDX(5),
+	9, 152, SPRITESET_IDX(5),
+	9, 167, SPRITESET_IDX(4),
+	10, 35, SPRITESET_IDX(5),
+	10, 42, SPRITESET_IDX(5),
+	10, 111, SPRITESET_IDX(5),
+	10, 124, SPRITESET_IDX(4),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sRidley_18_Bg0[818] = {
+    #include "extracted/data/rooms/ridley/ridley_18_bg0.gfx.inc"
+};
+

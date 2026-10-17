@@ -1,0 +1,93 @@
+#include "data/sprites/morph_ball.h"
+#include "macros.h"
+
+const u32 sMorphBallGfx[168] = {
+    #include "extracted/data/sprites/morph_ball.gfx.lz.inc"
+};
+const u16 sMorphBallPal[16] = {
+    #include "extracted/data/sprites/morph_ball.pal.inc"
+};
+
+static const u16 sMorphBallOam_Idle_Frame0[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x200, 8, 0)
+};
+
+static const u16 sMorphBallOam_Idle_Frame1[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x202, 8, 0)
+};
+
+static const u16 sMorphBallOam_Idle_Frame2[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x204, 8, 0)
+};
+
+static const u16 sMorphBallOutsideOam_Idle_Frame0[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x206, 8, 0)
+};
+
+static const u16 sMorphBallOutsideOam_Idle_Frame1[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x208, 8, 0)
+};
+
+static const u16 sMorphBallOutsideOam_Idle_Frame2[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x20a, 8, 0)
+};
+
+static const u16 sMorphBallOutsideOam_Idle_Frame3[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x20c, 8, 0)
+};
+
+static const u16 sMorphBallOutsideOam_Idle_Frame4[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x20e, 8, 0)
+};
+
+const struct FrameData sMorphBallOam_Idle[5] = {
+    [0] = {
+        .pFrame = sMorphBallOam_Idle_Frame0,
+        .timer = CONVERT_SECONDS(4.f / 15)
+    },
+    [1] = {
+        .pFrame = sMorphBallOam_Idle_Frame1,
+        .timer = CONVERT_SECONDS(4.f / 15)
+    },
+    [2] = {
+        .pFrame = sMorphBallOam_Idle_Frame2,
+        .timer = CONVERT_SECONDS(4.f / 15)
+    },
+    [3] = {
+        .pFrame = sMorphBallOam_Idle_Frame1,
+        .timer = CONVERT_SECONDS(4.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sMorphBallOutsideOam_Idle[6] = {
+    [0] = {
+        .pFrame = sMorphBallOutsideOam_Idle_Frame0,
+        .timer = CONVERT_SECONDS(1.f) + CONVERT_SECONDS(2.f / 3)
+    },
+    [1] = {
+        .pFrame = sMorphBallOutsideOam_Idle_Frame1,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [2] = {
+        .pFrame = sMorphBallOutsideOam_Idle_Frame2,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [3] = {
+        .pFrame = sMorphBallOutsideOam_Idle_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sMorphBallOutsideOam_Idle_Frame4,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [5] = FRAME_DATA_TERMINATOR
+};

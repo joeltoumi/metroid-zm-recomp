@@ -1,0 +1,57 @@
+#ifndef INTRO_DATA_H
+#define INTRO_DATA_H
+
+#include "types.h"
+
+#include "constants/intro.h"
+
+#include "structs/in_game_timer.h"
+#include "structs/intro.h"
+
+extern const u16 sIntroEmergencyOrderTextOam[52];
+extern const u16 sIntroExterminateAllTextOam[163];
+extern const u16 sIntroDefeatTheTextOam[157];
+extern const u16 sIntroTextMarkerOam[10];
+
+extern const u16 sIntroShipFlyingTowardsCameraOam_2[28];
+extern const u16 sIntroShipFlyingTowardsCameraOam_1[19];
+
+extern const u16 sIntroViewOfZebesShipOam[13];
+extern const u16 sIntroViewOfZebesHeatOam_2[37];
+extern const u16 sIntroViewOfZebesHeatOam_1[73];
+
+extern const u16 sIntroFuzzOam[52];
+
+extern const u16 sIntroTextAndShipPal[16 * 6];
+extern const u16 sIntroPal_45f9d4[16 * 1];
+extern const u16 sIntroSamusInHerShipPal[16 * 5];
+extern const u16 sIntroViewOfZebesPal[16 * 10];
+extern const u16 sIntroMotherBrainPal[16 * 5];
+
+extern const u8 sIntroFuzzRandomValues_1[64];
+extern const u8 sIntroFuzzRandomValues_2[64];
+extern const u8 sTimeAttackPasswordCharacters[32];
+
+extern const u32 sTimeAttackAntiCheatTimes[4];
+
+extern const u8 sSpriteXHalfRadius[3][4];
+extern const u8 sSpriteYHalfRadius[3][4];
+
+extern const IntroTextAction sIntroEmergencyOrderActions[16];
+extern const IntroTextAction sIntroExterminateAllActions[52];
+extern const IntroTextAction sIntroDefeatTheActions[50];
+
+extern const u32 sIntroTextAndShipFlyingInGfx[1310];
+extern const u32 sIntroSpaceBackgroundGfx[3181];
+extern const u32 sIntroSpaceBackgroundTileTable[577];
+extern const u32 sIntroSamusInHerShipGfx[4800];
+extern const u32 sIntroSamusInHerShipTileTable[418];
+extern const u32 sIntroSamusShipViewOfZebesGfx[1224];
+extern const u32 sIntroViewOfZebesGfx[2986];
+extern const u32 sIntroViewOfZebesTileTable[577];
+extern const u32 sIntroMotherBrainGfx[5004];
+extern const u32 sIntroMotherBrainTileTable[577];
+extern const u32 sIntroFuzzGfx[5224];
+extern const u32 sIntro_47920c[125];
+
+#endif /* INTRO_DATA_H */

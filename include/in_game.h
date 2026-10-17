@@ -1,0 +1,20 @@
+#ifndef IN_GAME_H
+#define IN_GAME_H
+
+#include "types.h"
+#include "structs/samus.h"
+
+u32 InGameHandler(void);
+void SetVBlankCodeInGame(void);
+#ifdef REGION_EU
+void InGameIoWriteRegisters(void);
+#endif // REGION_EU
+void TransferSamusGraphics(u32 updatePalette, struct SamusPhysics* pPhysics);
+void VBlankCodeInGameLoad(void);
+void TransferSamusAndBgGraphics(void);
+void VBlankCodeInGame(void);
+void VBlankInGame_Empty(void);
+void InitAndLoadGenerics(void);
+void UpdateNoClip_Debug(void);
+
+#endif /* IN_GAME_H */

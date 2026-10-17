@@ -1,0 +1,32 @@
+#include "data/rooms/kraid_rooms_data.h"
+#include "macros.h"
+
+const u8 sKraid_18_Clipdata[111] = {
+    #include "extracted/data/rooms/kraid/kraid_18_clipdata.gfx.inc"
+};
+
+const u8 sKraid_18_Bg2[137] = {
+    #include "extracted/data/rooms/kraid/kraid_18_bg2.gfx.inc"
+};
+
+const u8 sKraid_18_Spriteset1[ENEMY_ROOM_DATA_ARRAY_SIZE(4)] = {
+	15, 13, SPRITESET_IDX(4),
+	16, 10, SPRITESET_IDX(4),
+	21, 11, SPRITESET_IDX(5),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sKraid_18_Bg1[333] = {
+    #include "extracted/data/rooms/kraid/kraid_18_bg1.gfx.inc"
+};
+
+const u8 sKraid_18_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(3)] = {
+	16, 10, SPRITESET_IDX(4),
+	21, 11, SPRITESET_IDX(5),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sKraid_18_Bg0[30] = {
+    #include "extracted/data/rooms/kraid/kraid_18_bg0.gfx.inc"
+};
+

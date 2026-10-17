@@ -1,0 +1,19 @@
+#ifndef ESCAPE_CONSTANTS_H
+#define ESCAPE_CONSTANTS_H
+
+#include "types.h"
+#include "macros.h"
+
+MAKE_ENUM(u8, Escape) {
+    ESCAPE_NONE,
+    ESCAPE_MOTHER_BRAIN,
+    ESCAPE_MECHA_RIDLEY
+};
+
+MAKE_ENUM(u8, EscapeStatus) {
+    ESCAPE_STATUS_NONE,
+    ESCAPE_STATUS_HAPPENNING,
+    ESCAPE_STATUS_FAILED
+};
+
+#endif /* ESCAPE_CONSTANTS_H */

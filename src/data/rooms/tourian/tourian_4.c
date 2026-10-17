@@ -1,0 +1,51 @@
+#include "data/rooms/tourian_rooms_data.h"
+#include "macros.h"
+
+const u8 sTourian_1_Scrolls[SCROLL_DATA_SIZE(1)] = {
+	4, // Room
+	1, // Number of scrolls
+	
+	// Scroll 0
+	2, 61, // X bounds
+	8, 21, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+};
+
+const u8 sTourian_4_Clipdata[375] = {
+    #include "extracted/data/rooms/tourian/tourian_4_clipdata.gfx.inc"
+};
+
+const u8 sTourian_4_Bg2[144] = {
+    #include "extracted/data/rooms/tourian/tourian_4_bg2.gfx.inc"
+};
+
+const u8 sTourian_4_Bg1[657] = {
+    #include "extracted/data/rooms/tourian/tourian_4_bg1.gfx.inc"
+};
+
+const u8 sTourian_4_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(17)] = {
+	9, 28, SPRITESET_IDX(8),
+	9, 38, SPRITESET_IDX(8),
+	9, 48, SPRITESET_IDX(4),
+	9, 59, SPRITESET_IDX(3),
+	10, 53, SPRITESET_IDX(6),
+	11, 38, SPRITESET_IDX(11),
+	11, 48, SPRITESET_IDX(9),
+	12, 42, SPRITESET_IDX(10),
+	12, 44, SPRITESET_IDX(9),
+	12, 52, SPRITESET_IDX(9),
+	12, 54, SPRITESET_IDX(9),
+	15, 7, SPRITESET_IDX(0),
+	16, 43, SPRITESET_IDX(2),
+	16, 53, SPRITESET_IDX(1),
+	19, 43, SPRITESET_IDX(5),
+	19, 53, SPRITESET_IDX(7),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sTourian_4_Bg0[307] = {
+    #include "extracted/data/rooms/tourian/tourian_4_bg0.gfx.inc"
+};
+

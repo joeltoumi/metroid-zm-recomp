@@ -1,0 +1,27 @@
+#include "data/rooms/ridley_rooms_data.h"
+#include "macros.h"
+
+const u8 sRidley_28_Clipdata[250] = {
+    #include "extracted/data/rooms/ridley/ridley_28_clipdata.gfx.inc"
+};
+
+const u8 sRidley_28_Bg2[157] = {
+    #include "extracted/data/rooms/ridley/ridley_28_bg2.gfx.inc"
+};
+
+const u8 sRidley_28_Bg1[626] = {
+    #include "extracted/data/rooms/ridley/ridley_28_bg1.gfx.inc"
+};
+
+const u8 sRidley_28_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(5)] = {
+	15, 8, SPRITESET_IDX(2),
+	22, 6, SPRITESET_IDX(0),
+	23, 5, SPRITESET_IDX(1),
+	24, 6, SPRITESET_IDX(1),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sRidley_28_Bg0[116] = {
+    #include "extracted/data/rooms/ridley/ridley_28_bg0.gfx.inc"
+};
+

@@ -1,0 +1,46 @@
+#ifndef SPRITE_UTIL_CONSTANTS_H
+#define SPRITE_UTIL_CONSTANTS_H
+
+#include "types.h"
+#include "macros.h"
+
+MAKE_ENUM(u32, NearLeftRight) {
+    NSLR_OUT_OF_RANGE,
+    NSLR_LEFT = 4,
+    NSLR_RIGHT = 8
+};
+
+MAKE_ENUM(u32, NearAboveBelow) {
+    NSAB_OUT_OF_RANGE,
+    NSAB_ABOVE,
+    NSAB_BELOW
+};
+
+MAKE_ENUM(u32, NearFrontBack) {
+    NSFB_OUT_OF_RANGE,
+    NSFB_IN_FRONT = 3,
+    NSFB_BEHIND = 12
+};
+
+MAKE_ENUM(u32, DamageContactType) {
+    DCT_NONE,
+    DCT_SHINESPARK,
+    DCT_SPEEDBOOSTER,
+    DCT_SCREW_ATTACK,
+    DCT_PSEUDO_SCREW
+};
+
+MAKE_ENUM(u8, SpriteDeathType) {
+    DEATH_NORMAL,
+    DEATH_RESPAWNING,
+    DEATH_NO_DEATH_OR_RESPAWNING_ALREADY_HAS_DROP
+};
+
+MAKE_ENUM(u8, SplashSize) {
+    SPLASH_NONE,
+    SPLASH_SMALL,
+    SPLASH_BIG,
+    SPLASH_HUGE
+};
+
+#endif /* SPRITE_UTIL_CONSTANTS_H */

@@ -1,0 +1,1965 @@
+#include "data/sprites/ruins_test.h"
+#include "macros.h"
+
+const u32 sRuinsTestGfx[1951] = {
+    #include "extracted/data/sprites/ruins_test.gfx.inc"
+};
+const u32 sRuinsTestGfx_SamusReflectionTurningRightTop[96] = {
+    #include "extracted/data/sprites/ruins_test_samus_reflection_turning_right_top.gfx.inc"
+};
+const u32 sRuinsTestGfx_SamusReflectionTurningRightBottom[64] = {
+    #include "extracted/data/sprites/ruins_test_samus_reflection_turning_right_bottom.gfx.inc"
+};
+const u32 sRuinsTestGfx_SamusReflectionTurningLeftTop[96] = {
+    #include "extracted/data/sprites/ruins_test_samus_reflection_turning_left_top.gfx.inc"
+};
+const u32 sRuinsTestGfx_SamusReflectionTurningLeftBottom[64] = {
+    #include "extracted/data/sprites/ruins_test_samus_reflection_turning_left_bottom.gfx.inc"
+};
+const u32 sRuinsTestGfx_SamusReflectionFullSuitTop[96] = {
+    #include "extracted/data/sprites/ruins_test_samus_reflection_full_suit_top.gfx.inc"
+};
+const u32 sRuinsTestGfx_SamusReflectionFullSuitBottom[64] = {
+    #include "extracted/data/sprites/ruins_test_samus_reflection_full_suit_bottom.gfx.inc"
+};
+const u32 sRuinsTestGfx_SamusReflectionSuitlessTop[96] = {
+    #include "extracted/data/sprites/ruins_test_samus_reflection_suitless_top.gfx.inc"
+};
+const u32 sRuinsTestGfx_SamusReflectionSuitlessBottom[64] = {
+    #include "extracted/data/sprites/ruins_test_samus_reflection_suitless_bottom.gfx.inc"
+};
+
+const u16 sRuinsTestPal[128] = {
+    #include "extracted/data/sprites/ruins_test.pal.inc"
+};
+const u16 sRuinsTestPal_SymbolShot_Frame1[8] = {
+    #include "extracted/data/sprites/ruins_test_symbol_shot_frame_1.pal.inc"
+};
+const u16 sRuinsTestPal_SymbolShot_Frame2[8] = {
+    #include "extracted/data/sprites/ruins_test_symbol_shot_frame_2.pal.inc"
+};
+const u16 sRuinsTestPal_SymbolShot_Frame3[8] = {
+    #include "extracted/data/sprites/ruins_test_symbol_shot_frame_3.pal.inc"
+};
+const u16 sRuinsTestPal_SymbolShot_Frame4[8] = {
+    #include "extracted/data/sprites/ruins_test_symbol_shot_frame_4.pal.inc"
+};
+const u16 sRuinsTestPal_SymbolShot_Frame5[8] = {
+    #include "extracted/data/sprites/ruins_test_symbol_shot_frame_5.pal.inc"
+};
+const u16 sRuinsTestPal_SymbolShot_Frame6[8] = {
+    #include "extracted/data/sprites/ruins_test_symbol_shot_frame_6.pal.inc"
+};
+const u16 sRuinsTestPal_SamusReflection[15 * 16] = {
+    #include "extracted/data/sprites/ruins_test_samus_reflection.pal.inc"
+};
+const u16 sRuinsTestPal_SamusReflectionFullSuit[15 * 16] = {
+    #include "extracted/data/sprites/ruins_test_samus_reflection_full_suit.pal.inc"
+};
+
+static const u16 sRuinsTestSamusReflectionOam_Frame0[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-16, -40, OAM_DIMS_32x16, OAM_NO_FLIP, 0x214, 15, 0),
+    OAM_ENTRY(-16, -24, OAM_DIMS_32x16, OAM_NO_FLIP, 0x218, 15, 0),
+    OAM_ENTRY(-16, -8, OAM_DIMS_32x8, OAM_NO_FLIP, 0x21c, 15, 0)
+};
+
+static const u16 sRuinsTestGhostOam_SymbolPlaced_Frame0[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-16, -16, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 10, 0)
+};
+
+static const u16 sRuinsTestGhostOutlineOam_Spawning_Frame0[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-32, -84, OAM_DIMS_32x64, OAM_NO_FLIP, 0x23c, 9, 0),
+    OAM_ENTRY(-48, -68, OAM_DIMS_16x32, OAM_NO_FLIP, 0x27a, 9, 0),
+    OAM_ENTRY(-48, -36, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2fa, 9, 0),
+    OAM_ENTRY(-53, -24, OAM_DIMS_32x16, OAM_NO_FLIP, 0x34d, 9, 0),
+    OAM_ENTRY(-37, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x212, 9, 0),
+    OAM_ENTRY(-29, 8, OAM_DIMS_16x8, OAM_NO_FLIP, 0x25a, 9, 0),
+    OAM_ENTRY(0, -84, OAM_DIMS_32x64, OAM_X_FLIP, 0x23c, 9, 0),
+    OAM_ENTRY(32, -68, OAM_DIMS_16x32, OAM_X_FLIP, 0x27a, 9, 0),
+    OAM_ENTRY(32, -36, OAM_DIMS_16x16, OAM_X_FLIP, 0x2fa, 9, 0),
+    OAM_ENTRY(21, -24, OAM_DIMS_32x16, OAM_X_FLIP, 0x34d, 9, 0),
+    OAM_ENTRY(21, -8, OAM_DIMS_16x16, OAM_X_FLIP, 0x212, 9, 0),
+    OAM_ENTRY(13, 8, OAM_DIMS_16x8, OAM_X_FLIP, 0x25a, 9, 0)
+};
+
+static const u16 sRuinsTestGhostOutlineOam_Spawning_Frame1[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-32, -84, OAM_DIMS_32x64, OAM_NO_FLIP, 0x23c, 10, 0),
+    OAM_ENTRY(-48, -68, OAM_DIMS_16x32, OAM_NO_FLIP, 0x27a, 10, 0),
+    OAM_ENTRY(-48, -36, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2fa, 10, 0),
+    OAM_ENTRY(-53, -24, OAM_DIMS_32x16, OAM_NO_FLIP, 0x34d, 10, 0),
+    OAM_ENTRY(-37, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x212, 10, 0),
+    OAM_ENTRY(-29, 8, OAM_DIMS_16x8, OAM_NO_FLIP, 0x25a, 10, 0),
+    OAM_ENTRY(0, -84, OAM_DIMS_32x64, OAM_X_FLIP, 0x23c, 10, 0),
+    OAM_ENTRY(32, -68, OAM_DIMS_16x32, OAM_X_FLIP, 0x27a, 10, 0),
+    OAM_ENTRY(32, -36, OAM_DIMS_16x16, OAM_X_FLIP, 0x2fa, 10, 0),
+    OAM_ENTRY(21, -24, OAM_DIMS_32x16, OAM_X_FLIP, 0x34d, 10, 0),
+    OAM_ENTRY(21, -8, OAM_DIMS_16x16, OAM_X_FLIP, 0x212, 10, 0),
+    OAM_ENTRY(13, 8, OAM_DIMS_16x8, OAM_X_FLIP, 0x25a, 10, 0)
+};
+
+static const u16 sRuinsTestGhostOutlineOam_Spawning_Frame2[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-32, -84, OAM_DIMS_32x64, OAM_NO_FLIP, 0x23c, 11, 0),
+    OAM_ENTRY(-48, -68, OAM_DIMS_16x32, OAM_NO_FLIP, 0x27a, 11, 0),
+    OAM_ENTRY(-48, -36, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2fa, 11, 0),
+    OAM_ENTRY(-53, -24, OAM_DIMS_32x16, OAM_NO_FLIP, 0x34d, 11, 0),
+    OAM_ENTRY(-37, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x212, 11, 0),
+    OAM_ENTRY(-29, 8, OAM_DIMS_16x8, OAM_NO_FLIP, 0x25a, 11, 0),
+    OAM_ENTRY(0, -84, OAM_DIMS_32x64, OAM_X_FLIP, 0x23c, 11, 0),
+    OAM_ENTRY(32, -68, OAM_DIMS_16x32, OAM_X_FLIP, 0x27a, 11, 0),
+    OAM_ENTRY(32, -36, OAM_DIMS_16x16, OAM_X_FLIP, 0x2fa, 11, 0),
+    OAM_ENTRY(21, -24, OAM_DIMS_32x16, OAM_X_FLIP, 0x34d, 11, 0),
+    OAM_ENTRY(21, -8, OAM_DIMS_16x16, OAM_X_FLIP, 0x212, 11, 0),
+    OAM_ENTRY(13, 8, OAM_DIMS_16x8, OAM_X_FLIP, 0x25a, 11, 0)
+};
+
+static const u16 sRuinsTestGhostOutlineOam_Spawning_Frame3[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-32, -84, OAM_DIMS_32x64, OAM_NO_FLIP, 0x23c, 12, 0),
+    OAM_ENTRY(-48, -68, OAM_DIMS_16x32, OAM_NO_FLIP, 0x27a, 12, 0),
+    OAM_ENTRY(-48, -36, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2fa, 12, 0),
+    OAM_ENTRY(-53, -24, OAM_DIMS_32x16, OAM_NO_FLIP, 0x34d, 12, 0),
+    OAM_ENTRY(-37, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x212, 12, 0),
+    OAM_ENTRY(-29, 8, OAM_DIMS_16x8, OAM_NO_FLIP, 0x25a, 12, 0),
+    OAM_ENTRY(0, -84, OAM_DIMS_32x64, OAM_X_FLIP, 0x23c, 12, 0),
+    OAM_ENTRY(32, -68, OAM_DIMS_16x32, OAM_X_FLIP, 0x27a, 12, 0),
+    OAM_ENTRY(32, -36, OAM_DIMS_16x16, OAM_X_FLIP, 0x2fa, 12, 0),
+    OAM_ENTRY(21, -24, OAM_DIMS_32x16, OAM_X_FLIP, 0x34d, 12, 0),
+    OAM_ENTRY(21, -8, OAM_DIMS_16x16, OAM_X_FLIP, 0x212, 12, 0),
+    OAM_ENTRY(13, 8, OAM_DIMS_16x8, OAM_X_FLIP, 0x25a, 12, 0)
+};
+
+static const u16 sRuinsTestGhostOutlineOam_Spawning_Frame4[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-32, -84, OAM_DIMS_32x64, OAM_NO_FLIP, 0x23c, 13, 0),
+    OAM_ENTRY(-48, -68, OAM_DIMS_16x32, OAM_NO_FLIP, 0x27a, 13, 0),
+    OAM_ENTRY(-48, -36, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2fa, 13, 0),
+    OAM_ENTRY(-53, -24, OAM_DIMS_32x16, OAM_NO_FLIP, 0x34d, 13, 0),
+    OAM_ENTRY(-37, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x212, 13, 0),
+    OAM_ENTRY(-29, 8, OAM_DIMS_16x8, OAM_NO_FLIP, 0x25a, 13, 0),
+    OAM_ENTRY(0, -84, OAM_DIMS_32x64, OAM_X_FLIP, 0x23c, 13, 0),
+    OAM_ENTRY(32, -68, OAM_DIMS_16x32, OAM_X_FLIP, 0x27a, 13, 0),
+    OAM_ENTRY(32, -36, OAM_DIMS_16x16, OAM_X_FLIP, 0x2fa, 13, 0),
+    OAM_ENTRY(21, -24, OAM_DIMS_32x16, OAM_X_FLIP, 0x34d, 13, 0),
+    OAM_ENTRY(21, -8, OAM_DIMS_16x16, OAM_X_FLIP, 0x212, 13, 0),
+    OAM_ENTRY(13, 8, OAM_DIMS_16x8, OAM_X_FLIP, 0x25a, 13, 0)
+};
+
+static const u16 sRuinsTestGhostOam_NotMoving_Frame0[OAM_DATA_SIZE(25)] = {
+    25,
+    OAM_ENTRY(-53, -24, OAM_DIMS_32x16, OAM_NO_FLIP, 0x204, 8, 0),
+    OAM_ENTRY(-37, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x246, 8, 0),
+    OAM_ENTRY(-29, 8, OAM_DIMS_16x8, OAM_NO_FLIP, 0x287, 8, 0),
+    OAM_ENTRY(-44, -43, OAM_DIMS_16x16, OAM_NO_FLIP, 0x244, 8, 0),
+    OAM_ENTRY(-44, -27, OAM_DIMS_16x8, OAM_NO_FLIP, 0x284, 8, 0),
+    OAM_ENTRY(-37, -57, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2e4, 8, 0),
+    OAM_ENTRY(-52, -65, OAM_DIMS_32x32, OAM_NO_FLIP, 0x300, 8, 0),
+    OAM_ENTRY(21, -24, OAM_DIMS_32x16, OAM_X_FLIP, 0x204, 8, 0),
+    OAM_ENTRY(21, -8, OAM_DIMS_16x16, OAM_X_FLIP, 0x246, 8, 0),
+    OAM_ENTRY(13, 8, OAM_DIMS_16x8, OAM_X_FLIP, 0x287, 8, 0),
+    OAM_ENTRY(28, -43, OAM_DIMS_16x16, OAM_X_FLIP, 0x244, 8, 0),
+    OAM_ENTRY(28, -27, OAM_DIMS_16x8, OAM_X_FLIP, 0x284, 8, 0),
+    OAM_ENTRY(29, -57, OAM_DIMS_8x8, OAM_X_FLIP, 0x2e4, 8, 0),
+    OAM_ENTRY(20, -65, OAM_DIMS_32x32, OAM_X_FLIP, 0x300, 8, 0),
+    OAM_ENTRY(-14, -46, OAM_DIMS_8x16, OAM_NO_FLIP, 0x304, 8, 0),
+    OAM_ENTRY(6, -46, OAM_DIMS_8x16, OAM_X_FLIP, 0x304, 8, 0),
+    OAM_ENTRY(-12, -68, OAM_DIMS_16x8, OAM_NO_FLIP, 0x327, 8, 0),
+    OAM_ENTRY(4, -68, OAM_DIMS_8x8, OAM_X_FLIP, 0x327, 8, 0),
+    OAM_ENTRY(-24, -84, OAM_DIMS_32x64, OAM_NO_FLIP, 0x200, 8, 0),
+    OAM_ENTRY(8, -84, OAM_DIMS_16x32, OAM_X_FLIP, 0x200, 8, 0),
+    OAM_ENTRY(8, -52, OAM_DIMS_16x32, OAM_X_FLIP, 0x280, 8, 0),
+    OAM_ENTRY(-24, -33, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2a4, 8, 0),
+    OAM_ENTRY(-16, -33, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a5, 8, 0),
+    OAM_ENTRY(16, -33, OAM_DIMS_8x8, OAM_X_FLIP, 0x2a4, 8, 0),
+    OAM_ENTRY(0, -33, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a5, 8, 0)
+};
+
+static const u16 sRuinsTestGhostOam_Moving_Frame1[OAM_DATA_SIZE(19)] = {
+    19,
+    OAM_ENTRY(-53, -23, OAM_DIMS_32x16, OAM_NO_FLIP, 0x204, 8, 0),
+    OAM_ENTRY(-37, -7, OAM_DIMS_16x16, OAM_NO_FLIP, 0x246, 8, 0),
+    OAM_ENTRY(-29, 9, OAM_DIMS_16x8, OAM_NO_FLIP, 0x287, 8, 0),
+    OAM_ENTRY(-44, -42, OAM_DIMS_16x16, OAM_NO_FLIP, 0x244, 8, 0),
+    OAM_ENTRY(-44, -26, OAM_DIMS_16x8, OAM_NO_FLIP, 0x284, 8, 0),
+    OAM_ENTRY(-52, -65, OAM_DIMS_32x32, OAM_NO_FLIP, 0x300, 8, 0),
+    OAM_ENTRY(21, -23, OAM_DIMS_32x16, OAM_X_FLIP, 0x204, 8, 0),
+    OAM_ENTRY(21, -7, OAM_DIMS_16x16, OAM_X_FLIP, 0x246, 8, 0),
+    OAM_ENTRY(13, 9, OAM_DIMS_16x8, OAM_X_FLIP, 0x287, 8, 0),
+    OAM_ENTRY(28, -42, OAM_DIMS_16x16, OAM_X_FLIP, 0x244, 8, 0),
+    OAM_ENTRY(28, -26, OAM_DIMS_16x8, OAM_X_FLIP, 0x284, 8, 0),
+    OAM_ENTRY(20, -65, OAM_DIMS_32x32, OAM_X_FLIP, 0x300, 8, 0),
+    OAM_ENTRY(-24, -84, OAM_DIMS_32x64, OAM_NO_FLIP, 0x200, 8, 0),
+    OAM_ENTRY(8, -84, OAM_DIMS_16x32, OAM_X_FLIP, 0x200, 8, 0),
+    OAM_ENTRY(8, -52, OAM_DIMS_16x32, OAM_X_FLIP, 0x280, 8, 0),
+    OAM_ENTRY(-24, -33, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2a4, 8, 0),
+    OAM_ENTRY(-16, -33, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a5, 8, 0),
+    OAM_ENTRY(16, -33, OAM_DIMS_8x8, OAM_X_FLIP, 0x2a4, 8, 0),
+    OAM_ENTRY(0, -33, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a5, 8, 0)
+};
+
+static const u16 sRuinsTestGhostOam_Moving_Frame2[OAM_DATA_SIZE(25)] = {
+    25,
+    OAM_ENTRY(-52, -23, OAM_DIMS_32x16, OAM_NO_FLIP, 0x204, 8, 0),
+    OAM_ENTRY(-36, -7, OAM_DIMS_16x16, OAM_NO_FLIP, 0x246, 8, 0),
+    OAM_ENTRY(-28, 9, OAM_DIMS_16x8, OAM_NO_FLIP, 0x287, 8, 0),
+    OAM_ENTRY(-43, -42, OAM_DIMS_16x16, OAM_NO_FLIP, 0x244, 8, 0),
+    OAM_ENTRY(-43, -26, OAM_DIMS_16x8, OAM_NO_FLIP, 0x284, 8, 0),
+    OAM_ENTRY(-37, -56, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2e5, 8, 0),
+    OAM_ENTRY(-52, -64, OAM_DIMS_32x32, OAM_NO_FLIP, 0x300, 8, 0),
+    OAM_ENTRY(20, -23, OAM_DIMS_32x16, OAM_X_FLIP, 0x204, 8, 0),
+    OAM_ENTRY(20, -7, OAM_DIMS_16x16, OAM_X_FLIP, 0x246, 8, 0),
+    OAM_ENTRY(12, 9, OAM_DIMS_16x8, OAM_X_FLIP, 0x287, 8, 0),
+    OAM_ENTRY(27, -42, OAM_DIMS_16x16, OAM_X_FLIP, 0x244, 8, 0),
+    OAM_ENTRY(27, -26, OAM_DIMS_16x8, OAM_X_FLIP, 0x284, 8, 0),
+    OAM_ENTRY(29, -56, OAM_DIMS_8x8, OAM_X_FLIP, 0x2e5, 8, 0),
+    OAM_ENTRY(20, -64, OAM_DIMS_32x32, OAM_X_FLIP, 0x300, 8, 0),
+    OAM_ENTRY(-14, -45, OAM_DIMS_8x16, OAM_NO_FLIP, 0x305, 8, 0),
+    OAM_ENTRY(6, -45, OAM_DIMS_8x16, OAM_X_FLIP, 0x305, 8, 0),
+    OAM_ENTRY(-12, -67, OAM_DIMS_16x8, OAM_NO_FLIP, 0x32a, 8, 0),
+    OAM_ENTRY(4, -67, OAM_DIMS_8x8, OAM_X_FLIP, 0x32a, 8, 0),
+    OAM_ENTRY(-24, -83, OAM_DIMS_32x64, OAM_NO_FLIP, 0x200, 8, 0),
+    OAM_ENTRY(8, -83, OAM_DIMS_16x32, OAM_X_FLIP, 0x200, 8, 0),
+    OAM_ENTRY(8, -51, OAM_DIMS_16x32, OAM_X_FLIP, 0x280, 8, 0),
+    OAM_ENTRY(-24, -33, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2a4, 8, 0),
+    OAM_ENTRY(-16, -33, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a5, 8, 0),
+    OAM_ENTRY(16, -33, OAM_DIMS_8x8, OAM_X_FLIP, 0x2a4, 8, 0),
+    OAM_ENTRY(0, -33, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a5, 8, 0)
+};
+
+static const u16 sRuinsTestGhostOam_Moving_Frame3[OAM_DATA_SIZE(25)] = {
+    25,
+    OAM_ENTRY(-52, -23, OAM_DIMS_32x16, OAM_NO_FLIP, 0x204, 8, 0),
+    OAM_ENTRY(-36, -7, OAM_DIMS_16x16, OAM_NO_FLIP, 0x246, 8, 0),
+    OAM_ENTRY(-28, 9, OAM_DIMS_16x8, OAM_NO_FLIP, 0x287, 8, 0),
+    OAM_ENTRY(-43, -41, OAM_DIMS_16x16, OAM_NO_FLIP, 0x244, 8, 0),
+    OAM_ENTRY(-43, -25, OAM_DIMS_16x8, OAM_NO_FLIP, 0x284, 8, 0),
+    OAM_ENTRY(-36, -55, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2e6, 8, 0),
+    OAM_ENTRY(-51, -63, OAM_DIMS_32x32, OAM_NO_FLIP, 0x300, 8, 0),
+    OAM_ENTRY(20, -23, OAM_DIMS_32x16, OAM_X_FLIP, 0x204, 8, 0),
+    OAM_ENTRY(20, -7, OAM_DIMS_16x16, OAM_X_FLIP, 0x246, 8, 0),
+    OAM_ENTRY(12, 9, OAM_DIMS_16x8, OAM_X_FLIP, 0x287, 8, 0),
+    OAM_ENTRY(27, -41, OAM_DIMS_16x16, OAM_X_FLIP, 0x244, 8, 0),
+    OAM_ENTRY(27, -25, OAM_DIMS_16x8, OAM_X_FLIP, 0x284, 8, 0),
+    OAM_ENTRY(28, -55, OAM_DIMS_8x8, OAM_X_FLIP, 0x2e6, 8, 0),
+    OAM_ENTRY(19, -63, OAM_DIMS_32x32, OAM_X_FLIP, 0x300, 8, 0),
+    OAM_ENTRY(-14, -44, OAM_DIMS_8x16, OAM_NO_FLIP, 0x306, 8, 0),
+    OAM_ENTRY(6, -44, OAM_DIMS_8x16, OAM_X_FLIP, 0x306, 8, 0),
+    OAM_ENTRY(-12, -66, OAM_DIMS_16x8, OAM_NO_FLIP, 0x32c, 8, 0),
+    OAM_ENTRY(4, -66, OAM_DIMS_8x8, OAM_X_FLIP, 0x32c, 8, 0),
+    OAM_ENTRY(-24, -82, OAM_DIMS_32x64, OAM_NO_FLIP, 0x200, 8, 0),
+    OAM_ENTRY(8, -82, OAM_DIMS_16x32, OAM_X_FLIP, 0x200, 8, 0),
+    OAM_ENTRY(8, -50, OAM_DIMS_16x32, OAM_X_FLIP, 0x280, 8, 0),
+    OAM_ENTRY(-24, -32, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2a4, 8, 0),
+    OAM_ENTRY(-16, -32, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a5, 8, 0),
+    OAM_ENTRY(16, -32, OAM_DIMS_8x8, OAM_X_FLIP, 0x2a4, 8, 0),
+    OAM_ENTRY(0, -32, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a5, 8, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_FourSymbols_Frame0[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_FourSymbols_Frame1[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_FourSymbols_Frame2[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_FourSymbols_Frame3[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_FourSymbols_Frame4[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_FourSymbols_Frame5[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_FourSymbols_Frame6[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20a, 9, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x20a, 9, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x20a, 9, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20a, 9, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20a, 9, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x20a, 9, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x20a, 9, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20a, 9, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_FourSymbols_Frame7[OAM_DATA_SIZE(12)] = {
+    12,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_FourSymbols_Frame10[OAM_DATA_SIZE(16)] = {
+    16,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-75, -43, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(59, -43, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-75, 27, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(59, 27, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_FourSymbols_Frame11[OAM_DATA_SIZE(20)] = {
+    20,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-75, -43, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-59, -35, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(59, -43, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(43, -35, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-75, 27, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-59, 19, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(59, 27, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(43, 19, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_FourSymbols_Frame12[OAM_DATA_SIZE(24)] = {
+    24,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-75, -43, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-59, -35, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-43, -27, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(59, -43, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(43, -35, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(27, -27, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-75, 27, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-59, 19, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-43, 11, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(59, 27, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(43, 19, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(27, 11, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_Merging_Frame0[OAM_DATA_SIZE(28)] = {
+    28,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(-75, -43, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-59, -35, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-43, -27, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-27, -19, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(59, -43, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(43, -35, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(27, -27, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(11, -19, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-75, 27, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-59, 19, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-43, 11, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-27, 3, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(59, 27, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(43, 19, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(27, 11, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(11, 3, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_Merging_Frame1[OAM_DATA_SIZE(28)] = {
+    28,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(-75, -43, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(-59, -35, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(-43, -27, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(-27, -19, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(59, -43, OAM_DIMS_16x16, OAM_X_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(43, -35, OAM_DIMS_16x16, OAM_X_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(27, -27, OAM_DIMS_16x16, OAM_X_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(11, -19, OAM_DIMS_16x16, OAM_X_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(-75, 27, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(-59, 19, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(-43, 11, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(-27, 3, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(59, 27, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(43, 19, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(27, 11, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(11, 3, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2e7, 9, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_Disappearing_Frame0[OAM_DATA_SIZE(24)] = {
+    24,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-59, -35, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-43, -27, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-27, -19, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(43, -35, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(27, -27, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(11, -19, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-59, 19, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-43, 11, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-27, 3, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(43, 19, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(27, 11, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(11, 3, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_Disappearing_Frame1[OAM_DATA_SIZE(20)] = {
+    20,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-43, -27, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-27, -19, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(27, -27, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(11, -19, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-43, 11, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-27, 3, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(27, 11, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(11, 3, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_Disappearing_Frame2[OAM_DATA_SIZE(16)] = {
+    16,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-27, -19, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(11, -19, OAM_DIMS_16x16, OAM_X_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-27, 3, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(11, 3, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2a7, 9, 0),
+    OAM_ENTRY(-104, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_Disappearing_Frame3[OAM_DATA_SIZE(8)] = {
+    8,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 11, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_Disappearing_Frame4[OAM_DATA_SIZE(8)] = {
+    8,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 10, 0)
+};
+
+static const u16 sRuinsTestSymbolOam_Disappearing_Frame5[OAM_DATA_SIZE(8)] = {
+    8,
+    OAM_ENTRY(-104, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(-88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(88, -60, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(72, -60, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(-104, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(-88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(88, 28, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(72, 28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 9, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame0[OAM_DATA_SIZE(6)] = {
+    6,
+    OAM_ENTRY(-16, -20, OAM_DIMS_32x32, OAM_NO_FLIP, 0x28a, 9, 0),
+    OAM_ENTRY(-16, 12, OAM_DIMS_32x8, OAM_NO_FLIP, 0x30a, 9, 0),
+    OAM_ENTRY(-24, -12, OAM_DIMS_8x16, OAM_NO_FLIP, 0x289, 9, 0),
+    OAM_ENTRY(-24, 4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2c9, 9, 0),
+    OAM_ENTRY(16, -12, OAM_DIMS_8x16, OAM_NO_FLIP, 0x2e9, 9, 0),
+    OAM_ENTRY(16, 4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x329, 9, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame1[OAM_DATA_SIZE(6)] = {
+    6,
+    OAM_ENTRY(-16, -20, OAM_DIMS_32x32, OAM_NO_FLIP, 0x28a, 10, 0),
+    OAM_ENTRY(-16, 12, OAM_DIMS_32x8, OAM_NO_FLIP, 0x30a, 10, 0),
+    OAM_ENTRY(-24, -12, OAM_DIMS_8x16, OAM_NO_FLIP, 0x289, 10, 0),
+    OAM_ENTRY(-24, 4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2c9, 10, 0),
+    OAM_ENTRY(16, -12, OAM_DIMS_8x16, OAM_NO_FLIP, 0x2e9, 10, 0),
+    OAM_ENTRY(16, 4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x329, 10, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame2[OAM_DATA_SIZE(6)] = {
+    6,
+    OAM_ENTRY(-16, -20, OAM_DIMS_32x32, OAM_NO_FLIP, 0x28a, 11, 0),
+    OAM_ENTRY(-16, 12, OAM_DIMS_32x8, OAM_NO_FLIP, 0x30a, 11, 0),
+    OAM_ENTRY(-24, -12, OAM_DIMS_8x16, OAM_NO_FLIP, 0x289, 11, 0),
+    OAM_ENTRY(-24, 4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2c9, 11, 0),
+    OAM_ENTRY(16, -12, OAM_DIMS_8x16, OAM_NO_FLIP, 0x2e9, 11, 0),
+    OAM_ENTRY(16, 4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x329, 11, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame3[OAM_DATA_SIZE(6)] = {
+    6,
+    OAM_ENTRY(-16, -20, OAM_DIMS_32x32, OAM_NO_FLIP, 0x28a, 12, 0),
+    OAM_ENTRY(-16, 12, OAM_DIMS_32x8, OAM_NO_FLIP, 0x30a, 12, 0),
+    OAM_ENTRY(-24, -12, OAM_DIMS_8x16, OAM_NO_FLIP, 0x289, 12, 0),
+    OAM_ENTRY(-24, 4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2c9, 12, 0),
+    OAM_ENTRY(16, -12, OAM_DIMS_8x16, OAM_NO_FLIP, 0x2e9, 12, 0),
+    OAM_ENTRY(16, 4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x329, 12, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame4[OAM_DATA_SIZE(6)] = {
+    6,
+    OAM_ENTRY(-16, -20, OAM_DIMS_32x32, OAM_NO_FLIP, 0x28a, 13, 0),
+    OAM_ENTRY(-16, 12, OAM_DIMS_32x8, OAM_NO_FLIP, 0x30a, 13, 0),
+    OAM_ENTRY(-24, -12, OAM_DIMS_8x16, OAM_NO_FLIP, 0x289, 13, 0),
+    OAM_ENTRY(-24, 4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x2c9, 13, 0),
+    OAM_ENTRY(16, -12, OAM_DIMS_8x16, OAM_NO_FLIP, 0x2e9, 13, 0),
+    OAM_ENTRY(16, 4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x329, 13, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame5[OAM_DATA_SIZE(13)] = {
+    13,
+    OAM_ENTRY(-22, -22, OAM_DIMS_16x16, OAM_NO_FLIP, 0x380, 13, 0),
+    OAM_ENTRY(-8, -21, OAM_DIMS_8x16, OAM_NO_FLIP, 0x382, 13, 0),
+    OAM_ENTRY(-21, -8, OAM_DIMS_16x8, OAM_NO_FLIP, 0x3c0, 13, 0),
+    OAM_ENTRY(6, -22, OAM_DIMS_16x16, OAM_X_FLIP, 0x380, 13, 0),
+    OAM_ENTRY(0, -21, OAM_DIMS_8x16, OAM_X_FLIP, 0x382, 13, 0),
+    OAM_ENTRY(5, -8, OAM_DIMS_16x8, OAM_X_FLIP, 0x3c0, 13, 0),
+    OAM_ENTRY(-22, 6, OAM_DIMS_16x16, OAM_Y_FLIP, 0x380, 13, 0),
+    OAM_ENTRY(-8, 5, OAM_DIMS_8x16, OAM_Y_FLIP, 0x382, 13, 0),
+    OAM_ENTRY(-21, 0, OAM_DIMS_16x8, OAM_Y_FLIP, 0x3c0, 13, 0),
+    OAM_ENTRY(6, 6, OAM_DIMS_16x16, OAM_XY_FLIP, 0x380, 13, 0),
+    OAM_ENTRY(0, 5, OAM_DIMS_8x16, OAM_XY_FLIP, 0x382, 13, 0),
+    OAM_ENTRY(5, 0, OAM_DIMS_16x8, OAM_XY_FLIP, 0x3c0, 13, 0),
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x3c2, 13, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame6[OAM_DATA_SIZE(13)] = {
+    13,
+    OAM_ENTRY(-23, -23, OAM_DIMS_16x16, OAM_NO_FLIP, 0x380, 13, 0),
+    OAM_ENTRY(-8, -22, OAM_DIMS_8x16, OAM_NO_FLIP, 0x382, 13, 0),
+    OAM_ENTRY(-22, -8, OAM_DIMS_16x8, OAM_NO_FLIP, 0x3c0, 13, 0),
+    OAM_ENTRY(7, -23, OAM_DIMS_16x16, OAM_X_FLIP, 0x380, 13, 0),
+    OAM_ENTRY(0, -22, OAM_DIMS_8x16, OAM_X_FLIP, 0x382, 13, 0),
+    OAM_ENTRY(6, -8, OAM_DIMS_16x8, OAM_X_FLIP, 0x3c0, 13, 0),
+    OAM_ENTRY(-23, 7, OAM_DIMS_16x16, OAM_Y_FLIP, 0x380, 13, 0),
+    OAM_ENTRY(-8, 6, OAM_DIMS_8x16, OAM_Y_FLIP, 0x382, 13, 0),
+    OAM_ENTRY(-22, 0, OAM_DIMS_16x8, OAM_Y_FLIP, 0x3c0, 13, 0),
+    OAM_ENTRY(7, 7, OAM_DIMS_16x16, OAM_XY_FLIP, 0x380, 13, 0),
+    OAM_ENTRY(0, 6, OAM_DIMS_8x16, OAM_XY_FLIP, 0x382, 13, 0),
+    OAM_ENTRY(6, 0, OAM_DIMS_16x8, OAM_XY_FLIP, 0x3c0, 13, 0),
+    OAM_ENTRY(-8, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x3c2, 13, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame7[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-24, -24, OAM_DIMS_32x32, OAM_NO_FLIP, 0x380, 13, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x380, 13, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_32x16, OAM_Y_FLIP, 0x380, 13, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_XY_FLIP, 0x380, 13, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame8[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-24, -24, OAM_DIMS_32x32, OAM_NO_FLIP, 0x380, 12, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x380, 12, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_32x16, OAM_Y_FLIP, 0x380, 12, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_XY_FLIP, 0x380, 12, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame9[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-24, -24, OAM_DIMS_32x32, OAM_NO_FLIP, 0x380, 11, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x380, 11, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_32x16, OAM_Y_FLIP, 0x380, 11, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_XY_FLIP, 0x380, 11, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame10[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-24, -24, OAM_DIMS_32x32, OAM_NO_FLIP, 0x380, 10, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x380, 10, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_32x16, OAM_Y_FLIP, 0x380, 10, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_XY_FLIP, 0x380, 10, 0)
+};
+
+static const u16 sRuinsTestOam_TurningIntoReflection_Frame11[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-24, -24, OAM_DIMS_32x32, OAM_NO_FLIP, 0x380, 9, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x380, 9, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_32x16, OAM_Y_FLIP, 0x380, 9, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_XY_FLIP, 0x380, 9, 0)
+};
+
+static const u16 sRuinsTestReflectionCoverOam_Frame0[OAM_DATA_SIZE(5)] = {
+    5,
+    OAM_ENTRY(-17, -17, OAM_DIMS_8x8, OAM_NO_FLIP, 0x286, 9, 0),
+    OAM_ENTRY(-24, -24, OAM_DIMS_32x32, OAM_NO_FLIP, 0x28e, 9, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_32x16, OAM_NO_FLIP, 0x30e, 9, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x28e, 9, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_X_FLIP, 0x30e, 9, 0)
+};
+
+static const u16 sRuinsTestReflectionCoverOam_Frame1[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-16, -16, OAM_DIMS_8x8, OAM_NO_FLIP, 0x286, 9, 0)
+};
+
+static const u16 sRuinsTestOam_Symbol_Frame0[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(0, -32, OAM_DIMS_32x32, OAM_NO_FLIP, 0x399, 9, 0),
+    OAM_ENTRY(-32, -32, OAM_DIMS_32x32, OAM_X_FLIP, 0x399, 9, 0),
+    OAM_ENTRY(0, 0, OAM_DIMS_32x32, OAM_Y_FLIP, 0x399, 9, 0),
+    OAM_ENTRY(-32, 0, OAM_DIMS_32x32, OAM_XY_FLIP, 0x399, 9, 0)
+};
+
+static const u16 sRuinsTestOam_Symbol_Frame1[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-32, -32, OAM_DIMS_32x32, OAM_NO_FLIP, 0x39c, 9, 0),
+    OAM_ENTRY(0, -32, OAM_DIMS_32x32, OAM_X_FLIP, 0x39c, 9, 0),
+    OAM_ENTRY(-32, 0, OAM_DIMS_32x32, OAM_Y_FLIP, 0x39c, 9, 0),
+    OAM_ENTRY(0, 0, OAM_DIMS_32x32, OAM_XY_FLIP, 0x39c, 9, 0)
+};
+
+static const u16 sRuinsTestOam_Symbol_Frame2[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(0, 0, OAM_DIMS_32x32, OAM_NO_FLIP, 0x339, 9, 0),
+    OAM_ENTRY(-32, 0, OAM_DIMS_32x32, OAM_X_FLIP, 0x339, 9, 0),
+    OAM_ENTRY(0, -32, OAM_DIMS_32x32, OAM_Y_FLIP, 0x339, 9, 0),
+    OAM_ENTRY(-32, -32, OAM_DIMS_32x32, OAM_XY_FLIP, 0x339, 9, 0)
+};
+
+static const u16 sRuinsTestOam_Symbol_Frame3[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-32, 0, OAM_DIMS_32x32, OAM_NO_FLIP, 0x33c, 9, 0),
+    OAM_ENTRY(0, 0, OAM_DIMS_32x32, OAM_X_FLIP, 0x33c, 9, 0),
+    OAM_ENTRY(-32, -32, OAM_DIMS_32x32, OAM_Y_FLIP, 0x33c, 9, 0),
+    OAM_ENTRY(0, -32, OAM_DIMS_32x32, OAM_XY_FLIP, 0x33c, 9, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_Spawning_Frame0[OAM_DATA_SIZE(8)] = {
+    8,
+    OAM_ENTRY(-24, -24, OAM_DIMS_16x32, OAM_NO_FLIP, 0x344, 9, 0),
+    OAM_ENTRY(-8, -24, OAM_DIMS_8x32, OAM_NO_FLIP, 0x346, 9, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x3c4, 9, 0),
+    OAM_ENTRY(-8, 8, OAM_DIMS_8x16, OAM_NO_FLIP, 0x3c6, 9, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x344, 9, 0),
+    OAM_ENTRY(0, -24, OAM_DIMS_8x32, OAM_X_FLIP, 0x346, 9, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_X_FLIP, 0x3c4, 9, 0),
+    OAM_ENTRY(0, 8, OAM_DIMS_8x16, OAM_X_FLIP, 0x3c6, 9, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_Spawning_Frame1[OAM_DATA_SIZE(8)] = {
+    8,
+    OAM_ENTRY(-24, -24, OAM_DIMS_16x32, OAM_NO_FLIP, 0x344, 10, 0),
+    OAM_ENTRY(-8, -24, OAM_DIMS_8x32, OAM_NO_FLIP, 0x346, 10, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x3c4, 10, 0),
+    OAM_ENTRY(-8, 8, OAM_DIMS_8x16, OAM_NO_FLIP, 0x3c6, 10, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x344, 10, 0),
+    OAM_ENTRY(0, -24, OAM_DIMS_8x32, OAM_X_FLIP, 0x346, 10, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_X_FLIP, 0x3c4, 10, 0),
+    OAM_ENTRY(0, 8, OAM_DIMS_8x16, OAM_X_FLIP, 0x3c6, 10, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_Spawning_Frame2[OAM_DATA_SIZE(8)] = {
+    8,
+    OAM_ENTRY(-24, -24, OAM_DIMS_16x32, OAM_NO_FLIP, 0x344, 11, 0),
+    OAM_ENTRY(-8, -24, OAM_DIMS_8x32, OAM_NO_FLIP, 0x346, 11, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x3c4, 11, 0),
+    OAM_ENTRY(-8, 8, OAM_DIMS_8x16, OAM_NO_FLIP, 0x3c6, 11, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x344, 11, 0),
+    OAM_ENTRY(0, -24, OAM_DIMS_8x32, OAM_X_FLIP, 0x346, 11, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_X_FLIP, 0x3c4, 11, 0),
+    OAM_ENTRY(0, 8, OAM_DIMS_8x16, OAM_X_FLIP, 0x3c6, 11, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_Spawning_Frame3[OAM_DATA_SIZE(8)] = {
+    8,
+    OAM_ENTRY(-24, -24, OAM_DIMS_16x32, OAM_NO_FLIP, 0x344, 12, 0),
+    OAM_ENTRY(-8, -24, OAM_DIMS_8x32, OAM_NO_FLIP, 0x346, 12, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x3c4, 12, 0),
+    OAM_ENTRY(-8, 8, OAM_DIMS_8x16, OAM_NO_FLIP, 0x3c6, 12, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x344, 12, 0),
+    OAM_ENTRY(0, -24, OAM_DIMS_8x32, OAM_X_FLIP, 0x346, 12, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_X_FLIP, 0x3c4, 12, 0),
+    OAM_ENTRY(0, 8, OAM_DIMS_8x16, OAM_X_FLIP, 0x3c6, 12, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_Spawning_Frame4[OAM_DATA_SIZE(8)] = {
+    8,
+    OAM_ENTRY(-24, -24, OAM_DIMS_16x32, OAM_NO_FLIP, 0x344, 13, 0),
+    OAM_ENTRY(-8, -24, OAM_DIMS_8x32, OAM_NO_FLIP, 0x346, 13, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x3c4, 13, 0),
+    OAM_ENTRY(-8, 8, OAM_DIMS_8x16, OAM_NO_FLIP, 0x3c6, 13, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x344, 13, 0),
+    OAM_ENTRY(0, -24, OAM_DIMS_8x32, OAM_X_FLIP, 0x346, 13, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_X_FLIP, 0x3c4, 13, 0),
+    OAM_ENTRY(0, 8, OAM_DIMS_8x16, OAM_X_FLIP, 0x3c6, 13, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_Spawning_Frame5[OAM_DATA_SIZE(8)] = {
+    8,
+    OAM_ENTRY(-24, -24, OAM_DIMS_16x32, OAM_NO_FLIP, 0x347, 9, 0),
+    OAM_ENTRY(-8, -24, OAM_DIMS_8x32, OAM_NO_FLIP, 0x349, 9, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x3c7, 9, 0),
+    OAM_ENTRY(-8, 8, OAM_DIMS_8x16, OAM_NO_FLIP, 0x3c9, 9, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x347, 9, 0),
+    OAM_ENTRY(0, -24, OAM_DIMS_8x32, OAM_X_FLIP, 0x349, 9, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_X_FLIP, 0x3c7, 9, 0),
+    OAM_ENTRY(0, 8, OAM_DIMS_8x16, OAM_X_FLIP, 0x3c9, 9, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_Spawning_Frame6[OAM_DATA_SIZE(8)] = {
+    8,
+    OAM_ENTRY(-24, -24, OAM_DIMS_16x32, OAM_NO_FLIP, 0x34a, 9, 0),
+    OAM_ENTRY(-8, -24, OAM_DIMS_8x32, OAM_NO_FLIP, 0x34c, 9, 0),
+    OAM_ENTRY(-24, 8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x3ca, 9, 0),
+    OAM_ENTRY(-8, 8, OAM_DIMS_8x16, OAM_NO_FLIP, 0x3cc, 9, 0),
+    OAM_ENTRY(8, -24, OAM_DIMS_16x32, OAM_X_FLIP, 0x34a, 9, 0),
+    OAM_ENTRY(0, -24, OAM_DIMS_8x32, OAM_X_FLIP, 0x34c, 9, 0),
+    OAM_ENTRY(8, 8, OAM_DIMS_16x16, OAM_X_FLIP, 0x3ca, 9, 0),
+    OAM_ENTRY(0, 8, OAM_DIMS_8x16, OAM_X_FLIP, 0x3cc, 9, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame3[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-20, -20, OAM_DIMS_32x32, OAM_NO_FLIP, 0x38d, 13, 0),
+    OAM_ENTRY(12, -20, OAM_DIMS_8x32, OAM_X_FLIP, 0x38d, 13, 0),
+    OAM_ENTRY(-20, 12, OAM_DIMS_32x8, OAM_Y_FLIP, 0x38d, 13, 0),
+    OAM_ENTRY(12, 12, OAM_DIMS_8x8, OAM_XY_FLIP, 0x38d, 13, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame4[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-20, -20, OAM_DIMS_32x32, OAM_NO_FLIP, 0x38d, 12, 0),
+    OAM_ENTRY(12, -20, OAM_DIMS_8x32, OAM_X_FLIP, 0x38d, 12, 0),
+    OAM_ENTRY(-20, 12, OAM_DIMS_32x8, OAM_Y_FLIP, 0x38d, 12, 0),
+    OAM_ENTRY(12, 12, OAM_DIMS_8x8, OAM_XY_FLIP, 0x38d, 12, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame5[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-16, -16, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(0, -16, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 11, 0),
+    OAM_ENTRY(-16, -16, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame6[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-16, -16, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(0, -16, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 10, 0),
+    OAM_ENTRY(-16, -16, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame7[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-16, -16, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(0, -16, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 9, 0),
+    OAM_ENTRY(-16, -16, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestGhostOam_SymbolShot_Frame0[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-16, -16, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestGhostOam_SymbolPlacing_Frame3[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-16, -16, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(0, -16, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 12, 0),
+    OAM_ENTRY(-16, -16, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestGhostOam_SymbolPlacing_Frame4[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-16, -16, OAM_DIMS_16x32, OAM_NO_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(0, -16, OAM_DIMS_16x32, OAM_X_FLIP, 0x208, 13, 0),
+    OAM_ENTRY(-16, -16, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestGhostOam_SymbolPlacing_Frame5[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-16, -16, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20a, 9, 0),
+    OAM_ENTRY(0, -16, OAM_DIMS_16x32, OAM_X_FLIP, 0x20a, 9, 0),
+    OAM_ENTRY(-16, -16, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestGhostOam_SymbolPlacing_Frame6[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-16, -16, OAM_DIMS_16x32, OAM_NO_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(0, -16, OAM_DIMS_16x32, OAM_X_FLIP, 0x20c, 9, 0),
+    OAM_ENTRY(-16, -16, OAM_DIMS_32x32, OAM_NO_FLIP, 0x20e, 14, 0)
+};
+
+static const u16 sRuinsTestLightningOam_InAir_Frame0[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-12, -80, OAM_DIMS_16x32, OAM_NO_FLIP, 0x252, 9, 0),
+    OAM_ENTRY(-12, -48, OAM_DIMS_16x32, OAM_NO_FLIP, 0x2d2, 9, 0),
+    OAM_ENTRY(-12, -16, OAM_DIMS_16x16, OAM_NO_FLIP, 0x352, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_InAir_Frame2[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-8, -28, OAM_DIMS_16x32, OAM_Y_FLIP, 0x254, 9, 0),
+    OAM_ENTRY(-8, -60, OAM_DIMS_16x32, OAM_Y_FLIP, 0x2d4, 9, 0),
+    OAM_ENTRY(-8, -76, OAM_DIMS_16x16, OAM_Y_FLIP, 0x354, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_InAir_Frame3[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-4, -24, OAM_DIMS_16x32, OAM_XY_FLIP, 0x252, 13, 0),
+    OAM_ENTRY(-4, -56, OAM_DIMS_16x32, OAM_XY_FLIP, 0x2d2, 13, 0),
+    OAM_ENTRY(-4, -72, OAM_DIMS_16x16, OAM_XY_FLIP, 0x352, 13, 0)
+};
+
+static const u16 sRuinsTestLightningOam_InAir_Frame4[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-8, -76, OAM_DIMS_16x32, OAM_X_FLIP, 0x254, 13, 0),
+    OAM_ENTRY(-8, -44, OAM_DIMS_16x32, OAM_X_FLIP, 0x2d4, 13, 0),
+    OAM_ENTRY(-8, -12, OAM_DIMS_16x16, OAM_X_FLIP, 0x354, 13, 0)
+};
+
+static const u16 sRuinsTestLightningOam_InAir_Frame6[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-12, -32, OAM_DIMS_16x32, OAM_Y_FLIP, 0x252, 9, 0),
+    OAM_ENTRY(-12, -64, OAM_DIMS_16x32, OAM_Y_FLIP, 0x2d2, 9, 0),
+    OAM_ENTRY(-12, -80, OAM_DIMS_16x16, OAM_Y_FLIP, 0x352, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_InAir_Frame7[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-8, -28, OAM_DIMS_16x32, OAM_XY_FLIP, 0x254, 13, 0),
+    OAM_ENTRY(-8, -60, OAM_DIMS_16x32, OAM_XY_FLIP, 0x2d4, 13, 0),
+    OAM_ENTRY(-8, -76, OAM_DIMS_16x16, OAM_XY_FLIP, 0x354, 13, 0)
+};
+
+static const u16 sRuinsTestLightningOam_InAir_Frame8[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-4, -72, OAM_DIMS_16x32, OAM_X_FLIP, 0x252, 9, 0),
+    OAM_ENTRY(-4, -40, OAM_DIMS_16x32, OAM_X_FLIP, 0x2d2, 9, 0),
+    OAM_ENTRY(-4, -8, OAM_DIMS_16x16, OAM_X_FLIP, 0x352, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_InAir_Frame10[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-8, -76, OAM_DIMS_16x32, OAM_NO_FLIP, 0x254, 9, 0),
+    OAM_ENTRY(-8, -44, OAM_DIMS_16x32, OAM_NO_FLIP, 0x2d4, 9, 0),
+    OAM_ENTRY(-8, -12, OAM_DIMS_16x16, OAM_NO_FLIP, 0x354, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_InAir_Frame1[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-4, -4, OAM_DIMS_8x8, OAM_NO_FLIP, 0x39c, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_GoingOnGround_Frame0[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-12, -64, OAM_DIMS_16x32, OAM_NO_FLIP, 0x252, 9, 0),
+    OAM_ENTRY(-12, -32, OAM_DIMS_16x32, OAM_NO_FLIP, 0x2d2, 9, 0),
+    OAM_ENTRY(0, -8, OAM_DIMS_16x16, OAM_X_FLIP, 0x3d1, 9, 0),
+    OAM_ENTRY(-16, -8, OAM_DIMS_16x16, OAM_Y_FLIP, 0x3d1, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_GoingOnGround_Frame1[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-12, -64, OAM_DIMS_16x32, OAM_NO_FLIP, 0x252, 9, 0),
+    OAM_ENTRY(-12, -32, OAM_DIMS_16x32, OAM_NO_FLIP, 0x2d2, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_GoingOnGround_Frame2[OAM_DATA_SIZE(4)] = {
+    4,
+    OAM_ENTRY(-8, -32, OAM_DIMS_16x32, OAM_Y_FLIP, 0x2d4, 13, 0),
+    OAM_ENTRY(-8, -48, OAM_DIMS_16x16, OAM_Y_FLIP, 0x354, 13, 0),
+    OAM_ENTRY(-12, -8, OAM_DIMS_32x16, OAM_X_FLIP, 0x391, 9, 0),
+    OAM_ENTRY(-20, -8, OAM_DIMS_32x16, OAM_Y_FLIP, 0x391, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_GoingOnGround_Frame3[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-8, -32, OAM_DIMS_16x32, OAM_Y_FLIP, 0x2d4, 13, 0),
+    OAM_ENTRY(-8, -48, OAM_DIMS_16x16, OAM_Y_FLIP, 0x354, 13, 0)
+};
+
+static const u16 sRuinsTestLightningOam_GoingOnGround_Frame4[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-4, -32, OAM_DIMS_16x32, OAM_XY_FLIP, 0x312, 13, 0),
+    OAM_ENTRY(-8, -8, OAM_DIMS_32x16, OAM_XY_FLIP, 0x3d1, 9, 0),
+    OAM_ENTRY(-24, -8, OAM_DIMS_32x16, OAM_NO_FLIP, 0x3d1, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_GoingOnGround_Frame5[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-4, -32, OAM_DIMS_16x32, OAM_XY_FLIP, 0x312, 13, 0)
+};
+
+static const u16 sRuinsTestLightningOam_GoingOnGround_Frame6[OAM_DATA_SIZE(3)] = {
+    3,
+    OAM_ENTRY(-8, -24, OAM_DIMS_16x16, OAM_X_FLIP, 0x254, 9, 0),
+    OAM_ENTRY(-4, -8, OAM_DIMS_32x16, OAM_XY_FLIP, 0x391, 9, 0),
+    OAM_ENTRY(-28, -8, OAM_DIMS_32x16, OAM_NO_FLIP, 0x391, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_GoingOnGround_Frame7[OAM_DATA_SIZE(1)] = {
+    1,
+    OAM_ENTRY(-8, -16, OAM_DIMS_16x16, OAM_X_FLIP, 0x254, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundHorizontal_Frame0[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-32, -8, OAM_DIMS_32x16, OAM_NO_FLIP, 0x3d1, 9, 0),
+    OAM_ENTRY(0, -8, OAM_DIMS_32x16, OAM_NO_FLIP, 0x3d5, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundHorizontal_Frame2[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-20, -8, OAM_DIMS_32x16, OAM_NO_FLIP, 0x391, 9, 0),
+    OAM_ENTRY(12, -8, OAM_DIMS_16x16, OAM_NO_FLIP, 0x395, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundHorizontal_Frame4[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-24, -8, OAM_DIMS_32x16, OAM_Y_FLIP, 0x3d1, 13, 0),
+    OAM_ENTRY(8, -8, OAM_DIMS_32x16, OAM_Y_FLIP, 0x3d5, 13, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundHorizontal_Frame6[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-20, -8, OAM_DIMS_32x16, OAM_Y_FLIP, 0x391, 13, 0),
+    OAM_ENTRY(12, -8, OAM_DIMS_16x16, OAM_Y_FLIP, 0x395, 13, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundHorizontal_Frame8[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(0, -8, OAM_DIMS_32x16, OAM_X_FLIP, 0x3d1, 9, 0),
+    OAM_ENTRY(-32, -8, OAM_DIMS_32x16, OAM_X_FLIP, 0x3d5, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundHorizontal_Frame10[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-4, -8, OAM_DIMS_32x16, OAM_X_FLIP, 0x391, 9, 0),
+    OAM_ENTRY(-20, -8, OAM_DIMS_16x16, OAM_X_FLIP, 0x395, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundHorizontal_Frame12[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(8, -8, OAM_DIMS_32x16, OAM_XY_FLIP, 0x3d1, 9, 0),
+    OAM_ENTRY(-24, -8, OAM_DIMS_32x16, OAM_XY_FLIP, 0x3d5, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundHorizontal_Frame14[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-4, -8, OAM_DIMS_32x16, OAM_XY_FLIP, 0x391, 9, 0),
+    OAM_ENTRY(-20, -8, OAM_DIMS_16x16, OAM_XY_FLIP, 0x395, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundVertical_Frame0[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-8, -32, OAM_DIMS_16x32, OAM_NO_FLIP, 0x256, 9, 0),
+    OAM_ENTRY(-8, 0, OAM_DIMS_16x32, OAM_NO_FLIP, 0x2d6, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundVertical_Frame2[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-8, -28, OAM_DIMS_16x32, OAM_NO_FLIP, 0x258, 9, 0),
+    OAM_ENTRY(-8, 4, OAM_DIMS_16x16, OAM_NO_FLIP, 0x2d8, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundVertical_Frame4[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-8, 0, OAM_DIMS_16x32, OAM_Y_FLIP, 0x256, 13, 0),
+    OAM_ENTRY(-8, -32, OAM_DIMS_16x32, OAM_Y_FLIP, 0x2d6, 13, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundVertical_Frame6[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-8, -12, OAM_DIMS_16x32, OAM_Y_FLIP, 0x258, 13, 0),
+    OAM_ENTRY(-8, -28, OAM_DIMS_16x16, OAM_Y_FLIP, 0x2d8, 13, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundVertical_Frame8[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-8, -32, OAM_DIMS_16x32, OAM_X_FLIP, 0x256, 9, 0),
+    OAM_ENTRY(-8, 0, OAM_DIMS_16x32, OAM_X_FLIP, 0x2d6, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundVertical_Frame10[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-8, -28, OAM_DIMS_16x32, OAM_X_FLIP, 0x258, 9, 0),
+    OAM_ENTRY(-8, 4, OAM_DIMS_16x16, OAM_X_FLIP, 0x2d8, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundVertical_Frame12[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-8, 0, OAM_DIMS_16x32, OAM_XY_FLIP, 0x256, 9, 0),
+    OAM_ENTRY(-8, -32, OAM_DIMS_16x32, OAM_XY_FLIP, 0x2d6, 9, 0)
+};
+
+static const u16 sRuinsTestLightningOam_OnGroundVertical_Frame14[OAM_DATA_SIZE(2)] = {
+    2,
+    OAM_ENTRY(-8, -12, OAM_DIMS_16x32, OAM_XY_FLIP, 0x258, 9, 0),
+    OAM_ENTRY(-8, -28, OAM_DIMS_16x16, OAM_XY_FLIP, 0x2d8, 9, 0)
+};
+
+const struct FrameData sRuinsTestSamusReflectionOam[2] = {
+    [0] = {
+        .pFrame = sRuinsTestSamusReflectionOam_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestGhostOutlineOam_Spawning[9] = {
+    [0] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [1] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [2] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame3,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [4] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame4,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [5] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame3,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [6] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [7] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [8] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestGhostOam_NotMoving[2] = {
+    [0] = {
+        .pFrame = sRuinsTestGhostOam_NotMoving_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestGhostOam_Moving[7] = {
+    [0] = {
+        .pFrame = sRuinsTestGhostOam_NotMoving_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 6)
+    },
+    [1] = {
+        .pFrame = sRuinsTestGhostOam_Moving_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 6)
+    },
+    [2] = {
+        .pFrame = sRuinsTestGhostOam_Moving_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 6)
+    },
+    [3] = {
+        .pFrame = sRuinsTestGhostOam_Moving_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 6)
+    },
+    [4] = {
+        .pFrame = sRuinsTestGhostOam_Moving_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 6)
+    },
+    [5] = {
+        .pFrame = sRuinsTestGhostOam_Moving_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 6)
+    },
+    [6] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestGhostOam_SymbolPlaced[2] = {
+    [0] = {
+        .pFrame = sRuinsTestGhostOam_SymbolPlaced_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestSymbolOam_FourSymbols[14] = {
+    [0] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [1] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame1,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [2] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame2,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [3] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [5] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [6] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame6,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [7] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame7,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [8] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame6,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [9] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame5,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [10] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame10,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [11] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame11,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [12] = {
+        .pFrame = sRuinsTestSymbolOam_FourSymbols_Frame12,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [13] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestSymbolOam_Merging[3] = {
+    [0] = {
+        .pFrame = sRuinsTestSymbolOam_Merging_Frame0,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [1] = {
+        .pFrame = sRuinsTestSymbolOam_Merging_Frame1,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [2] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestSymbolOam_Disappearing[7] = {
+    [0] = {
+        .pFrame = sRuinsTestSymbolOam_Disappearing_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sRuinsTestSymbolOam_Disappearing_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [2] = {
+        .pFrame = sRuinsTestSymbolOam_Disappearing_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sRuinsTestSymbolOam_Disappearing_Frame3,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [4] = {
+        .pFrame = sRuinsTestSymbolOam_Disappearing_Frame4,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [5] = {
+        .pFrame = sRuinsTestSymbolOam_Disappearing_Frame5,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [6] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestOam_TurningIntoReflection[13] = {
+    [0] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [1] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [3] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [5] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [6] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [7] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame7,
+        .timer = CONVERT_SECONDS(19.f / 60)
+    },
+    [8] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame8,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [9] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame9,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [10] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame10,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [11] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame11,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [12] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestReflectionCoverOam[3] = {
+    [0] = {
+        .pFrame = sRuinsTestReflectionCoverOam_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sRuinsTestReflectionCoverOam_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [2] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestOam_Symbol[5] = {
+    [0] = {
+        .pFrame = sRuinsTestOam_Symbol_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [1] = {
+        .pFrame = sRuinsTestOam_Symbol_Frame1,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [2] = {
+        .pFrame = sRuinsTestOam_Symbol_Frame2,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sRuinsTestOam_Symbol_Frame3,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [4] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestShootableSymbolOam_Spawning[10] = {
+    [0] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame0,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [1] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame1,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [2] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [3] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [5] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame5,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [6] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame6,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [7] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [8] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [9] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestShootableSymbolOam_Spawned[7] = {
+    [0] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [2] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [4] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [5] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [6] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestShootableSymbolOam_Despawning[5] = {
+    [0] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [1] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame1,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [3] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame0,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [4] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestShootableSymbolOam_TurningIntoSymbol[9] = {
+    [0] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame6,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [1] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame5,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [2] = {
+        .pFrame = sRuinsTestShootableSymbolOam_Spawning_Frame4,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [3] = {
+        .pFrame = sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame3,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [4] = {
+        .pFrame = sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame4,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [5] = {
+        .pFrame = sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame5,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [6] = {
+        .pFrame = sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame6,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [7] = {
+        .pFrame = sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame7,
+        .timer = CONVERT_SECONDS(0.05f)
+    },
+    [8] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestGhostOam_SymbolShot[2] = {
+    [0] = {
+        .pFrame = sRuinsTestGhostOam_SymbolShot_Frame0,
+        .timer = CONVERT_SECONDS(0.8f)
+    },
+    [1] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestGhostOam_SymbolPlacing[14] = {
+    [0] = {
+        .pFrame = sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame7,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [1] = {
+        .pFrame = sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame6,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [2] = {
+        .pFrame = sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [3] = {
+        .pFrame = sRuinsTestGhostOam_SymbolPlacing_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sRuinsTestGhostOam_SymbolPlacing_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [5] = {
+        .pFrame = sRuinsTestGhostOam_SymbolPlacing_Frame5,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [6] = {
+        .pFrame = sRuinsTestGhostOam_SymbolPlacing_Frame6,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [7] = {
+        .pFrame = sRuinsTestGhostOam_SymbolPlacing_Frame5,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [8] = {
+        .pFrame = sRuinsTestGhostOam_SymbolPlacing_Frame4,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [9] = {
+        .pFrame = sRuinsTestGhostOam_SymbolPlacing_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [10] = {
+        .pFrame = sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [11] = {
+        .pFrame = sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame6,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [12] = {
+        .pFrame = sRuinsTestShootableSymbolOam_TurningIntoSymbol_Frame7,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [13] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestOam_Despawn[6] = {
+    [0] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame11,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [1] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame10,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [2] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame9,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [3] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame8,
+        .timer = CONVERT_SECONDS(0.1f)
+    },
+    [4] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame7,
+        .timer = UCHAR_MAX
+    },
+    [5] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestOam_Unused[9] = {
+    [0] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame7,
+        .timer = UCHAR_MAX
+    },
+    [1] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [2] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [3] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [4] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [5] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [6] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 15)
+    },
+    [7] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame0,
+        .timer = UCHAR_MAX
+    },
+    [8] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestOam_Spawning[9] = {
+    [0] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [1] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [2] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [3] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [4] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [5] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [6] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [7] = {
+        .pFrame = sRuinsTestOam_TurningIntoReflection_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [8] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestLightningOam_InAir[12] = {
+    [0] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [2] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [4] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [5] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [6] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [7] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame7,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [8] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame8,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [9] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [10] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame10,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [11] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestLightningOam_GoingOnGround[9] = {
+    [0] = {
+        .pFrame = sRuinsTestLightningOam_GoingOnGround_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sRuinsTestLightningOam_GoingOnGround_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [2] = {
+        .pFrame = sRuinsTestLightningOam_GoingOnGround_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sRuinsTestLightningOam_GoingOnGround_Frame3,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [4] = {
+        .pFrame = sRuinsTestLightningOam_GoingOnGround_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [5] = {
+        .pFrame = sRuinsTestLightningOam_GoingOnGround_Frame5,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [6] = {
+        .pFrame = sRuinsTestLightningOam_GoingOnGround_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [7] = {
+        .pFrame = sRuinsTestLightningOam_GoingOnGround_Frame7,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [8] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestLightningOam_OnGroundHorizontal[17] = {
+    [0] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundHorizontal_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [2] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundHorizontal_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [4] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundHorizontal_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [5] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [6] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundHorizontal_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [7] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [8] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundHorizontal_Frame8,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [9] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [10] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundHorizontal_Frame10,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [11] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [12] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundHorizontal_Frame12,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [13] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [14] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundHorizontal_Frame14,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [15] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [16] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestLightningOam_OnGroundVertical[17] = {
+    [0] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundVertical_Frame0,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [1] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [2] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundVertical_Frame2,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [3] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [4] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundVertical_Frame4,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [5] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [6] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundVertical_Frame6,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [7] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [8] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundVertical_Frame8,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [9] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [10] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundVertical_Frame10,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [11] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [12] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundVertical_Frame12,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [13] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [14] = {
+        .pFrame = sRuinsTestLightningOam_OnGroundVertical_Frame14,
+        .timer = CONVERT_SECONDS(1.f / 30)
+    },
+    [15] = {
+        .pFrame = sRuinsTestLightningOam_InAir_Frame1,
+        .timer = CONVERT_SECONDS(1.f / 60)
+    },
+    [16] = FRAME_DATA_TERMINATOR
+};
+
+const struct FrameData sRuinsTestGhostOutlineOam_ShootingGroundLightning[9] = {
+    [0] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame4,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [1] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [2] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame4,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [3] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [4] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame4,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [5] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [6] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame4,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [7] = {
+        .pFrame = sRuinsTestGhostOutlineOam_Spawning_Frame0,
+        .timer = CONVERT_SECONDS(2.f / 15)
+    },
+    [8] = FRAME_DATA_TERMINATOR
+};

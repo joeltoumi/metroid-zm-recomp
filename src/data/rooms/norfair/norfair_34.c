@@ -1,0 +1,50 @@
+#include "data/rooms/norfair_rooms_data.h"
+#include "macros.h"
+
+const u8 sNorfair_12_Scrolls[SCROLL_DATA_SIZE(3)] = {
+	34, // Room
+	3, // Number of scrolls
+	
+	// Scroll 0
+	16, 31, // X bounds
+	2, 14, // Y bounds
+	23, 13, // Breakable block position
+	3, // Breakable block direction
+	21, // Breakable block Y bound extension
+
+	// Scroll 1
+	31, 46, // X bounds
+	2, 14, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+
+	// Scroll 2
+	32, 46, // X bounds
+	12, 21, // Y bounds
+	32, 16, // Breakable block position
+	0, // Breakable block direction
+	16, // Breakable block Y bound extension
+};
+
+const u8 sNorfair_34_Clipdata[269] = {
+    #include "extracted/data/rooms/norfair/norfair_34_clipdata.gfx.inc"
+};
+
+const u8 sNorfair_34_Bg2[332] = {
+    #include "extracted/data/rooms/norfair/norfair_34_bg2.gfx.inc"
+};
+
+const u8 sNorfair_34_Bg1[704] = {
+    #include "extracted/data/rooms/norfair/norfair_34_bg1.gfx.inc"
+};
+
+const u8 sNorfair_34_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(2)] = {
+	2, 23, SPRITESET_IDX(0),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sNorfair_34_Bg0[87] = {
+    #include "extracted/data/rooms/norfair/norfair_34_bg0.gfx.inc"
+};
+

@@ -1,0 +1,1163 @@
+#include "music_wrappers.h"
+#include "audio.h"
+#include "audio_wrappers.h"
+#include "syscalls.h"
+#include "gba.h"
+#include "macros.h"
+
+#include "data/audio.h"
+
+#include "constants/audio.h"
+
+/**
+ * @brief 3380 | 5c | DMA 2 interrupt callback
+ * 
+ */
+void DMA2IntrCode(void)
+{
+    gMusicInfo.unk_10++;
+    if (gMusicInfo.unk_10 == gMusicInfo.unk_E)
+    {
+        // Flush DMA 1 and 2
+        WRITE_32(REG_DMA1_CNT, C_32_2_16(DMA_DEST_FIXED | DMA_32BIT | DMA_ENABLE, sizeof(u32)));
+        WRITE_32(REG_DMA2_CNT, C_32_2_16(DMA_DEST_FIXED | DMA_32BIT | DMA_ENABLE, sizeof(u32)));
+        WRITE_16(REG_DMA1_CNT + 2, DMA_SRC_FIXED | DMA_32BIT);
+        WRITE_16(REG_DMA2_CNT + 2, DMA_SRC_FIXED | DMA_32BIT);
+
+        WRITE_16(REG_DMA1_CNT + 2, DMA_REPEAT | DMA_32BIT | DMA_START_VBLANK | DMA_START_HBLANK | DMA_ENABLE);
+        WRITE_16(REG_DMA2_CNT + 2, DMA_REPEAT | DMA_32BIT | DMA_START_VBLANK | DMA_START_HBLANK | DMA_INTR_ENABLE | DMA_ENABLE);
+
+        gMusicInfo.unk_10 = 0;
+    }
+}
+
+/**
+ * @brief 33dc | 7c | Restarts the sound registers
+ * 
+ */
+void RestartSound(void)
+{
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    WRITE_16(REG_SOUND1CNT_X, SOUNDCNT_RESTART_SOUND);
+
+    WRITE_8(REG_SOUND2CNT_L + 1, HIGH_BYTE(SOUNDCNT_ENVELOPE_INCREASE));
+    WRITE_16(REG_SOUND2CNT_H, SOUNDCNT_RESTART_SOUND);
+
+    WRITE_8(REG_SOUND3CNT_L, 0); // Turn off channel 3
+
+    WRITE_8(REG_SOUND4CNT_L + 1, HIGH_BYTE(SOUNDCNT_ENVELOPE_INCREASE));
+    WRITE_16(REG_SOUND4CNT_H, SOUNDCNT_RESTART_SOUND);
+
+    // Flush DMA 1 and 2
+    WRITE_32(REG_DMA1_CNT, C_32_2_16(DMA_DEST_FIXED | DMA_32BIT | DMA_ENABLE, sizeof(u32)));
+    WRITE_32(REG_DMA2_CNT, C_32_2_16(DMA_DEST_FIXED | DMA_32BIT | DMA_ENABLE, sizeof(u32)));
+    WRITE_16(REG_DMA1_CNT + 2, DMA_SRC_FIXED | DMA_32BIT);
+    WRITE_16(REG_DMA2_CNT + 2, DMA_SRC_FIXED | DMA_32BIT);
+
+    CPU_FILL_32(0, gMusicInfo.soundRawData, sizeof(gMusicInfo.soundRawData));
+    WRITE_8(REG_SOUNDCNT_X, 0); // Disable and reset sound (PSG and FIFO) registers
+
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 3458 | 54 | Clears the raw sound data
+ * 
+ */
+void ClearSoundData(void)
+{
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    // Flush DMA 1 and 2
+    WRITE_32(REG_DMA1_CNT, C_32_2_16(DMA_DEST_FIXED | DMA_32BIT | DMA_ENABLE, sizeof(u32)));
+    WRITE_32(REG_DMA2_CNT, C_32_2_16(DMA_DEST_FIXED | DMA_32BIT | DMA_ENABLE, sizeof(u32)));
+    WRITE_16(REG_DMA1_CNT + 2, DMA_SRC_FIXED | DMA_32BIT);
+    WRITE_16(REG_DMA2_CNT + 2, DMA_SRC_FIXED | DMA_32BIT);
+
+    CPU_FILL_32(0, gMusicInfo.soundRawData, sizeof(gMusicInfo.soundRawData));
+
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 34ac | 124 | To document
+ * 
+ * @param isInterrupting bool, is the new music track interrupting (or maybe current music track is interrupted?)
+ */
+void unk_34ac(u8 isInterrupting)
+{
+    u8 track;
+    u8 startTrack;
+    u8 j;
+    u8 currChannel;
+    struct TrackData* pTrack;
+    struct TrackVariables* pVariables;
+    struct SoundChannel* pChannel;
+    struct SoundChannel* pChannelNext;
+
+    currChannel = 0;
+    if (isInterrupting == FALSE)
+        startTrack = 2;
+    else
+        startTrack = 1;
+
+    // gNumMusicPlayers = 9
+    for (track = startTrack; track < (u16)gNumMusicPlayers; track++)
+    {
+        // If the 1st iteration when isInterrupting is false
+        // Or the 1st, 3rd, 6th, or 8th iteration when isInterrupting is true
+        // Or the 2nd, 5th, or 7th iteration when isInterrupting is false
+        if ((track == 2 && isInterrupting == FALSE) || (0x14A >> track) & 1)
+        {
+            pTrack = sMusicTrackDataRom[track].pTrack;
+            if (pTrack->occupied)
+                continue;
+
+            pTrack->occupied = TRUE;
+
+            if (!(pTrack->unk_1E & TRUE) && (pTrack->flags & 2))
+            {
+                pTrack->unk_1E = TRUE;
+
+                for (j = 0, pVariables = pTrack->pVariables; j < pTrack->amountOfTracks; j++, pVariables++)
+                {
+                    if (!(pVariables->channel & 0xC0))
+                    {
+                        if (pVariables->pSoundPsg != NULL)
+                        {
+                            ClearRegistersForPsg(pVariables->pSoundPsg, (u8)((pVariables->channel & 7) - 1));
+                        }
+
+                        if (pVariables->pChannel == NULL)
+                            continue;
+                        
+                        for (pChannel = pVariables->pChannel; pChannel != NULL; pChannel = pChannelNext)
+                        {
+                            gSoundChannelBackup[currChannel].pChannel = pChannel;
+                            gSoundChannelBackup[currChannel].channel = *pChannel;
+                            currChannel++;
+
+                            pChannel->unk_0 = 0;
+                            pChannel->pVariables = NULL;
+                            pChannelNext = pChannel->pChannel2;
+                            pChannel->pChannel2 = NULL;
+                            pChannel->pChannel1 = NULL;
+                        }
+                    }
+                }
+            }
+
+            pTrack->occupied = FALSE;
+        }
+    }
+}
+
+/**
+ * @brief 35d0 | 100 | To document
+ * 
+ * @param param_1 To document
+ */
+void unk_35d0(u8 param_1)
+{
+    u8 i;
+    u8 start;
+    u8 j;
+    u8 currChannel;
+    struct TrackData* pTrack;
+    struct TrackVariables* pVariables;
+    struct SoundChannel* pChannel;
+
+    currChannel = 0;
+    if (param_1 == FALSE)
+        start = 2;
+    else
+        start = 1;
+
+    for (i = start; i < (u16)gNumMusicPlayers; i++)
+    {
+        if ((i == 2 && param_1 == FALSE) || (0x14A >> i) & 1)
+        {
+            pTrack = sMusicTrackDataRom[i].pTrack;
+            if (pTrack->occupied)
+                continue;
+
+            pTrack->occupied = TRUE;
+
+            if (pTrack->unk_1E & TRUE)
+            {
+                pTrack->unk_1E &= ~TRUE;
+
+                for (j = 0, pVariables = pTrack->pVariables; j < pTrack->amountOfTracks; j++, pVariables++)
+                {
+                    if (!(pVariables->channel & 0xC0))
+                    {
+                        if (pVariables->pChannel == NULL)
+                            continue;
+                        
+                        for (pChannel = pVariables->pChannel; pChannel != NULL; pChannel = pChannel->pChannel2)
+                        {
+                            unk_20a4(pChannel);
+                            *pChannel = gSoundChannelBackup[currChannel].channel;
+                            currChannel++;
+                        }
+                    }
+                }
+            }
+
+            pTrack->occupied = FALSE;
+        }
+    }
+}
+
+/**
+ * @brief 36d0 | bc | Checks if musicTrack is a new music track
+ * 
+ * @param musicTrack Music Track
+ */
+void CheckSetNewMusicTrack(Sound musicTrack)
+{
+    struct TrackData* pTrack;
+    u32 newTrack;
+
+    if (gMusicInfo.priority & 4)
+        return;
+
+    if (gMusicInfo.priority & 0x70)
+    {
+        unk_378c(musicTrack);
+        return;
+    }
+    
+    if (gMusicInfo.priority != 0)
+        return;
+
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    ApplyMusicSoundFading(sMusicTrackDataRom[6].pTrack, 10);
+    ApplyMusicSoundFading(sMusicTrackDataRom[8].pTrack, 10);
+
+    if (gSoundQueue[6].exists & 3)
+        gSoundQueue[6].exists = 0;
+
+    if (gSoundQueue[8].exists & 3)
+    {
+        // The following line is written like that to produce matching ASM:
+        do { gSoundQueue[8].exists = 0; } while (0);
+    }
+
+    pTrack = sMusicTrackDataRom[0].pTrack;
+
+    if (musicTrack == 0)
+        musicTrack = SOUND_A9;
+
+    newTrack = DetermineNewMusicTrack(musicTrack);
+
+    if (sSoundDataEntries[newTrack].pHeader != pTrack->pHeader)
+    {
+        ApplyMusicSoundFading(pTrack, 30);
+        gMusicInfo.musicTrackOnTransition = newTrack;
+    }
+    
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 378c | ec | To document
+ * 
+ * @param musicTrack Music Track
+ */
+void unk_378c(Sound musicTrack)
+{
+    u16 newTrack;
+    struct TrackData* pTrack;
+    s32 var_0;
+
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    ApplyMusicSoundFading(sMusicTrackDataRom[6].pTrack, 10);
+    ApplyMusicSoundFading(sMusicTrackDataRom[8].pTrack, 10);
+
+    if (gSoundQueue[6].exists & 3)
+        gSoundQueue[6].exists = 0;
+        
+    if (gSoundQueue[8].exists & 3)
+        gSoundQueue[8].exists = 0;
+
+    if (gMusicInfo.priority & 0x30)
+    {
+        newTrack = gMusicInfo.musicTrack - 0x5A;
+        if (newTrack < 10)
+        {
+            newTrack = musicTrack - 0x5A;
+            if (newTrack >= 10)
+            {
+                if (gMusicInfo.priority & 0x10)
+                    musicTrack = MUSIC_STEALTH;
+                else
+                    musicTrack = MUSIC_CHOZODIA_DETECTED;
+            }
+            var_0 = TRUE;
+        }
+        else
+        {
+            newTrack = musicTrack - 0x5A;
+            if (newTrack >= 10)
+            {
+                // The following line is needed to produce matching ASM:
+                gSoundQueue[8].exists += 0;
+                var_0 = FALSE;
+            }
+            else
+            {
+                var_0 = TRUE;
+            }
+        }
+    }
+    else if (gMusicInfo.priority & 0x40)
+    {
+        newTrack = musicTrack - 0x5A;
+        if (newTrack < 10)
+        {
+            gMusicInfo.musicTrackOnTransition = musicTrack;
+        }
+        var_0 = FALSE;
+    }
+    else
+        var_0 = TRUE;
+
+    if (var_0)
+    {
+        pTrack = sMusicTrackDataRom[0].pTrack;
+        if (sSoundDataEntries[(u16)DetermineNewMusicTrack(musicTrack)].pHeader != pTrack->pHeader)
+        {
+            ApplyMusicSoundFading(pTrack, 30);
+            gMusicInfo.musicTrackOnTransition = musicTrack;
+        }
+    }
+
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 3878 | 60 | Checks if the music track on transition should play
+ * 
+ */
+void CheckPlayTransitionMusicTrack(void)
+{
+    if (!(gMusicInfo.priority & 4))
+    {
+        if (gMusicInfo.priority & 0x70)
+        {
+            unk_38d8();
+            return;
+        }
+        
+        if (gMusicInfo.priority == 0 && gMusicInfo.musicTrackOnTransition != MUSIC_NONE)
+        {
+            InitTrack(sMusicTrackDataRom[0].pTrack, sSoundDataEntries[gMusicInfo.musicTrackOnTransition].pHeader);
+
+            gMusicInfo.unk_20 = 0;
+            gMusicInfo.musicTrack = gMusicInfo.musicTrackOnTransition;
+            gMusicInfo.musicTrackOnTransition = MUSIC_NONE;
+        }
+    }
+}
+
+/**
+ * @brief 38d8 | 58 | To document
+ * 
+ */
+void unk_38d8(void)
+{
+    if (!(gMusicInfo.priority & 0x40) && gMusicInfo.musicTrackOnTransition != MUSIC_NONE)
+    {
+        InitTrack(sMusicTrackDataRom[0].pTrack,
+            sSoundDataEntries[(u16)DetermineNewMusicTrack(gMusicInfo.musicTrackOnTransition)].pHeader);
+        gMusicInfo.unk_20 = 0;
+        gMusicInfo.musicTrack = gMusicInfo.musicTrackOnTransition;
+    }
+
+    gMusicInfo.musicTrackOnTransition = MUSIC_NONE;
+}
+
+/**
+ * @brief 3930 | 51 | Updates the music after the alarm got disabled
+ * 
+ */
+void UpdateMusicAfterAlarmDisable(void)
+{
+    Sound musicTrack;
+
+    gMusicInfo.priority = 0x20;
+    
+    if (gMusicInfo.musicTrackOnTransition == MUSIC_NONE)
+    {
+        FadeCurrentMusicAndQueueNextMusic(5, MUSIC_CHOZODIA_DETECTED, 0x20);
+        return;
+    }
+
+    musicTrack = gMusicInfo.musicTrackOnTransition - 0x5A;
+    if (musicTrack < 10)
+        ApplyMusicSoundFading(sMusicTrackDataRom[0].pTrack, 5);
+    else
+        FadeCurrentMusicAndQueueNextMusic(5, MUSIC_CHOZODIA_DETECTED, 0x20);
+}
+
+/**
+ * @brief 3980 | 48 | Determines a new music track based on something?
+ * 
+ * @param musicTrack Music track
+ * @return u32 New music track
+ */
+u32 DetermineNewMusicTrack(Sound musicTrack)
+{
+    switch (musicTrack)
+    {
+        case MUSIC_CHOZODIA_SURFACE:
+            musicTrack = MUSIC_CHOZO_RUINS;
+            break;
+
+        case MUSIC_MAP_ROOM_2:
+            musicTrack = MUSIC_MAP_ROOM;
+            break;
+
+        case MUSIC_SAVE_ELEVATOR_ROOM_2:
+            musicTrack = MUSIC_SAVE_ELEVATOR_ROOM;
+            break;
+
+        case MUSIC_BEFORE_RUINS_TEST_ROOM:
+            musicTrack = MUSIC_BEFORE_RUINS_TEST_UNUSED;
+            break;
+
+        case MUSIC_STEALTH_2:
+            musicTrack = MUSIC_STEALTH;
+            break;
+    }
+
+    return musicTrack;
+}
+
+/**
+ * @brief 39c8 | 2c | To document
+ * 
+ */
+void unk_39c8(void)
+{
+    if (gMusicInfo.priority == 0)
+    {
+        ApplyMusicSoundFading(sMusicTrackDataRom[6].pTrack, 10);
+        ApplyMusicSoundFading(sMusicTrackDataRom[8].pTrack, 10);
+    }
+}
+
+/**
+ * @brief 39f4 | 78 | Plays a music track
+ * 
+ * @param musicTrack Music track
+ * @param priority Priority
+ */
+void PlayMusic(Sound musicTrack, u8 priority)
+{
+    const u8* pHeader;
+    struct TrackData* pTrack;
+
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    if (!(gMusicInfo.priority & 0x84))
+    {
+        gMusicInfo.priority = (gMusicInfo.priority & 0x80) | priority;
+
+        pHeader = sSoundDataEntries[musicTrack].pHeader;
+        pTrack = sMusicTrackDataRom[0].pTrack;
+
+        if (pHeader != pTrack->pHeader || !(pTrack->flags & 2))
+        {
+            gMusicInfo.unk_20 = 0;
+            gMusicInfo.musicTrack = musicTrack;
+            gMusicInfo.occupied = FALSE;
+            InitTrack(pTrack, pHeader);
+        }
+    }
+
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 3a6c | 2c | To document
+ * 
+ */
+void unk_3a6c(void)
+{
+    struct TrackData* pTrack;
+
+    if (gMusicInfo.unk_20 == 0)
+        pTrack = sMusicTrackDataRom[0].pTrack;
+    else
+        pTrack = sMusicTrackDataRom[1].pTrack;
+
+    StopMusicOrSound(pTrack);
+}
+
+/**
+ * @brief 3a98 | 4c | Fades out the current music
+ * 
+ * @param timer Fading timer
+ */
+void FadeMusic(u16 timer)
+{
+    struct TrackData* pTrack;
+
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    if (!(gMusicInfo.priority & 0x84))
+    {
+        pTrack = sMusicTrackDataRom[0].pTrack;
+        if (timer != 0)
+            ApplyMusicSoundFading(pTrack, timer);
+        else
+            StopMusicOrSound(pTrack);
+    }
+
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 3ae4 | 4c | Fades out the current music for demos
+ * 
+ * @param timer Fading timer
+ */
+void FadeMusicForDemo(u16 timer)
+{
+    struct TrackData* pTrack;
+
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    if (!(gMusicInfo.priority & 0x80))
+    {
+        pTrack = sMusicTrackDataRom[0].pTrack;
+        if (timer != 0)
+            ApplyMusicSoundFading(pTrack, timer);
+        else
+            StopMusicOrSound(pTrack);
+    }
+
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 3b30 | 4c | Fades the current music and queues another music track to be played after
+ * 
+ * @param timer Fading timer
+ * @param musicTrack Music track
+ * @param priority Priority
+ */
+void FadeCurrentMusicAndQueueNextMusic(u16 timer, Sound musicTrack, u8 priority)
+{
+    struct TrackData* pTrack;
+
+    if (!(gMusicInfo.priority & 0x84))
+    {
+        if (timer == 0)
+            PlayMusic(musicTrack, priority);
+        else
+        {
+            pTrack = sMusicTrackDataRom[0].pTrack;
+
+            pTrack->musicTrack = musicTrack;
+            pTrack->priority = priority;
+            ApplyMusicSoundFading(pTrack, timer);
+        }
+    }
+}
+
+/**
+ * @brief 3b7c | 54 | Fades the current music, inserts another music track, and replays the current music back after
+ * 
+ * @param timer Fading timer
+ * @param musicTrack Music track
+ * @param priority Priority
+ */
+void FadeCurrentInsertMusicQueueCurrent(u16 timer, Sound musicTrack, u8 priority)
+{
+    struct TrackData* pTrack;
+
+    if (!(gMusicInfo.priority & 0x84))
+    {
+        if (timer == 0)
+            PlayMusic(musicTrack, priority);
+        else
+        {
+            pTrack = sMusicTrackDataRom[0].pTrack;
+
+            pTrack->musicTrack = musicTrack | 0x8000;
+            pTrack->priority = priority;
+            ApplyRawMusicSoundFading(pTrack, timer);
+        }
+    }
+}
+
+/**
+ * @brief 3bd0 | 50 | To document
+ * 
+ * @param musicTrack Music track
+ * @param timer Fading timer
+ */
+void unk_3bd0(Sound musicTrack, u16 timer)
+{
+    struct TrackData* pTrack;
+
+    if (!(gMusicInfo.priority & 0x84))
+    {
+        pTrack = sMusicTrackDataRom[sSoundDataEntries[musicTrack].trackGroundNumber].pTrack;
+
+        if (sSoundDataEntries[musicTrack].pHeader == pTrack->pHeader)
+            unk_2e34(pTrack, timer);
+    }
+}
+
+/**
+ * @brief 3c20 | 80 | Plays a fading music
+ * 
+ * @param musicTrack Music track
+ * @param timer Timer
+ * @param priority Priority
+ */
+void CheckPlayFadingMusic(Sound musicTrack, u16 timer, u8 priority)
+{
+    const u8* pHeader;
+    struct TrackData* pTrack;
+
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    if (!(gMusicInfo.priority & 0x84))
+    {
+        gMusicInfo.priority = (gMusicInfo.priority & 0x80) | priority;
+
+        pHeader = sSoundDataEntries[musicTrack].pHeader;
+        pTrack = sMusicTrackDataRom[0].pTrack;
+
+        if ((pTrack->flags & (0x2 | 0x8 | 0x10)) != 0x2 || pHeader != pTrack->pHeader)
+        {
+            gMusicInfo.unk_20 = 0;
+            gMusicInfo.musicTrack = musicTrack;
+            gMusicInfo.occupied = FALSE;
+            InitFadingMusic(pTrack, pHeader, timer);
+        }
+    }
+
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 3ca0 | ac | Queues the current music and inserts a new music track
+ * 
+ * @param musicTrack Music track
+ * @param isNotInterrupting bool, is new music track not interrupting current music
+ */
+void InsertMusicAndQueueCurrent(Sound musicTrack, u8 isNotInterrupting)
+{
+    // isNotInterrupting is 0 when playing item jingle, 1 when playing loading jingle
+    const u8* pHeader;
+    struct TrackData* pTrack;
+
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    if (!(gMusicInfo.priority & 0x84))
+    {
+        pHeader = sSoundDataEntries[musicTrack].pHeader;
+        pTrack = sMusicTrackDataRom[0].pTrack;
+
+        if ((pTrack->flags & (0x2 | 0x8 | 0x10)) != 0x2 || pHeader != pTrack->pHeader)
+        {
+            if (isNotInterrupting == FALSE)
+            {
+                StopMusicOrSound(sMusicTrackDataRom[3].pTrack);
+                unk_34ac(TRUE);
+                unk_2a8c();
+                pTrack->queueFlags |= 0x80;
+            }
+            else if (isNotInterrupting == TRUE)
+            {
+                unk_2a8c();
+                pTrack->queueFlags |= 0x40;
+                pTrack->queueFlags |= 0x80;
+            }
+
+            gMusicInfo.unk_20 = 1;
+            gMusicInfo.occupied = FALSE;
+            InitTrack(pTrack, pHeader);
+        }
+    }
+
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 3d4c | d8 | Replays the current music that was queued
+ * 
+ * @param queueFlags Queue flags
+ */
+void ReplayQueuedMusic(u8 queueFlags)
+{
+    u16 music;
+    struct TrackData* pTrack;
+    const u8* pHeader;
+
+    if (gMusicInfo.occupied)
+        return;
+    
+    gMusicInfo.occupied = TRUE;
+
+    if (!(queueFlags & 0x40))
+        unk_35d0(TRUE);
+
+    pTrack = sMusicTrackDataRom[0].pTrack;
+
+    gMusicInfo.unk_20 = 0;
+    if ((u16)(gMusicInfo.musicTrack - 0x5A) < 0xA)
+        music = (u16)DetermineNewMusicTrack(gMusicInfo.musicTrack);
+    else
+        music = gMusicInfo.musicTrack;
+
+    pHeader = sSoundDataEntries[music].pHeader;
+    gMusicInfo.occupied = FALSE;
+    InitTrack(pTrack, pHeader);
+
+    if (queueFlags & 0x40)
+        DelayMusicStart(pTrack, 60);
+
+    if (gMusicInfo.volumeDownFlag & (1 << 7))
+    {
+        unk_3058(sMusicTrackDataRom[0].pTrack, USHORT_MAX, (u16)gUnk_Audio0x50);
+        unk_3058(sMusicTrackDataRom[1].pTrack, USHORT_MAX, (u16)gUnk_Audio0x50);
+        unk_3058(sMusicTrackDataRom[7].pTrack, USHORT_MAX, (u16)gUnk_Audio0x50);
+    }
+
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 3e24 | 3c | To document
+ * 
+ * @param timer Fading timer
+ */
+void unk_3e24(u16 timer)
+{
+    struct TrackData* pTrack;
+
+    if (gMusicInfo.unk_20 == 0)
+        pTrack = sMusicTrackDataRom[0].pTrack;
+    else
+        pTrack = sMusicTrackDataRom[1].pTrack;
+
+    if (timer != 0)
+        ApplyMusicSoundFading(pTrack, timer);
+    else
+        StopMusicOrSound(pTrack);
+}
+
+/**
+ * @brief 3e60 | 58 | Updates the music priority
+ * 
+ * @param priority Priority
+ */
+void UpdateMusicPriority(u8 priority)
+{
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    if (priority == 0x80)
+        gMusicInfo.priority |= priority;
+    else if (priority == UCHAR_MAX)
+        gMusicInfo.priority &= ~0x80;
+    else
+        gMusicInfo.priority = (gMusicInfo.priority & 0x80) | priority;
+
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 3eb8 | 68 | Plays the current music track
+ * 
+ */
+void PlayCurrentMusicTrack(void)
+{
+    struct TrackData* pTrack;
+    const u8* pHeader;
+    Sound musicTrack;
+    u16 currTrack;
+
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    pTrack = sMusicTrackDataRom[0].pTrack;
+    gMusicInfo.unk_20 = 0;
+
+    currTrack = gMusicInfo.musicTrack;
+    musicTrack = currTrack - 0x5A;
+    if (musicTrack < 10)
+        pHeader = sSoundDataEntries[(u16)DetermineNewMusicTrack(currTrack)].pHeader;
+    else
+        pHeader = sSoundDataEntries[currTrack].pHeader;
+
+    gMusicInfo.occupied = FALSE;
+    InitTrack(pTrack, pHeader);
+    gMusicInfo.occupied = FALSE;
+}
+
+/**
+ * @brief 3f20 | 4c | Decreases the music volume when paused
+ * 
+ */
+void DecreaseMusicVolume(void)
+{
+    SoundPlay(SOUND_63);
+    unk_34ac(FALSE);
+
+    gMusicInfo.volumeDownFlag |= (1 << 7);
+    
+    unk_3058(sMusicTrackDataRom[0].pTrack, USHORT_MAX, (u16)gUnk_Audio0x50);
+    unk_3058(sMusicTrackDataRom[1].pTrack, USHORT_MAX, (u16)gUnk_Audio0x50);
+}
+
+/**
+ * @brief 3f6c | 40 | Resets the music volume after it'd been decreased
+ * 
+ */
+void ResetMusicVolume(void)
+{
+    unk_3058(sMusicTrackDataRom[0].pTrack, USHORT_MAX, 0x100);
+    unk_3058(sMusicTrackDataRom[1].pTrack, USHORT_MAX, 0x100);
+
+    gMusicInfo.volumeDownFlag &= ~(1 << 7);
+    unk_35d0(FALSE);
+}
+
+/**
+ * @brief 3fac | 68 | Adds a sound in the sound queue
+ * 
+ * @param sound Sound ID
+ * @param timer Fading timer
+ */
+void QueueSound(u16 sound, u16 timer)
+{
+    u8 trackGroup;
+    const u8* pHeader;
+
+    trackGroup = sSoundDataEntries[sound].trackGroundNumber; 
+    pHeader = sSoundDataEntries[sound].pHeader;
+
+    if (sArray_808cee2[trackGroup] == 0 || !(gSoundQueue[trackGroup].exists & 3) || gSoundQueue[trackGroup].priority <= pHeader[2])
+    {
+        if (timer == 0)
+        {
+            gSoundQueue[trackGroup].exists = 1;
+            gSoundQueue[trackGroup].fadingTimer = 0;
+        }
+        else
+        {
+            gSoundQueue[trackGroup].exists = 2;
+            gSoundQueue[trackGroup].fadingTimer = timer;
+        }
+
+        gSoundQueue[trackGroup].priority = pHeader[2];
+        gSoundQueue[trackGroup].pHeader = pHeader;
+    }
+}
+
+/**
+ * @brief 4014 | 70 | Fades or stops a sound
+ * 
+ * @param sound Sound ID
+ * @param timer Fading timer (0 to stop)
+ */
+void StopOrFadeSound(u16 sound, u16 timer)
+{
+    u8 trackGroup;
+    const u8* pHeader;
+    struct TrackData* pTrack;
+
+    trackGroup = sSoundDataEntries[sound].trackGroundNumber; 
+    pHeader = sSoundDataEntries[sound].pHeader;
+
+    if (gSoundQueue[trackGroup].exists & 3 && pHeader == gSoundQueue[trackGroup].pHeader)
+        gSoundQueue[trackGroup].exists = 0;
+    else
+    {
+        pTrack = sMusicTrackDataRom[trackGroup].pTrack;
+        if (pHeader == pTrack->pHeader)
+        {
+            if (timer == 0)
+                StopMusicOrSound(pTrack);
+            else
+                ApplyMusicSoundFading(pTrack, timer);
+        }
+    }
+}
+
+/**
+ * @brief 4084 | 4 | Empty function
+ * 
+ */
+void Music_Empty_1(void)
+{
+    return;
+}
+
+/**
+ * @brief 4088 | 4 | Empty function
+ * 
+ */
+void Music_Empty_2(void)
+{
+    return;
+}
+
+/**
+ * @brief 408c | c4 | Makes a backup of the track data 2 sound channels
+ * 
+ */
+void BackupTrackData2SoundChannels(void)
+{
+    u8 trackId;
+    u8 i;
+    struct TrackData* pTrack;
+    struct TrackVariables* pVariables;
+    struct SoundChannel* pChannel;
+    struct SoundChannel* pChannel2;
+
+    i = 0;
+    pTrack = sMusicTrackDataRom[2].pTrack;
+
+    if (!pTrack->occupied)
+    {
+        pTrack->occupied = TRUE;
+        if (!(pTrack->unk_1E & TRUE) && pTrack->flags & 2)
+        {
+            pTrack->unk_1E = TRUE;
+
+            trackId = 0;
+            pVariables  = pTrack->pVariables;
+
+            while (trackId < pTrack->amountOfTracks)
+            {
+                if (!(pVariables->channel & 0xC0))
+                {
+                    if (pVariables->pSoundPsg)
+                        ClearRegistersForPsg(pVariables->pSoundPsg, (pVariables->channel & 7) - 1);
+
+                    if (pVariables->pChannel)
+                    {
+                        pChannel = pVariables->pChannel;
+                        while (pChannel)
+                        {
+                            gSoundChannelTrack2Backup[i].pChannel = pChannel;
+                            gSoundChannelTrack2Backup[i].channel = *pChannel;
+
+                            i++;
+                            pChannel->unk_0 = 0;
+                            pChannel->pVariables = NULL;
+
+                            pChannel2 = pChannel->pChannel2;
+                            pChannel->pChannel2 = NULL;
+                            pChannel->pChannel1 = NULL;
+                            pChannel = pChannel2;
+                        }
+                    }
+                }
+
+                trackId++;
+                pVariables++;
+            }
+        }
+    }
+
+    pTrack->occupied = FALSE;
+}
+
+/**
+ * @brief 4150 | 9c | Retrieves the track data 2 sound channels
+ * 
+ */
+void RetrieveTrackData2SoundChannels(void)
+{
+    u8 i;
+    u8 trackId;
+    struct TrackData* pTrack;
+    struct TrackVariables* pVariables;
+    struct SoundChannel* pChannel;
+
+    i = 0;
+    pTrack = sMusicTrackDataRom[2].pTrack;
+
+    if (!pTrack->occupied)
+    {
+        pTrack->occupied = TRUE;
+
+        if (pTrack->unk_1E & TRUE)
+        {
+            pTrack->unk_1E &= ~TRUE;
+            trackId = 0;
+            pVariables = pTrack->pVariables;
+
+            while (trackId < pTrack->amountOfTracks)
+            {
+                if (!(pVariables->channel & 0xC0))
+                {
+                    if (pVariables->pChannel)
+                    {
+                        pChannel = pVariables->pChannel;
+                        while (pChannel)
+                        {
+                            unk_20a4(pChannel);
+
+                            *pChannel = gSoundChannelTrack2Backup[i].channel;
+                            i++;
+
+                            pChannel = pChannel->pChannel2;
+                        }
+                    }
+                }
+
+                trackId++;
+                pVariables++;
+            }
+        }
+    }
+
+    pTrack->occupied = FALSE;
+}
+
+/**
+ * @brief 41ec | 3c | Adds a delay before a music starts
+ * 
+ * @param pTrack Track data pointer
+ * @param delay Delay (in frames)
+ */
+void DelayMusicStart(struct TrackData* pTrack, u16 delay)
+{
+    struct TrackVariables* pVariables;
+    u8 trackId;
+
+    if (!pTrack->occupied)
+    {
+        pTrack->occupied = TRUE;
+        
+        trackId = 0;
+        pVariables = pTrack->pVariables;
+        while (trackId < pTrack->amountOfTracks)
+        {
+            if (pVariables->unk_0 != 0)
+                pVariables->delay += delay;
+
+            trackId++;
+            pVariables++;
+        }
+    }
+
+    pTrack->occupied = FALSE;
+}
+
+/**
+ * @brief 4228 | 383 | Plays a sound test
+ * 
+ * @param musicTrack Music track
+ */
+void PlaySoundTest(Sound musicTrack)
+{
+    struct TrackData* pTrack;
+
+    if (musicTrack != gMusicInfo.musicTrack)
+    {
+        pTrack = sMusicTrackDataRom[0].pTrack;
+        StopMusicOrSound(pTrack);
+        PlayMusic(musicTrack, 0x8);
+        DelayMusicStart(pTrack, 30);
+    }
+}
+
+/**
+ * @brief 4260 | 1c | Replays a sound test
+ * 
+ * @param musicTrack Music track
+ */
+void ReplaySoundTest(Sound musicTrack)
+{
+    SoundPlay(musicTrack);
+    DelayMusicStart(sMusicTrackDataRom[0].pTrack, 30);
+}
+
+/**
+ * @brief 427c | 40 | Replays the file select music
+ * 
+ * @param timer Fading timer
+ */
+void CheckReplayFileSelectMusic(u16 timer)
+{
+    struct TrackData* pTrack;
+    const u8* pHeader;
+
+    pTrack = sMusicTrackDataRom[0].pTrack;
+    pHeader = sSoundDataEntries[MUSIC_FILE_SELECT].pHeader;
+
+    if (pTrack->flags & 2 && pHeader == pTrack->pHeader)
+        UpdateMusicPriority(2);
+    else
+        FadeCurrentMusicAndQueueNextMusic(timer, MUSIC_FILE_SELECT, 0x2);
+}
+
+/**
+ * @brief 42bc | 54 | To document
+ * 
+ * @param musicTrack Music track
+ */
+void unk_42bc(Sound musicTrack)
+{
+    if (gMusicInfo.occupied)
+        return;
+
+    gMusicInfo.occupied = TRUE;
+
+    gMusicInfo.priority &= 0x80;
+    if (musicTrack == MUSIC_NONE)
+        musicTrack = SOUND_BOSS_STATUES_KRAID_STATUE_OPENING;
+
+    InitTrack(sMusicTrackDataRom[0].pTrack, sSoundDataEntries[musicTrack].pHeader);
+    
+    gMusicInfo.unk_20 = 0;
+    gMusicInfo.musicTrack = musicTrack;
+
+    // Doesn't remove the occupied flag
+}

@@ -1,0 +1,35 @@
+#include "data/rooms/chozodia_rooms_data.h"
+#include "macros.h"
+
+const u8 sChozodia_47_Scrolls[SCROLL_DATA_SIZE(1)] = {
+	81, // Room
+	1, // Number of scrolls
+	
+	// Scroll 0
+	2, 16, // X bounds
+	2, 12, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+};
+
+const u8 sChozodia_81_Clipdata[190] = {
+    #include "extracted/data/rooms/chozodia/chozodia_81_clipdata.gfx.inc"
+};
+
+const u8 sChozodia_81_Bg2[97] = {
+    #include "extracted/data/rooms/chozodia/chozodia_81_bg2.gfx.inc"
+};
+
+const u8 sChozodia_81_Bg1[319] = {
+    #include "extracted/data/rooms/chozodia/chozodia_81_bg1.gfx.inc"
+};
+
+const u8 sChozodia_81_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(1)] = {
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sChozodia_81_Bg0[133] = {
+    #include "extracted/data/rooms/chozodia/chozodia_81_bg0.gfx.inc"
+};
+

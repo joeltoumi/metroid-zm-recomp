@@ -1,0 +1,64 @@
+#include "data/rooms/brinstar_rooms_data.h"
+#include "macros.h"
+
+const u8 sBrinstar_2_Scrolls[SCROLL_DATA_SIZE(2)] = {
+	2, // Room
+	2, // Number of scrolls
+	
+	// Scroll 0
+	2, 36, // X bounds
+	2, 11, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+
+	// Scroll 1
+	36, 61, // X bounds
+	2, 11, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+};
+
+const u8 sBrinstar_2_Clipdata[122] = {
+    #include "extracted/data/rooms/brinstar/brinstar_2_clipdata.gfx.inc"
+};
+
+const u8 sBrinstar_2_Spriteset2[ENEMY_ROOM_DATA_ARRAY_SIZE(7)] = {
+	2, 19, SPRITESET_IDX(0),
+	2, 23, SPRITESET_IDX(0),
+	3, 12, SPRITESET_IDX(0),
+	3, 16, SPRITESET_IDX(0),
+	3, 27, SPRITESET_IDX(0),
+	9, 53, SPRITESET_IDX(1),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sBrinstar_2_Bg2[108] = {
+    #include "extracted/data/rooms/brinstar/brinstar_2_bg2.gfx.inc"
+};
+
+const u8 sBrinstar_2_Spriteset1[ENEMY_ROOM_DATA_ARRAY_SIZE(5)] = {
+	2, 19, SPRITESET_IDX(0),
+	2, 23, SPRITESET_IDX(0),
+	3, 27, SPRITESET_IDX(0),
+	9, 53, SPRITESET_IDX(1),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sBrinstar_2_Bg1[653] = {
+    #include "extracted/data/rooms/brinstar/brinstar_2_bg1.gfx.inc"
+};
+
+const u8 sBrinstar_2_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(5)] = {
+	2, 19, SPRITESET_IDX(0),
+	2, 23, SPRITESET_IDX(0),
+	3, 27, SPRITESET_IDX(0),
+	9, 53, SPRITESET_IDX(1),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sBrinstar_2_Bg0[128] = {
+    #include "extracted/data/rooms/brinstar/brinstar_2_bg0.gfx.inc"
+};
+

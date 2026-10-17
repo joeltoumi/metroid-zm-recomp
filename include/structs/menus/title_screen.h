@@ -1,0 +1,60 @@
+#ifndef TITLE_SCREEN_STRUCT_H
+#define TITLE_SCREEN_STRUCT_H
+
+#include "types.h"
+
+#include "constants/menus/title_screen.h"
+
+#include "structs/menu.h"
+
+#define TITLE_SCREEN_DATA sNonGameplayRamPointer->titleScreen
+
+struct TitleScreenOamTiming {
+    u8 stage;
+#ifdef REGION_EU
+    u8 menuOption;
+#endif // REGION_EU
+    u16 timer;
+};
+
+struct TitleScreenAnimatedPalette {
+    u8 paletteRow;
+    u8 maxTimer;
+    u16 timer;
+    u8 unk_4;
+};
+
+struct TitleScreenPageData {
+    u8 tiletablePage;
+    u8 graphicsPage;
+    u8 priority;
+    u16 screenSize;
+    u16 bg;
+    const u32* const tiletablePointer; 
+};
+
+struct TitleScreenData {
+    u16 timer;
+    u16 demoTimer;
+    u16 effectsTimer;
+    u8 cometsStage;
+    u16 cometsTimer;
+    TitleScreenAnimatedPalette activeAnimatedPalettes;
+    u16 type;
+    u8 unk_E;
+    u8 unk_F;
+    u8 fadingStage;
+    u8 colorToApply;
+    u8 paletteUpdated;
+    u16 fadingTimer;
+    u8 padding_16[2];
+    u16 dispcnt;
+    u8 padding_1A[8];
+    u16 bldcnt;
+    u16 unk_24;
+    struct TitleScreenAnimatedPalette animatedPalettes[3];
+    struct TitleScreenOamTiming oamTimings[3];
+    struct MenuOamData oam[7];
+};
+
+#endif /* TITLE_SCREEN_STRUCT_H */

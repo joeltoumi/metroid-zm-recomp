@@ -1,0 +1,18 @@
+# Non-Matching Functions
+
+Of the 2721 functions in the game, only 3 haven't been matched. These functions are wrapped with `NON_MATCHING` in the source code. Details about the functions are listed below.
+
+### BitFill
+- File: [dma.c](../src/dma.c)
+- decomp.me: https://decomp.me/scratch/Qei01
+- Problem: Register swaps
+
+### FileSelectCopyFileHandler
+- File: [menus/file_select.c](../src/menus/file_select.c)
+- decomp.me: https://decomp.me/scratch/Rz4bp
+- Problem: Incorrect branches
+
+### FileSelectUpdateTilemap
+- File: [menus/file_select.c](../src/menus/file_select.c)
+- decomp.me: https://decomp.me/scratch/gRPsy
+- Problem: Register swaps

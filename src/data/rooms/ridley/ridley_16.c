@@ -1,0 +1,66 @@
+#include "data/rooms/ridley_rooms_data.h"
+#include "macros.h"
+
+const u8 sRidley_9_Scrolls[SCROLL_DATA_SIZE(3)] = {
+	16, // Room
+	3, // Number of scrolls
+	
+	// Scroll 0
+	2, 17, // X bounds
+	12, 21, // Y bounds
+	6, 12, // Breakable block position
+	2, // Breakable block direction
+	10, // Breakable block Y bound extension
+
+	// Scroll 1
+	2, 61, // X bounds
+	2, 12, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+
+	// Scroll 2
+	17, 61, // X bounds
+	10, 21, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+};
+
+const u8 sRidley_16_Clipdata[311] = {
+    #include "extracted/data/rooms/ridley/ridley_16_clipdata.gfx.inc"
+};
+
+const u8 sRidley_16_Bg2[1456] = {
+    #include "extracted/data/rooms/ridley/ridley_16_bg2.gfx.inc"
+};
+
+const u8 sRidley_16_Spriteset1[ENEMY_ROOM_DATA_ARRAY_SIZE(7)] = {
+	5, 22, SPRITESET_IDX(2),
+	5, 28, SPRITESET_IDX(2),
+	17, 51, SPRITESET_IDX(0),
+	18, 45, SPRITESET_IDX(5),
+	19, 51, SPRITESET_IDX(0),
+	20, 12, SPRITESET_IDX(4),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sRidley_16_Bg1[760] = {
+    #include "extracted/data/rooms/ridley/ridley_16_bg1.gfx.inc"
+};
+
+const u8 sRidley_16_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(8)] = {
+	5, 22, SPRITESET_IDX(2),
+	5, 25, SPRITESET_IDX(2),
+	5, 28, SPRITESET_IDX(2),
+	17, 51, SPRITESET_IDX(0),
+	18, 45, SPRITESET_IDX(5),
+	19, 51, SPRITESET_IDX(1),
+	20, 12, SPRITESET_IDX(4),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sRidley_16_Bg0[218] = {
+    #include "extracted/data/rooms/ridley/ridley_16_bg0.gfx.inc"
+};
+

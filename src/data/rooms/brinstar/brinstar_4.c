@@ -1,0 +1,22 @@
+#include "data/rooms/brinstar_rooms_data.h"
+#include "macros.h"
+
+const u8 sBrinstar_4_Clipdata[142] = {
+    #include "extracted/data/rooms/brinstar/brinstar_4_clipdata.gfx.inc"
+};
+
+const u8 sBrinstar_4_Bg2[128] = {
+    #include "extracted/data/rooms/brinstar/brinstar_4_bg2.gfx.inc"
+};
+
+const u8 sBrinstar_4_Bg1[544] = {
+    #include "extracted/data/rooms/brinstar/brinstar_4_bg1.gfx.inc"
+};
+
+const u8 sBrinstar_4_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(4)] = {
+	3, 9, SPRITESET_IDX(2),
+	3, 12, SPRITESET_IDX(2),
+	3, 39, SPRITESET_IDX(2),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+

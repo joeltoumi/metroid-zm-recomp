@@ -1,0 +1,50 @@
+#include "data/rooms/crateria_rooms_data.h"
+#include "macros.h"
+
+const u8 sCrateria_6_Scrolls[SCROLL_DATA_SIZE(3)] = {
+	9, // Room
+	3, // Number of scrolls
+	
+	// Scroll 0
+	2, 91, // X bounds
+	3, 31, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+
+	// Scroll 1
+	60, 91, // X bounds
+	29, 41, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+
+	// Scroll 2
+	2, 31, // X bounds
+	3, 41, // Y bounds
+	UCHAR_MAX, UCHAR_MAX, // Breakable block position
+	UCHAR_MAX, // Breakable block direction
+	UCHAR_MAX, // Breakable block Y bound extension
+};
+
+const u8 sCrateria_9_Clipdata[645] = {
+    #include "extracted/data/rooms/crateria/crateria_9_clipdata.gfx.inc"
+};
+
+const u8 sCrateria_9_Bg2[1347] = {
+    #include "extracted/data/rooms/crateria/crateria_9_bg2.gfx.inc"
+};
+
+const u8 sCrateria_9_Bg1[1539] = {
+    #include "extracted/data/rooms/crateria/crateria_9_bg1.gfx.inc"
+};
+
+const u8 sCrateria_9_Spriteset0[ENEMY_ROOM_DATA_ARRAY_SIZE(2)] = {
+	35, 21, SPRITESET_IDX(0),
+	ROOM_SPRITE_DATA_TERMINATOR
+};
+
+const u8 sCrateria_9_Bg0[293] = {
+    #include "extracted/data/rooms/crateria/crateria_9_bg0.gfx.inc"
+};
+

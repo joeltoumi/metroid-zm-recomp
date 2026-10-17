@@ -14,8 +14,8 @@
 - [x] Frontend SDL3: escalado, pantalla completa, teclado, mando, táctil,
       avance rápido, `settings.ini`
 - [x] Proyecto Android + APK en CI
-- [ ] Validar con la ROM real: intro, título, selección de partida, primera
-      sala de Brinstar
+- [x] Validar con la ROM real (EU, en headless): idioma, intro, título,
+      selección de partida, primera sala de Brinstar y mapa de pausa
 - [ ] Recorrer el juego y arreglar lo que falle (efectos de raster, modos de
       vídeo, cinemáticas)
 

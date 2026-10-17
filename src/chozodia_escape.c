@@ -66,11 +66,16 @@ static void ChozodiaEscapeHBlank(void)
  */
 static void ChozodiaEscapeSetHBlank(void)
 {
+#ifdef PLATFORM_PC
+    // Native code can't run from a copy in RAM: call the function directly
+    CallbackSetHblank(ChozodiaEscapeHBlank);
+#else // !PLATFORM_PC
     // Transfer code to RAM
     DMA3_COPY_16(ChozodiaEscapeHBlank, CHOZODIA_ESCAPE_DATA.hblankCode, 0x20);
     
     // Set pointer
     CallbackSetHblank((Func_T)(CHOZODIA_ESCAPE_DATA.hblankCode + 1));
+#endif // PLATFORM_PC
 }
 
 /**

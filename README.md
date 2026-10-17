@@ -1,63 +1,92 @@
-# Metroid - Zero Mission Decomp
+# mzm-android
 
-This is a work in progress decompilation of Metroid - Zero Mission.
+Port nativo de **Metroid: Zero Mission** (GBA) a Android y PC, construido sobre
+la decompilación [metroidret/mzm](https://github.com/metroidret/mzm).
 
-2718/2721 functions decompiled (99.89%, [3 left](docs/non_matching_functions.md))
+No es un emulador: el código C del juego se compila directamente para ARM64 /
+x86-64 y la "consola" (vídeo, DMA, interrupciones, BIOS) la pone una capa fina
+en `port/`.
 
-0x76b014/0x76b014 bytes of data not in blobs (100%, 0 left)
+> **Estado: en desarrollo temprano.** El juego compila y arranca en nativo; el
+> sonido todavía no funciona y falta validar todo el recorrido con la ROM real.
+> Ver [docs/ROADMAP.md](docs/ROADMAP.md).
 
-This repository can be used to build multiple ROMs. The ROMs are named like this: `mzm_{region}.gba` (or `mzm_{region}_debug.gba`)
+## Necesitas tu propia ROM
 
-Region indicates which region the ROM targets:
-- us: USA, North America `sha1: 5de8536afe1f0078ee6fe1089f890e8c7aa0a6e8`
-- eu: Europe `sha1: 0fd107445a42e6f3a3e5ce8c865f412583179903`
-- jp: Japan `sha1: 096f07685a3dc9286e71aa0b761f233b5efa2fcd`
-- cn: China **(Not yet supported)**
-- us_beta: USA beta version `sha1: 58986c4d6f2e5ccdc04936cc8b7c9d378570710c`
-- eu_beta: Europe beta version `sha1: 3c0b7ccd303c30ac5c4ffc9fb0aa7137a533ad69`
+El repositorio y los APK **no contienen ningún dato del juego**. Al arrancar por
+primera vez la app te pide tu dump de *Metroid - Zero Mission (USA)*:
 
-Debug simply indicates whether the ROM contains the debug features, it is optional.
+| Región | SHA-1 |
+| --- | --- |
+| USA | `5de8536afe1f0078ee6fe1089f890e8c7aa0a6e8` |
 
-The default built ROM is mzm_us.gba
+La ROM se copia al almacenamiento privado de la app y los gráficos, niveles y
+textos se cargan de ella en cada arranque. (Builds para EU/JP: `-DMZM_REGION=eu`).
 
-**Discords**: 
-- https://discord.gg/2MGB9Xbr9y Metroidret
-- https://discord.gg/WtekHKb MAGConst
+## Instalar en Android
 
-## Dependencies
+Cada push a `main` genera un APK en **Actions → build → Artifacts →
+`mzm-android-apk`** (arm64 + x86_64). Instálalo, abre *Zero Mission* y elige tu
+`.gba` con el selector de archivos.
 
-- [agbcc](https://github.com/jiangzhengwenjz/agbcc)
-- `binutils-arm-none-eabi`
-- A baserom for each ROM desired to be built (i.e.`mzm_us_baserom.gba` if you wish to build `mzm_us.gba`).
-- `python3`
-- `g++`
+## Compilar en PC (Linux)
 
-## Setup
+Requisitos: CMake ≥ 3.22, Ninja, Python 3, un compilador C11 y SDL3 (si no está
+instalado, CMake lo descarga y compila).
 
-- **WINDOWS ONLY**: Install and setup [WSL](https://docs.microsoft.com/en-us/windows/wsl/install)
-- Run `sudo apt update` just in case
-- Install `binutils-arm-none-eabi` by running this command: `sudo apt install binutils-arm-none-eabi` or `sudo dnf install arm-none-eabi-binutils-cs`
-- Install `git` by running this command: `sudo apt install git` or `sudo dnf install git`
-- Install `make` by running this command: `sudo apt install make` or `sudo dnf install make`
-- Clone [agbcc](https://github.com/jiangzhengwenjz/agbcc) by running this command: `git clone https://github.com/jiangzhengwenjz/agbcc.git`
-- Enter the agbcc folder (run `cd agbcc`) and build it (run `./build.sh`)
-- Either:
-  - Install agbcc into this project (by using its `./install.sh <path>` script, where `<path>` is the path to the root of this repository), or
-  - Add agbcc to your path (`export PATH="<agbcc_path>:$PATH"`, where `<agbcc_path>` is the full path to the agbcc directory)
+```sh
+cmake -B build -G Ninja
+cmake --build build
+./build/mzm ruta/a/mzm_us_baserom.gba
+```
 
-## Build
+Sin ventana (pruebas/CI): `-DMZM_HOST=headless`, que vuelca fotogramas a PPM:
 
-- Run `make clean` if necessary
-  - Use `make clean DATA=1` to remove data as well
-- Run the data extractor if necessary: `python3 tools/extractor.py`
-  - Use the `-r` flag to specify a region other than `us` (ex: `-r jp`)
-  - Use the `-d` flag to extract only debug data from the US beta ROM (required for building a ROM with debug features)
-- Run `make` (using the `-j` option is recommended to speed up the process)
-- To build another version of the ROM you can do either of the following:
-  - Specify it directly (ex: `make us_debug` for the US ROM with debug features)
-  - Specify the flags, REGION (takes the region name, defaults to `us`) and DEBUG (takes 0 or 1, defaults to 0)
-- Optionally, you can combine the commands to make it easier: `python3 tools/extractor.py && make -j`
+```sh
+./build/mzm_headless --rom mzm_us_baserom.gba --frames 1200 --dump-every 60 \
+    --press 400:S:5      # pulsa Start en el frame 400 durante 5 frames
+```
 
-## Contributing
+## Controles y ajustes
 
-See [CONTRIBUTING.md](CONTRIBUTING.md)
+Todo se configura en `settings.ini`, en la carpeta de datos de la app
+(Linux: `~/.local/share/mzm-android/mzm/`). Se crea con los valores por
+defecto la primera vez.
+
+| GBA | Teclado | Mando |
+| --- | --- | --- |
+| A / B | X / Z | botón derecho / inferior |
+| L / R | A / S | bumpers o gatillos |
+| Start / Select | Enter / Retroceso | Start / Back |
+| Cruceta | flechas | cruceta o stick izquierdo |
+| Avance rápido | Tab (mantener) | clic del stick derecho |
+
+`F11` alterna la pantalla completa. En pantallas táctiles aparece un mando
+virtual (`touch_controls = auto | on | off`) que se oculta al usar un mando
+físico, como los controles de la AYN Thor.
+
+Las partidas se guardan en `mzm.sav` con el mismo formato que la GBA, así que
+un `.sav` de mGBA de la versión USA sirve tal cual.
+
+## Cómo está hecho
+
+- `src/`, `include/`: la decompilación. Los cambios para el build nativo van
+  entre `#ifdef PLATFORM_PC` y no alteran la ROM de GBA.
+- `port/src/`: memoria emulada, DMA, BIOS en C, bucle de frame con IRQs de
+  VBlank/HBlank/VCount, carga de la ROM y frontends (SDL3 y headless).
+- `port/ppu/`: PPU por software de [Project Picori](https://github.com/999sian/tmc)
+  (el port nativo de Minish Cap).
+- `tools/port/gen_assets.py`: compila los datos de `src/data` a cero y genera
+  el registro que los rellena desde la ROM al arrancar.
+- `android/`: proyecto Gradle (SDL3 + `libmain.so`).
+
+Detalles en [docs/PORT.md](docs/PORT.md).
+
+## Licencias
+
+La decompilación es MIT ([LICENSE](LICENSE)); la capa del port es GPL-3.0
+([port/LICENSE](port/LICENSE)). Metroid es propiedad de Nintendo; este proyecto
+no incluye ni distribuye nada de su propiedad.
+
+El README original de la decompilación está en
+[docs/UPSTREAM_README.md](docs/UPSTREAM_README.md).

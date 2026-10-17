@@ -87,12 +87,18 @@ if(NOT MZM_BUGFIX)
 endif()
 target_compile_options(mzm_game PRIVATE
     -std=gnu11
+    -include port/prototypes.h # no implicit declarations on 64-bit hosts
     -nostdinc                 # the game defines its own NULL/types
     -fno-strict-aliasing      # GBA code type-puns freely
     -fwrapv                   # ...and relies on two's-complement overflow
     -fcommon
     -funsigned-char
     ${MZM_GAME_WARNINGS})
+if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+    # A few functions `return;` without a value (callers ignore the result).
+    # Implicit function declarations stay errors: see include/port/prototypes.h.
+    target_compile_options(mzm_game PRIVATE -Wno-error=return-type)
+endif()
 
 # ---------------------------------------------------------------------------
 # Port layer.

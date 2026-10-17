@@ -17,6 +17,9 @@ set(MZM_GAME_WARNINGS "-w" CACHE STRING "Warning flags for the game code")
 
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON) # Android links everything into libmain.so
+set(MZM_SDL3_TAG "release-3.4.18" CACHE STRING "SDL3 version fetched when no SDL3 is installed")
+
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
 endif()
@@ -111,11 +114,18 @@ string(REGEX MATCH "^[0-9a-f]+" MZM_ROM_SHA1 "${MZM_SHA1_LINE}")
 target_compile_definitions(mzm_port PRIVATE
     MZM_ROM_SHA1="${MZM_ROM_SHA1}" MZM_ROM_REGION_NAME="${MZM_REGION_UPPER}")
 target_compile_options(mzm_port PRIVATE -std=gnu11 -Wall -Wextra -Wno-unused-parameter)
-find_package(OpenMP COMPONENTS C)
-if(OpenMP_C_FOUND)
-    target_link_libraries(mzm_port PRIVATE OpenMP::OpenMP_C)
+# The PPU renders scanlines in parallel with OpenMP when available. Not used on
+# Android (240x160 takes ~1 ms on one core, and it avoids shipping libomp).
+if(NOT ANDROID)
+    find_package(OpenMP COMPONENTS C)
+    if(OpenMP_C_FOUND)
+        target_link_libraries(mzm_port PRIVATE OpenMP::OpenMP_C)
+    endif()
 endif()
 target_link_libraries(mzm_port PUBLIC m)
+if(ANDROID)
+    target_link_libraries(mzm_port PUBLIC log)
+endif()
 
 # ---------------------------------------------------------------------------
 # Executables.
@@ -125,7 +135,21 @@ if(MZM_HOST STREQUAL "headless")
     target_compile_options(mzm_headless PRIVATE -std=gnu11 -Wall -Wextra)
     target_link_libraries(mzm_headless PRIVATE mzm_port mzm_game mzm_port)
 elseif(MZM_HOST STREQUAL "sdl")
-    find_package(SDL3 REQUIRED CONFIG)
+    if(NOT ANDROID)
+        find_package(SDL3 CONFIG QUIET)
+    endif()
+    if(NOT TARGET SDL3::SDL3)
+        # No system SDL3 (always the case on Android): build it from source.
+        include(FetchContent)
+        set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
+        set(SDL_TESTS OFF CACHE BOOL "" FORCE)
+        set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)
+        FetchContent_Declare(SDL3
+            GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+            GIT_TAG ${MZM_SDL3_TAG}
+            GIT_SHALLOW TRUE)
+        FetchContent_MakeAvailable(SDL3)
+    endif()
     if(ANDROID)
         # SDLActivity loads libmain.so and calls SDL_main.
         add_library(main SHARED port/src/host_sdl.c port/src/config.c)

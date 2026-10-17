@@ -38,7 +38,21 @@ jobs:
       - uses: gradle/actions/setup-gradle@v5
       - name: Build APK
         working-directory: android
-        run: ./gradlew --no-daemon assembleRelease
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon assembleRelease 2>&1 | tee gradle.log
+      - name: Report build errors
+        if: failure()
+        working-directory: android
+        # Surface the end of the log as an annotation (readable from the API).
+        run: |
+          {
+            grep -nE "error|Error|FAILED|What went wrong" gradle.log | tail -40
+            echo "----- tail -----"
+            tail -60 gradle.log
+          } > summary.txt || true
+          msg=$(sed -e 's/%/%25/g' summary.txt | awk '{printf "%s%%0A", $0}')
+          echo "::error title=Android build log::${msg}"
       - uses: actions/upload-artifact@v5
         with:
           name: mzm-android-apk

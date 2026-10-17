@@ -7460,107 +7460,107 @@ const u32 sCreditsCharactersGfx[] = {
     #include "extracted/data/ending/credits_characters.gfx.lz.inc"
 };
 
-static const u32 sEndingImage_TopGfx_0[6186] = {
+const u32 sEndingImage_TopGfx_0[6186] = {
     #include "extracted/data/ending/image_top_0.gfx.lz.inc"
 };
-static const u32 sEndingImage_TopTileTable_0[577] = {
+const u32 sEndingImage_TopTileTable_0[577] = {
     #include "extracted/data/ending/image_top_0.tt.inc"
 };
-static const u32 sEndingImage_BottomGfx_0[3525] = {
+const u32 sEndingImage_BottomGfx_0[3525] = {
     #include "extracted/data/ending/image_bottom_0.gfx.lz.inc"
 };
-static const u32 sEndingImage_BottomTileTable_0[398] = {
+const u32 sEndingImage_BottomTileTable_0[398] = {
     #include "extracted/data/ending/image_bottom_0.tt.inc"
 };
 
-static const u32 sEndingImage_TopGfx_1[5578] = {
+const u32 sEndingImage_TopGfx_1[5578] = {
     #include "extracted/data/ending/image_top_1.gfx.lz.inc"
 };
-static const u32 sEndingImage_TopTileTable_1[577] = {
+const u32 sEndingImage_TopTileTable_1[577] = {
     #include "extracted/data/ending/image_top_1.tt.inc"
 };
-static const u32 sEndingImage_BottomGfx_1[3339] = {
+const u32 sEndingImage_BottomGfx_1[3339] = {
     #include "extracted/data/ending/image_bottom_1.gfx.lz.inc"
 };
-static const u32 sEndingImage_BottomTileTable_1[577] = {
+const u32 sEndingImage_BottomTileTable_1[577] = {
     #include "extracted/data/ending/image_bottom_1.tt.inc"
 };
 
-static const u32 sEndingImage_TopGfx_2[6259] = {
+const u32 sEndingImage_TopGfx_2[6259] = {
     #include "extracted/data/ending/image_top_2.gfx.lz.inc"
 };
-static const u32 sEndingImage_TopTileTable_2[577] = {
+const u32 sEndingImage_TopTileTable_2[577] = {
     #include "extracted/data/ending/image_top_2.tt.inc"
 };
-static const u32 sEndingImage_BottomGfx_2[3178] = {
+const u32 sEndingImage_BottomGfx_2[3178] = {
     #include "extracted/data/ending/image_bottom_2.gfx.lz.inc"
 };
-static const u32 sEndingImage_BottomTileTable_2[577] = {
+const u32 sEndingImage_BottomTileTable_2[577] = {
     #include "extracted/data/ending/image_bottom_2.tt.inc"
 };
 
-static const u32 sEndingImage_TopGfx_3[5289] = {
+const u32 sEndingImage_TopGfx_3[5289] = {
     #include "extracted/data/ending/image_top_3.gfx.lz.inc"
 };
-static const u32 sEndingImage_TopTileTable_3[577] = {
+const u32 sEndingImage_TopTileTable_3[577] = {
     #include "extracted/data/ending/image_top_3.tt.inc"
 };
-static const u32 sEndingImage_BottomGfx_3[2789] = {
+const u32 sEndingImage_BottomGfx_3[2789] = {
     #include "extracted/data/ending/image_bottom_3.gfx.lz.inc"
 };
-static const u32 sEndingImage_BottomTileTable_3[577] = {
+const u32 sEndingImage_BottomTileTable_3[577] = {
     #include "extracted/data/ending/image_bottom_3.tt.inc"
 };
 
-static const u32 sEndingImage_TopGfx_4[5900] = {
+const u32 sEndingImage_TopGfx_4[5900] = {
     #include "extracted/data/ending/image_top_4.gfx.lz.inc"
 };
-static const u32 sEndingImage_TopTileTable_4[577] = {
+const u32 sEndingImage_TopTileTable_4[577] = {
     #include "extracted/data/ending/image_top_4.tt.inc"
 };
-static const u32 sEndingImage_BottomGfx_4[3029] = {
+const u32 sEndingImage_BottomGfx_4[3029] = {
     #include "extracted/data/ending/image_bottom_4.gfx.lz.inc"
 };
-static const u32 sEndingImage_BottomTileTable_4[577] = {
+const u32 sEndingImage_BottomTileTable_4[577] = {
     #include "extracted/data/ending/image_bottom_4.tt.inc"
 };
 
-static const u32 sEndingImage_TopGfx_5[5080] = {
+const u32 sEndingImage_TopGfx_5[5080] = {
     #include "extracted/data/ending/image_top_5.gfx.lz.inc"
 };
-static const u32 sEndingImage_TopTileTable_5[577] = {
+const u32 sEndingImage_TopTileTable_5[577] = {
     #include "extracted/data/ending/image_top_5.tt.inc"
 };
-static const u32 sEndingImage_BottomGfx_5[3899] = {
+const u32 sEndingImage_BottomGfx_5[3899] = {
     #include "extracted/data/ending/image_bottom_5.gfx.lz.inc"
 };
-static const u32 sEndingImage_BottomTileTable_5[577] = {
+const u32 sEndingImage_BottomTileTable_5[577] = {
     #include "extracted/data/ending/image_bottom_5.tt.inc"
 };
 
-static const u32 sEndingImage_TopGfx_6[5748] = {
+const u32 sEndingImage_TopGfx_6[5748] = {
     #include "extracted/data/ending/image_top_6.gfx.lz.inc"
 };
-static const u32 sEndingImage_TopTileTable_6[577] = {
+const u32 sEndingImage_TopTileTable_6[577] = {
     #include "extracted/data/ending/image_top_6.tt.inc"
 };
-static const u32 sEndingImage_BottomGfx_6[2932] = {
+const u32 sEndingImage_BottomGfx_6[2932] = {
     #include "extracted/data/ending/image_bottom_6.gfx.lz.inc"
 };
-static const u32 sEndingImage_BottomTileTable_6[577] = {
+const u32 sEndingImage_BottomTileTable_6[577] = {
     #include "extracted/data/ending/image_bottom_6.tt.inc"
 };
 
-static const u32 sEndingImage_TopGfx_7[6818] = {
+const u32 sEndingImage_TopGfx_7[6818] = {
     #include "extracted/data/ending/image_top_7.gfx.lz.inc"
 };
-static const u32 sEndingImage_TopTileTable_7[577] = {
+const u32 sEndingImage_TopTileTable_7[577] = {
     #include "extracted/data/ending/image_top_7.tt.inc"
 };
-static const u32 sEndingImage_BottomGfx_7[3901] = {
+const u32 sEndingImage_BottomGfx_7[3901] = {
     #include "extracted/data/ending/image_bottom_7.gfx.lz.inc"
 };
-static const u32 sEndingImage_BottomTileTable_7[577] = {
+const u32 sEndingImage_BottomTileTable_7[577] = {
     #include "extracted/data/ending/image_bottom_7.tt.inc"
 };
 

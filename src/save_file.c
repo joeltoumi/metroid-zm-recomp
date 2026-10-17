@@ -742,11 +742,11 @@ void SramWrite_ToEwram(void)
     pFile->screwSpeedAnimation = gScrewSpeedAnimation;
     pFile->equipment = gEquipment;
     pFile->hazardDamage = gSamusHazardDamage;
-    pFile->environmentalEffects[0] = gSamusEnvironmentalEffects[0];
-    pFile->environmentalEffects[1] = gSamusEnvironmentalEffects[1];
-    pFile->environmentalEffects[2] = gSamusEnvironmentalEffects[2];
-    pFile->environmentalEffects[3] = gSamusEnvironmentalEffects[3];
-    pFile->environmentalEffects[4] = gSamusEnvironmentalEffects[4];
+    ENV_EFFECT_TO_SAVE(pFile->environmentalEffects[0], gSamusEnvironmentalEffects[0]);
+    ENV_EFFECT_TO_SAVE(pFile->environmentalEffects[1], gSamusEnvironmentalEffects[1]);
+    ENV_EFFECT_TO_SAVE(pFile->environmentalEffects[2], gSamusEnvironmentalEffects[2]);
+    ENV_EFFECT_TO_SAVE(pFile->environmentalEffects[3], gSamusEnvironmentalEffects[3]);
+    ENV_EFFECT_TO_SAVE(pFile->environmentalEffects[4], gSamusEnvironmentalEffects[4]);
     pFile->preventMovementTimer = gPreventMovementTimer;
     pFile->disableDrawingSamusAndScrolling = gDisableDrawingSamusAndScrolling;
 
@@ -831,11 +831,11 @@ void SramRead_FromEwram(void)
     gScrewSpeedAnimation = pFile->screwSpeedAnimation;
     gEquipment = pFile->equipment;
     gSamusHazardDamage = pFile->hazardDamage;
-    gSamusEnvironmentalEffects[0] = pFile->environmentalEffects[0];
-    gSamusEnvironmentalEffects[1] = pFile->environmentalEffects[1];
-    gSamusEnvironmentalEffects[2] = pFile->environmentalEffects[2];
-    gSamusEnvironmentalEffects[3] = pFile->environmentalEffects[3];
-    gSamusEnvironmentalEffects[4] = pFile->environmentalEffects[4];
+    ENV_EFFECT_FROM_SAVE(gSamusEnvironmentalEffects[0], pFile->environmentalEffects[0]);
+    ENV_EFFECT_FROM_SAVE(gSamusEnvironmentalEffects[1], pFile->environmentalEffects[1]);
+    ENV_EFFECT_FROM_SAVE(gSamusEnvironmentalEffects[2], pFile->environmentalEffects[2]);
+    ENV_EFFECT_FROM_SAVE(gSamusEnvironmentalEffects[3], pFile->environmentalEffects[3]);
+    ENV_EFFECT_FROM_SAVE(gSamusEnvironmentalEffects[4], pFile->environmentalEffects[4]);
     gPreventMovementTimer = pFile->preventMovementTimer;
     gDisableDrawingSamusAndScrolling = pFile->disableDrawingSamusAndScrolling;
 
@@ -1746,11 +1746,11 @@ void SramWrite_ToEwram_DemoRam(void)
     pFile->equipment = gEquipment;
     pFile->hazardDamage = gSamusHazardDamage;
     
-    pFile->environmentalEffects[0] = gSamusEnvironmentalEffects[0];
-    pFile->environmentalEffects[1] = gSamusEnvironmentalEffects[1];
-    pFile->environmentalEffects[2] = gSamusEnvironmentalEffects[2];
-    pFile->environmentalEffects[3] = gSamusEnvironmentalEffects[3];
-    pFile->environmentalEffects[4] = gSamusEnvironmentalEffects[4];
+    ENV_EFFECT_TO_SAVE(pFile->environmentalEffects[0], gSamusEnvironmentalEffects[0]);
+    ENV_EFFECT_TO_SAVE(pFile->environmentalEffects[1], gSamusEnvironmentalEffects[1]);
+    ENV_EFFECT_TO_SAVE(pFile->environmentalEffects[2], gSamusEnvironmentalEffects[2]);
+    ENV_EFFECT_TO_SAVE(pFile->environmentalEffects[3], gSamusEnvironmentalEffects[3]);
+    ENV_EFFECT_TO_SAVE(pFile->environmentalEffects[4], gSamusEnvironmentalEffects[4]);
 
     DmaTransfer(3, gVisitedMinimapTiles[gCurrentArea], pFile->visitedMinimapTiles, sizeof(pFile->visitedMinimapTiles), 16);
     DmaTransfer(3, gHatchesOpened[gCurrentArea], pFile->hatchesOpened, sizeof(pFile->hatchesOpened), 16);
@@ -1797,11 +1797,11 @@ void SramLoad_DemoRamValues(u8 loadSamusData, u8 demoNumber)
         gScrewSpeedAnimation = pDemo->screwSpeedAnimation;
         gEquipment = pDemo->equipment;
         gSamusHazardDamage = pDemo->hazardDamage;
-        gSamusEnvironmentalEffects[0] = pDemo->environmentalEffects[0];
-        gSamusEnvironmentalEffects[1] = pDemo->environmentalEffects[1];
-        gSamusEnvironmentalEffects[2] = pDemo->environmentalEffects[2];
-        gSamusEnvironmentalEffects[3] = pDemo->environmentalEffects[3];
-        gSamusEnvironmentalEffects[4] = pDemo->environmentalEffects[4];
+        ENV_EFFECT_FROM_SAVE(gSamusEnvironmentalEffects[0], pDemo->environmentalEffects[0]);
+        ENV_EFFECT_FROM_SAVE(gSamusEnvironmentalEffects[1], pDemo->environmentalEffects[1]);
+        ENV_EFFECT_FROM_SAVE(gSamusEnvironmentalEffects[2], pDemo->environmentalEffects[2]);
+        ENV_EFFECT_FROM_SAVE(gSamusEnvironmentalEffects[3], pDemo->environmentalEffects[3]);
+        ENV_EFFECT_FROM_SAVE(gSamusEnvironmentalEffects[4], pDemo->environmentalEffects[4]);
     }
 }
 

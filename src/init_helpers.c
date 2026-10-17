@@ -29,8 +29,10 @@ void ClearGfxRam(void)
  */
 void LoadInterruptCode(void)
 {
+#ifndef PLATFORM_PC // Native build: IRQs are dispatched by the port's frame loop
     // Transfer code
     DmaTransfer(3, IntrMain, &gInterruptCode, sizeof(gInterruptCode), 16);
+#endif // !PLATFORM_PC
 
     // Set pointer
     gIntrCodePointer = &gInterruptCode;

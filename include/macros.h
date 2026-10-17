@@ -170,7 +170,7 @@
  * @param expr Expression to assert
  * @param id Error message
  */
-#define STATIC_ASSERT(expr, id) static_assert(expr, "Assert failed : " #id)
+#define STATIC_ASSERT(expr, id) _Static_assert(expr, "Assert failed : " #id)
 #else
 /**
  * @brief Performs a static assertion

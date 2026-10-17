@@ -140,6 +140,48 @@ struct EnvironmentalEffect {
     const u16* pOamFrame;
 };
 
+#ifdef PLATFORM_PC
+/**
+ * @brief Environmental effect as stored in save data (native build).
+ * Same 12-byte layout as on the GBA (saves stay compatible with emulators);
+ * the ROM pointer can't be stored on a 64-bit host, so it's kept as an
+ * opaque 32-bit value and active effects are dropped when loading.
+ */
+struct EnvironmentalEffectSave {
+    EnvEffect type;
+    u8 animationDurationCounter;
+    u8 currentAnimationFrame;
+    u8 breathingTimer;
+    u16 xPosition;
+    u16 yPosition;
+    u32 pOamFrame;
+};
+
+#define ENV_EFFECT_SAVE_TYPE struct EnvironmentalEffectSave
+#define ENV_EFFECT_TO_SAVE(dst, src) do {                           \
+    (dst).type = (src).type;                                        \
+    (dst).animationDurationCounter = (src).animationDurationCounter;\
+    (dst).currentAnimationFrame = (src).currentAnimationFrame;      \
+    (dst).breathingTimer = (src).breathingTimer;                    \
+    (dst).xPosition = (src).xPosition;                              \
+    (dst).yPosition = (src).yPosition;                              \
+    (dst).pOamFrame = 0;                                            \
+} while (0)
+#define ENV_EFFECT_FROM_SAVE(dst, src) do {                         \
+    (dst).type = ENV_EFFECT_NONE;                                   \
+    (dst).animationDurationCounter = (src).animationDurationCounter;\
+    (dst).currentAnimationFrame = (src).currentAnimationFrame;      \
+    (dst).breathingTimer = (src).breathingTimer;                    \
+    (dst).xPosition = (src).xPosition;                              \
+    (dst).yPosition = (src).yPosition;                              \
+    (dst).pOamFrame = NULL;                                         \
+} while (0)
+#else // !PLATFORM_PC
+#define ENV_EFFECT_SAVE_TYPE struct EnvironmentalEffect
+#define ENV_EFFECT_TO_SAVE(dst, src) ((dst) = (src))
+#define ENV_EFFECT_FROM_SAVE(dst, src) ((dst) = (src))
+#endif // PLATFORM_PC
+
 struct SamusEcho {
     u8 active;
     u8 timer;

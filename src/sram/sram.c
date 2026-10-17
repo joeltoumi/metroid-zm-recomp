@@ -11,6 +11,15 @@ static void SramWriteUncheckedInternal(u8* src, u8* dest, u32 size)
         *dest++ = *src++;
 }
 
+#ifdef PLATFORM_PC
+// Native build: the GBA copies the loop to the stack and runs it from RAM
+// (SRAM can't be accessed while executing from ROM). Just call it.
+void SramWriteUnchecked(u8* src, u8* dest, u32 size)
+{
+    SramWriteUncheckedInternal(src, dest, size);
+    Port_SramWritten();
+}
+#else // !PLATFORM_PC
 void SramWriteUnchecked(u8* src, u8* dest, u32 size)
 {
     u16 code[0x40];
@@ -31,6 +40,7 @@ void SramWriteUnchecked(u8* src, u8* dest, u32 size)
     func = (void* (*)(u8*, u8*, u32))code + 1;
     func(src, dest, size);
 }
+#endif // PLATFORM_PC
 
 void SramWrite(u8* src, u8* dest, u32 size)
 {
@@ -39,6 +49,10 @@ void SramWrite(u8* src, u8* dest, u32 size)
 
     while (size-- != 0)
         *dest++ = *src++;
+
+#ifdef PLATFORM_PC
+    Port_SramWritten();
+#endif // PLATFORM_PC
 }
 
 static u8* SramCheckInternal(u8* src, u8* dest, u32 size)
@@ -52,6 +66,12 @@ static u8* SramCheckInternal(u8* src, u8* dest, u32 size)
     return NULL;
 }
 
+#ifdef PLATFORM_PC
+u8* SramCheck(u8* src, u8* dest, u32 size)
+{
+    return SramCheckInternal(src, dest, size);
+}
+#else // !PLATFORM_PC
 u8* SramCheck(u8* src, u8* dest, u32 size)
 {
     u16 code[0x60];
@@ -72,6 +92,7 @@ u8* SramCheck(u8* src, u8* dest, u32 size)
     func = (void* (*)(u8*, u8*, u32))code + 1;
     return func(src, dest, size);
 }
+#endif // PLATFORM_PC
 
 u8* SramWriteChecked(u8* src, u8* dest, u32 size)
 {

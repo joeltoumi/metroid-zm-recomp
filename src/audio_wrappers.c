@@ -33,6 +33,12 @@ void InitializeAudio(void)
     WRITE_8(REG_SOUND3CNT_L, 0x0);
     WRITE_8(REG_SOUNDCNT_L, 0x77); // Sound 1-4 master volume left/right 100%
 
+#ifdef PLATFORM_PC
+    // Native build: the mixing loops are plain C functions, nothing to copy.
+    gSoundCodeAPointer = Port_SoundCodeA;
+    gSoundCodeBPointer = Port_SoundCodeB;
+    gSoundCodeCPointer = Port_SoundCodeC;
+#else // !PLATFORM_PC
     gSoundCodeAPointer = (SoundCodeAFunc_T)(gSoundCodeA + 1);
     DMA3_COPY_16(CallSoundCodeA, gSoundCodeA, sizeof(gSoundCodeA) / 2);
 
@@ -41,6 +47,7 @@ void InitializeAudio(void)
 
     gSoundCodeCPointer = (SoundCodeCFunc_T)(gSoundCodeC + 1);
     DMA3_COPY_16(CallSoundCodeC, gSoundCodeC, sizeof(gSoundCodeC) / 2);
+#endif // PLATFORM_PC
 
     DMA3_FILL_16(0, &gMusicInfo, 28);
 

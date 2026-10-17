@@ -269,10 +269,19 @@ extern struct MusicTrackInfo gMusicTrackInfo;
 extern struct MusicInfo gMusicInfo;
 
 // Linker variables
+#ifdef PLATFORM_PC
+// Native build: these are constants defined in linker.ld, used through their
+// address. Keep the same expressions working with plain integer constants.
+#define gNumMusicPlayers ((char*)9)
+#define gUnk_Audio0x64 ((char*)0x64)
+#define gUnk_Audio0x194F700 ((char*)0x194F700)
+#define gUnk_Audio0x50 ((char*)0x50)
+#else // !PLATFORM_PC
 extern char gNumMusicPlayers[];
 extern char gUnk_Audio0x64[];
 extern char gUnk_Audio0x194F700[];
 extern char gUnk_Audio0x50[];
+#endif // PLATFORM_PC
 
 extern struct TrackData gTrackData8;
 extern struct TrackData gTrackData3;
@@ -301,6 +310,13 @@ extern struct TrackVariables gTrack8Variables[6];
 typedef void (*SoundCodeAFunc_T)(struct SoundChannel*, u32*, u8);
 typedef u8* (*SoundCodeBFunc_T)(u32*, u32*, u32*, u8);
 typedef u8* (*SoundCodeCFunc_T)(u32*, u32*, u8);
+
+#ifdef PLATFORM_PC
+// C versions of the IWRAM mixing loops (port/src/audio_*.c)
+void Port_SoundCodeA(struct SoundChannel* pChannel, u32* pBuffer, u8 size);
+u8* Port_SoundCodeB(u32* pDst, u32* pSrc1, u32* pSrc2, u8 size);
+u8* Port_SoundCodeC(u32* pDst, u32* pSrc, u8 size);
+#endif // PLATFORM_PC
 
 extern SoundCodeAFunc_T gSoundCodeAPointer;
 extern u8 gSoundCodeA[1624];

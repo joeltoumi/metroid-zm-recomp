@@ -1,9 +1,15 @@
 #include "data/nes_metroid.h"
 #include "macros.h"
 
+#ifdef PLATFORM_PC
+// Native build: the unlockable NES Metroid is a GBA-ARM emulator payload and
+// can't run natively; it isn't embedded (see docs/PORT.md).
+const u8 sNesMetroid[] = { 0 };
+#else // !PLATFORM_PC
 const u8 sNesMetroid[] = {
     #include "extracted/data/nes_metroid.bin.inc"
 };
+#endif // PLATFORM_PC
 
 #if defined(REGION_US_BETA)
 static const u8 sNesMetroidDataEnd[20] = {

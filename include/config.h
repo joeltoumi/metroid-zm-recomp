@@ -42,16 +42,34 @@
  */
 // #define USE_EWRAM_SYMBOLS
 
+/**
+ * @brief Native build for PC/Android (mzm-android port). Implies MODERN-style
+ * compilation, but keeps the hardcoded EWRAM offsets (they resolve against the
+ * port's emulated EWRAM buffer, see include/port/platform.h).
+ * Defined by the port build system, never for the GBA ROM.
+ */
+#ifdef PLATFORM_PC
+#define MODERN
+#define NON_MATCHING
+#undef RAM_PADDING
+#endif
+
 // Automatically change a few flags if modern is enabled
 #ifdef MODERN
 // We always want bug fixes if we're using a modern compiler
 #define BUGFIX
 // Proper ewram symbols are also preferable
+#ifndef PLATFORM_PC
 #define USE_EWRAM_SYMBOLS
+#endif
 // Enable fake matching code, behavior should be identical
 #define NON_MATCHING
 // Ram padding is no longer necessary
 #undef RAM_PADDING
+#endif
+
+#ifdef PORT_NO_BUGFIX
+#undef BUGFIX
 #endif
 
 #endif /* CONFIG_H*/

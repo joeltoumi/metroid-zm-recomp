@@ -105,7 +105,7 @@ struct SaveFile {
     struct ScrewSpeedAnimation screwSpeedAnimation;
     struct Equipment equipment;
     struct HazardDamage hazardDamage;
-    struct EnvironmentalEffect environmentalEffects[5];
+    ENV_EFFECT_SAVE_TYPE environmentalEffects[5];
     u16 preventMovementTimer;
     u8 disableDrawingSamusAndScrolling;
 
@@ -138,7 +138,7 @@ struct SaveDemo {
     struct ScrewSpeedAnimation screwSpeedAnimation;
     struct Equipment equipment;
     struct HazardDamage hazardDamage;
-    struct EnvironmentalEffect environmentalEffects[5];
+    ENV_EFFECT_SAVE_TYPE environmentalEffects[5];
 
     u8 visitedMinimapTiles[128];
     u8 hatchesOpened[32];
@@ -247,9 +247,18 @@ extern struct SaveFileInfo gSaveFilesInfo[3];
 extern struct SectionInfo gSectionInfo;
 
 // Place holder symbols?
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gSramDemoInputData (*(u16 (*)[DEMO_MAX_DURATION])(EWRAM_BASE + 0x3f080))
+#else
 extern u16 gSramDemoInputData[DEMO_MAX_DURATION];
+#endif
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gSramDemoInputDuration (*(u16 (*)[DEMO_MAX_DURATION])(EWRAM_BASE + 0x3f280))
+#else
 extern u16 gSramDemoInputDuration[DEMO_MAX_DURATION];
-
+#endif
 #ifdef USE_EWRAM_SYMBOLS
 extern struct Sram gSram;
 #else

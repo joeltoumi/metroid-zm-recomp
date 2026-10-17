@@ -2477,7 +2477,7 @@ const struct SaveDemo sDemo0_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -2486,7 +2486,7 @@ const struct SaveDemo sDemo0_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -2495,7 +2495,7 @@ const struct SaveDemo sDemo0_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -2504,7 +2504,7 @@ const struct SaveDemo sDemo0_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -2513,7 +2513,7 @@ const struct SaveDemo sDemo0_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -2661,7 +2661,7 @@ const struct SaveDemo sDemo1_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -2670,7 +2670,7 @@ const struct SaveDemo sDemo1_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -2679,7 +2679,7 @@ const struct SaveDemo sDemo1_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -2688,7 +2688,7 @@ const struct SaveDemo sDemo1_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -2697,7 +2697,7 @@ const struct SaveDemo sDemo1_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -2845,7 +2845,7 @@ const struct SaveDemo sDemo2_Ram = {
             .breathingTimer = 0,
             .xPosition = 835,
             .yPosition = 1151,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -2854,7 +2854,7 @@ const struct SaveDemo sDemo2_Ram = {
             .breathingTimer = 0,
             .xPosition = 955,
             .yPosition = 1151,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -2863,7 +2863,7 @@ const struct SaveDemo sDemo2_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -2872,7 +2872,7 @@ const struct SaveDemo sDemo2_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -2881,7 +2881,7 @@ const struct SaveDemo sDemo2_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -3029,7 +3029,7 @@ const struct SaveDemo sDemo3_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -3038,7 +3038,7 @@ const struct SaveDemo sDemo3_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -3047,7 +3047,7 @@ const struct SaveDemo sDemo3_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -3056,7 +3056,7 @@ const struct SaveDemo sDemo3_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -3065,7 +3065,7 @@ const struct SaveDemo sDemo3_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -3213,7 +3213,7 @@ const struct SaveDemo sDemo4_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -3222,7 +3222,7 @@ const struct SaveDemo sDemo4_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -3231,7 +3231,7 @@ const struct SaveDemo sDemo4_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -3240,7 +3240,7 @@ const struct SaveDemo sDemo4_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -3249,7 +3249,7 @@ const struct SaveDemo sDemo4_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -3397,7 +3397,7 @@ const struct SaveDemo sDemo5_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -3406,7 +3406,7 @@ const struct SaveDemo sDemo5_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -3415,7 +3415,7 @@ const struct SaveDemo sDemo5_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -3424,7 +3424,7 @@ const struct SaveDemo sDemo5_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -3433,7 +3433,7 @@ const struct SaveDemo sDemo5_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -3581,7 +3581,7 @@ const struct SaveDemo sDemo6_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -3590,7 +3590,7 @@ const struct SaveDemo sDemo6_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -3599,7 +3599,7 @@ const struct SaveDemo sDemo6_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -3608,7 +3608,7 @@ const struct SaveDemo sDemo6_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -3617,7 +3617,7 @@ const struct SaveDemo sDemo6_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -3765,7 +3765,7 @@ const struct SaveDemo sDemo7_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -3774,7 +3774,7 @@ const struct SaveDemo sDemo7_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -3783,7 +3783,7 @@ const struct SaveDemo sDemo7_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -3792,7 +3792,7 @@ const struct SaveDemo sDemo7_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -3801,7 +3801,7 @@ const struct SaveDemo sDemo7_Ram = {
             .breathingTimer = 0,
             .xPosition = BLOCK_SIZE * 15,
             .yPosition = BLOCK_SIZE * 20,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -3949,7 +3949,7 @@ const struct SaveDemo sDemo8_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -3958,7 +3958,7 @@ const struct SaveDemo sDemo8_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -3967,7 +3967,7 @@ const struct SaveDemo sDemo8_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -3976,7 +3976,7 @@ const struct SaveDemo sDemo8_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -3985,7 +3985,7 @@ const struct SaveDemo sDemo8_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -4135,7 +4135,7 @@ const struct SaveDemo sDemo9_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -4144,7 +4144,7 @@ const struct SaveDemo sDemo9_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -4153,7 +4153,7 @@ const struct SaveDemo sDemo9_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -4162,7 +4162,7 @@ const struct SaveDemo sDemo9_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -4171,7 +4171,7 @@ const struct SaveDemo sDemo9_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -4319,7 +4319,7 @@ const struct SaveDemo sDemo10_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -4328,7 +4328,7 @@ const struct SaveDemo sDemo10_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -4337,7 +4337,7 @@ const struct SaveDemo sDemo10_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -4346,7 +4346,7 @@ const struct SaveDemo sDemo10_Ram = {
             .breathingTimer = 0,
             .xPosition = BLOCK_SIZE * 26 + HALF_BLOCK_SIZE + 3,
             .yPosition = BLOCK_SIZE * 11,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -4355,7 +4355,7 @@ const struct SaveDemo sDemo10_Ram = {
             .breathingTimer = 0,
             .xPosition = BLOCK_SIZE * 26 + HALF_BLOCK_SIZE + 3,
             .yPosition = BLOCK_SIZE * 11,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -4503,7 +4503,7 @@ const struct SaveDemo sDemo11_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -4512,7 +4512,7 @@ const struct SaveDemo sDemo11_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -4521,7 +4521,7 @@ const struct SaveDemo sDemo11_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -4530,7 +4530,7 @@ const struct SaveDemo sDemo11_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -4539,7 +4539,7 @@ const struct SaveDemo sDemo11_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -4687,7 +4687,7 @@ const struct SaveDemo sDemo12_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -4696,7 +4696,7 @@ const struct SaveDemo sDemo12_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -4705,7 +4705,7 @@ const struct SaveDemo sDemo12_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -4714,7 +4714,7 @@ const struct SaveDemo sDemo12_Ram = {
             .breathingTimer = 0,
             .xPosition = BLOCK_SIZE * 15 + HALF_BLOCK_SIZE + 6,
             .yPosition = BLOCK_SIZE * 21 + HALF_BLOCK_SIZE + 4,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -4723,7 +4723,7 @@ const struct SaveDemo sDemo12_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -4873,7 +4873,7 @@ const struct SaveDemo sDemo13_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -4882,7 +4882,7 @@ const struct SaveDemo sDemo13_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -4891,7 +4891,7 @@ const struct SaveDemo sDemo13_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -4900,7 +4900,7 @@ const struct SaveDemo sDemo13_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -4909,7 +4909,7 @@ const struct SaveDemo sDemo13_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -5057,7 +5057,7 @@ const struct SaveDemo sDemo14_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -5066,7 +5066,7 @@ const struct SaveDemo sDemo14_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -5075,7 +5075,7 @@ const struct SaveDemo sDemo14_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -5084,7 +5084,7 @@ const struct SaveDemo sDemo14_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -5093,7 +5093,7 @@ const struct SaveDemo sDemo14_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 
@@ -5241,7 +5241,7 @@ const struct SaveDemo sDemo15_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [1] = {
             .type = ENV_EFFECT_NONE,
@@ -5250,7 +5250,7 @@ const struct SaveDemo sDemo15_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [2] = {
             .type = ENV_EFFECT_NONE,
@@ -5259,7 +5259,7 @@ const struct SaveDemo sDemo15_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [3] = {
             .type = ENV_EFFECT_NONE,
@@ -5268,7 +5268,7 @@ const struct SaveDemo sDemo15_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
         [4] = {
             .type = ENV_EFFECT_NONE,
@@ -5277,7 +5277,7 @@ const struct SaveDemo sDemo15_Ram = {
             .breathingTimer = 0,
             .xPosition = 0,
             .yPosition = 0,
-            .pOamFrame = NULL
+            .pOamFrame = 0
         },
     },
 

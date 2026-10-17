@@ -2,6 +2,8 @@
 #include "gba.h"
 #include "macros.h"
 
+#ifndef PLATFORM_PC // Native build: see port/src/dma.c
+
 struct DMA {
     const void* pSrc;
     void* pDst;
@@ -306,3 +308,5 @@ lbl_08003370: \n\
     ");
 }
 #endif
+
+#endif // !PLATFORM_PC

@@ -120,22 +120,72 @@ struct Unused_3005504 {
     u32 field_4;
 };
 
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gClipdataCollisionTypes (*(u8 (*)[1024])(EWRAM_BASE + 0x2000))
+#else
 extern u8 gClipdataCollisionTypes[1024];
+#endif
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gClipdataCollisionTypes_Tilemap (*(u8 (*)[512])(EWRAM_BASE + 0x2400))
+#else
 extern u8 gClipdataCollisionTypes_Tilemap[512];
-
+#endif
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gClipdataBehaviorTypes (*(u16 (*)[1024])(EWRAM_BASE + 0x3000))
+#else
 extern u16 gClipdataBehaviorTypes[1024];
+#endif
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gClipdataBehaviorTypes_Tilemap (*(u16 (*)[512])(EWRAM_BASE + 0x3800))
+#else
 extern u16 gClipdataBehaviorTypes_Tilemap[512];
-
+#endif
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gTilemap (*(u16 (*)[1024])(EWRAM_BASE + 0x4000))
+#else
 extern u16 gTilemap[1024];
-
+#endif
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gCommonTilemap (*(u16 (*)[1024])(EWRAM_BASE + 0x6000))
+#else
 extern u16 gCommonTilemap[1024];
-
+#endif
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gDecompClipdataMap (*(u16 (*)[1024])(EWRAM_BASE + 0x27800))
+#else
 extern u16 gDecompClipdataMap[1024];
+#endif
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gDecompBg0Map (*(u16 (*)[6144])(EWRAM_BASE + 0x2a800))
+#else
 extern u16 gDecompBg0Map[6144];
+#endif
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gDecompBg1Map (*(u16 (*)[6144])(EWRAM_BASE + 0x2d800))
+#else
 extern u16 gDecompBg1Map[6144];
+#endif
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gDecompBg2Map (*(u16 (*)[6144])(EWRAM_BASE + 0x30800))
+#else
 extern u16 gDecompBg2Map[6144];
+#endif
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gDecompBg3Map (*(u16 (*)[2048])(EWRAM_BASE + 0x7000))
+#else
 extern u16 gDecompBg3Map[2048];
-
+#endif
 extern u8 gSpriteset;
 extern u8 gSpritesetEntryUsed;
 extern struct Coordinates gWaitingSpacePiratesPosition;

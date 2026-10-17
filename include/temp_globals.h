@@ -53,8 +53,12 @@ union EwramData {
     struct BeforeRuinsTestEwramData beforeRuinsTest;
 };
 
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gUnk_02035400 (*(u16 *)(EWRAM_BASE + 0x35400))
+#else
 extern u16 gUnk_02035400;
-
+#endif
 extern u8 gUnk_03004FC9;
 extern union NonGameplayRam gNonGameplayRam;
 

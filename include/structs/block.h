@@ -66,7 +66,12 @@ struct TankBehavior {
 typedef u32 (*BlockFunc_T)(struct ClipdataBlockData*);
 
 extern struct BrokenBlock gBrokenBlocks[MAX_AMOUNT_OF_BROKEN_BLOCKS];
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gMakeSolidBlocks (*(u16 (*)[MAX_AMOUNT_OF_MAKE_SOLID_BLOCKS])(EWRAM_BASE + 0x27780))
+#else
 extern u16 gMakeSolidBlocks[MAX_AMOUNT_OF_MAKE_SOLID_BLOCKS];
+#endif
 extern struct BombChain gBombChains[MAX_AMOUNT_OF_BOMB_CHAINS];
 extern u8 gActiveBombChainTypes;
 

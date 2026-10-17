@@ -25,7 +25,12 @@ extern struct Message gCurrentMessage;
 extern s8 gCurrentItemBeingAcquired;
 
 #ifdef USE_EWRAM_SYMBOLS
+#ifdef PLATFORM_PC // linker.ld places it in EWRAM
+#include "gba/memory.h"
+#define gCurrentCharacterGfx (*(u32 (*)[32])(EWRAM_BASE + 0x27700))
+#else
 extern u32 gCurrentCharacterGfx[32];
+#endif
 #else
 #define gCurrentCharacterGfx CAST_TO_ARRAY(u32, [32], EWRAM_BASE + 0x27700)
 #endif /* USE_EWRAM_SYMBOLS */

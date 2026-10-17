@@ -26,3 +26,12 @@ tools/agbcc
 .vscode
 
 err.log
+
+# mzm-android
+/build*/
+/frames/
+*.ppm
+/android/.gradle/
+/android/app/build/
+/android/build/
+/android/local.properties

@@ -623,6 +623,12 @@ static u32 MultiBootHandshake(struct MultiBootData* pMultiBoot)
  * 
  * @param cycles Cycles to wait
  */
+#ifdef PLATFORM_PC
+// Native build: no link cable, nothing to wait for.
+static void MultiBootWaitCycles(s32 cycles)
+{
+}
+#else // !PLATFORM_PC
 NAKED_FUNCTION
 static void MultiBootWaitCycles(s32 cycles)
 {
@@ -661,6 +667,7 @@ static void MultiBootWaitCycles(s32 cycles)
         bx lr                        \n\
     ");
 }
+#endif // PLATFORM_PC
 
 /**
  * @brief 897d0 | 3c | Wait up to one frame for communication to be completed

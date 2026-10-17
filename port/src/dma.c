@@ -40,7 +40,7 @@ typedef struct PortDmaChannel {
     uint16_t control;
 } PortDmaChannel;
 
-static PortDmaChannel sChannels[4];
+static PortDmaChannel sChannels[4] PORT_STATE;
 
 void Port_DmaReset(void)
 {

@@ -55,6 +55,12 @@ const void* Port_RomPointer(unsigned int gbaAddress)
     return sRom + offset;
 }
 
+const uint8_t* Port_RomData(size_t* size)
+{
+    *size = sRomSize;
+    return sRom;
+}
+
 const char* Port_RomRegionName(void)
 {
     return MZM_ROM_REGION_NAME;

@@ -110,6 +110,31 @@ void Port_FlushSave(void);
 void Port_RequestQuit(void);
 bool Port_QuitRequested(void);
 
+// ---- save states (port/src/savestate.c) -------------------------------------
+// Port variables that are part of the machine state live in the same section
+// as the game's globals (IWRAM_DATA), so a save state copies them together.
+#define PORT_STATE __attribute__((section("mzm_state")))
+
+typedef enum PortStateResult {
+    PORT_STATE_OK,
+    PORT_STATE_BAD_FILE,    // not a save state, or truncated
+    PORT_STATE_OTHER_BUILD, // made by another version / region of the port
+} PortStateResult;
+
+// Called by the main loop once per frame, at the only point where the game's
+// C stack is always the same: the Halt at the end of agbmain's loop. Save
+// states can only be taken or restored from here.
+void Port_HostFrameBoundary(void);
+// Size of a save state image (constant for a given build).
+size_t Port_StateSize(void);
+// Writes the machine state into `buf` (Port_StateSize() bytes). Only from
+// Port_HostFrameBoundary().
+void Port_StateSave(uint8_t* buf);
+// Restores a state written by Port_StateSave, possibly in another run of the
+// same build (native pointers are relocated). Only from Port_HostFrameBoundary().
+PortStateResult Port_StateLoad(const uint8_t* buf, size_t size);
+const char* Port_StateResultText(PortStateResult result);
+
 void Port_Log(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 _Noreturn void Port_Fatal(const char* fmt, ...) __attribute__((format(printf, 1, 2)));
 

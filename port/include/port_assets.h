@@ -19,6 +19,8 @@ PortRomStatus Port_LoadRom(const uint8_t* rom, size_t size);
 PortRomStatus Port_CheckRom(const uint8_t* rom, size_t size);
 const char* Port_RomStatusText(PortRomStatus status);
 const char* Port_RomRegionName(void);
+// The player's ROM as kept in memory (the sound engine reads it in place).
+const uint8_t* Port_RomData(size_t* size);
 const char* Port_RomExpectedSha1(void);
 
 void Port_Sha1(const void* data, size_t size, uint8_t out[20]);

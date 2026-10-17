@@ -158,6 +158,9 @@ void Port_Syscall(unsigned int number)
 {
     switch (number) {
     case 2: // Halt: the main loop halts until the VBlank IRQ fires
+        Port_RunFrame();
+        Port_HostFrameBoundary(); // only agbmain's loop halts with SWI 2
+        break;
     case 3: // Stop (sleep mode): treat as waiting for the next frame
         Port_RunFrame();
         break;

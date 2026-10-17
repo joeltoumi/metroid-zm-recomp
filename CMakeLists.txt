@@ -19,6 +19,7 @@ find_package(Python3 REQUIRED COMPONENTS Interpreter)
 
 set(CMAKE_POSITION_INDEPENDENT_CODE ON) # Android links everything into libmain.so
 set(MZM_SDL3_TAG "release-3.4.18" CACHE STRING "SDL3 version fetched when no SDL3 is installed")
+set(MZM_IMGUI_TAG "v1.92.9b" CACHE STRING "Dear ImGui version (options menu)")
 
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE RelWithDebInfo)
@@ -114,6 +115,7 @@ add_library(mzm_port STATIC
     port/src/apu.c
     port/src/frame.c
     port/src/main.c
+    port/src/savestate.c
     port/ppu/src/virtuappu.c
     port/ppu/src/mode1.c)
 target_include_directories(mzm_port PUBLIC port/include PRIVATE port/ppu/include)
@@ -158,16 +160,38 @@ elseif(MZM_HOST STREQUAL "sdl")
             GIT_SHALLOW TRUE)
         FetchContent_MakeAvailable(SDL3)
     endif()
+    # Options menu: Dear ImGui with its SDL3 + SDL_Renderer backends.
+    enable_language(CXX)
+    include(FetchContent)
+    FetchContent_Declare(imgui
+        GIT_REPOSITORY https://github.com/ocornut/imgui.git
+        GIT_TAG ${MZM_IMGUI_TAG}
+        GIT_SHALLOW TRUE)
+    FetchContent_MakeAvailable(imgui)
+    add_library(mzm_imgui STATIC
+        ${imgui_SOURCE_DIR}/imgui.cpp
+        ${imgui_SOURCE_DIR}/imgui_draw.cpp
+        ${imgui_SOURCE_DIR}/imgui_tables.cpp
+        ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+        ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl3.cpp
+        ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer3.cpp)
+    target_include_directories(mzm_imgui PUBLIC ${imgui_SOURCE_DIR} ${imgui_SOURCE_DIR}/backends)
+    target_compile_definitions(mzm_imgui PUBLIC IMGUI_DISABLE_OBSOLETE_FUNCTIONS IMGUI_DISABLE_DEMO_WINDOWS
+                                                IMGUI_DISABLE_DEBUG_TOOLS)
+    target_link_libraries(mzm_imgui PUBLIC SDL3::SDL3)
+
+    set(MZM_SDL_SOURCES port/src/host_sdl.c port/src/config.c port/src/menu.cpp)
     if(ANDROID)
         # SDLActivity loads libmain.so and calls SDL_main.
-        add_library(main SHARED port/src/host_sdl.c port/src/config.c)
+        add_library(main SHARED ${MZM_SDL_SOURCES})
         set(MZM_EXE main)
     else()
-        add_executable(mzm port/src/host_sdl.c port/src/config.c)
+        add_executable(mzm ${MZM_SDL_SOURCES})
         set(MZM_EXE mzm)
     endif()
-    target_compile_options(${MZM_EXE} PRIVATE -std=gnu11 -Wall -Wextra)
-    target_link_libraries(${MZM_EXE} PRIVATE mzm_port mzm_game mzm_port SDL3::SDL3)
+    target_compile_options(${MZM_EXE} PRIVATE $<$<COMPILE_LANGUAGE:C>:-std=gnu11> -Wall -Wextra)
+    target_compile_features(${MZM_EXE} PRIVATE cxx_std_17)
+    target_link_libraries(${MZM_EXE} PRIVATE mzm_port mzm_game mzm_port mzm_imgui SDL3::SDL3)
 else()
     message(FATAL_ERROR "MZM_HOST must be sdl or headless")
 endif()

@@ -4,10 +4,12 @@
 //
 //   mzm_headless [--rom FILE] [--frames N] [--dump-every K] [--out DIR] [--save FILE]
 //                [--press FRAME:KEYS:LEN ...] [--wav FILE]
+//                [--state-save FRAME:FILE] [--state-load FRAME:FILE]
 //
 // Frames are written as PPM images (no dependencies). KEYS is a combination
 // of the letters A B s(elect) S(tart) R(ight) L(eft) U(p) D(own) r l.
 // --wav records the sound output (16-bit stereo, 48 kHz).
+// --state-save / --state-load write or restore a save state after FRAME.
 #include "port.h"
 
 #include <errno.h>
@@ -31,6 +33,14 @@ static FILE* sWav;
 static uint32_t sWavFrames;
 static Press sPresses[64];
 static int sPressCount;
+
+typedef struct StateOp {
+    uint64_t frame;
+    const char* path;
+    bool load;
+} StateOp;
+static StateOp sStateOps[8];
+static int sStateOpCount;
 
 static uint16_t ParseKeys(const char* s)
 {
@@ -84,6 +94,13 @@ bool Port_HostInit(const PortHostConfig* cfg)
             p->keys = (*end == ':') ? ParseKeys(end + 1) : 0;
             const char* len = strrchr(v, ':');
             p->length = (len && len != end) ? strtoull(len + 1, NULL, 10) : 1;
+            i++;
+        } else if ((strcmp(a, "--state-save") == 0 || strcmp(a, "--state-load") == 0) && v && sStateOpCount < 8) {
+            StateOp* op = &sStateOps[sStateOpCount++];
+            char* end;
+            op->frame = strtoull(v, &end, 10);
+            op->path = (*end == ':') ? end + 1 : "";
+            op->load = strcmp(a, "--state-load") == 0;
             i++;
         } else {
             Port_Log("unknown argument: %s", a);
@@ -195,6 +212,33 @@ void Port_HostQueueAudio(const int16_t* samples, int frames)
 
 void Port_HostWaitFrame(void)
 {
+}
+
+void Port_HostFrameBoundary(void)
+{
+    for (int i = 0; i < sStateOpCount; i++) {
+        const StateOp* op = &sStateOps[i];
+        if (op->frame != Port_FrameCount())
+            continue;
+        const size_t size = Port_StateSize();
+        uint8_t* buf = malloc(size);
+        FILE* f = fopen(op->path, op->load ? "rb" : "wb");
+        if (!buf || !f) {
+            Port_Log("state: can't open %s", op->path);
+        } else if (op->load) {
+            const size_t got = fread(buf, 1, size, f);
+            const PortStateResult r = Port_StateLoad(buf, got);
+            Port_Log("state: loaded %s at frame %llu: %s", op->path, (unsigned long long)op->frame,
+                     Port_StateResultText(r));
+        } else {
+            Port_StateSave(buf);
+            fwrite(buf, 1, size, f);
+            Port_Log("state: saved %s at frame %llu", op->path, (unsigned long long)op->frame);
+        }
+        if (f)
+            fclose(f);
+        free(buf);
+    }
 }
 
 uint8_t* Port_HostLoadRom(size_t* size, const char* error)

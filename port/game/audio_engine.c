@@ -53,6 +53,7 @@ static const u8* RomPointer(u32 address)
 // Stand-ins for data a corrupt pointer would reference: a script that ends,
 // a sample that plays nothing (header + a few zero samples), a silent wave.
 static const u8 sSilentScript[4] = { FINE, FINE, FINE, FINE };
+static const u8 sSilentHeader[8]; // 0 tracks
 static const u32 sSilentSample[8];
 static const u32 sSilentWave[4];
 
@@ -68,9 +69,11 @@ static const u8* ScriptPointer(u32 address)
 
 struct SoundEntry* Port_SoundEntriesForWriting(void); // port/game/sound_data.c
 
-static u32 sVoicegroupAddress[MAX_VOICEGROUPS];
+// The cache's order is part of the game state (tracks point into it); save
+// states keep the addresses and rebuild the copies (Port_SoundRebuildVoicegroups).
+static IWRAM_DATA u32 sVoicegroupAddress[MAX_VOICEGROUPS];
 static struct Voice sVoicegroups[MAX_VOICEGROUPS][VOICEGROUP_SIZE];
-static u32 sVoicegroupCount;
+static IWRAM_DATA u32 sVoicegroupCount;
 static struct Voice sSilentVoicegroup[VOICEGROUP_SIZE];
 
 static void SetupSilentVoicegroup(void)
@@ -215,6 +218,22 @@ static s32 FindSoundEntries(const u8* rom, u32 size)
     return -1;
 }
 
+void Port_SoundRebuildVoicegroups(void)
+{
+    u32 addresses[MAX_VOICEGROUPS];
+    u32 count;
+    u32 i;
+
+    // Same calls in the same order fill the same slots (nested groups
+    // included), so pointers into the cache stay valid.
+    count = sVoicegroupCount;
+    for (i = 0; i < count; i++)
+        addresses[i] = sVoicegroupAddress[i];
+    sVoicegroupCount = 0;
+    for (i = 0; i < count; i++)
+        Port_SoundVoicegroup(addresses[i]);
+}
+
 void Port_SoundInit(const u8* rom, u32 size)
 {
     struct SoundEntry* pEntries = Port_SoundEntriesForWriting();
@@ -231,7 +250,7 @@ void Port_SoundInit(const u8* rom, u32 size)
         Port_Log("sound: track table not found in the ROM, the game will be silent");
         for (i = 0; i < SOUND_COUNT; i++)
         {
-            pEntries[i].pHeader = sSilentScript; // 0 tracks
+            pEntries[i].pHeader = sSilentHeader;
             pEntries[i].trackGroundNumber = 0;
             pEntries[i].trackGroundNumber_2 = 0;
         }

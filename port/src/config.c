@@ -15,6 +15,8 @@
 //   [gamepad]
 //   a = b                        ; SDL gamepad button names (south/east/...)
 //   left = dpleft, leftx-        ; button and/or axis with a sign
+//   [touch]
+//   a = right 0.205 0.620 0.085 a ; anchor, x, y, radius (window heights), input
 #include "port_config.h"
 
 #include <stdio.h>
@@ -25,12 +27,43 @@ static const char* const sInputNames[PORT_INPUT_COUNT] = {
     "a", "b", "select", "start", "right", "left", "up", "down", "r", "l", "fast_forward",
 };
 
+static const char* const sTouchNames[PORT_TOUCH_BUTTON_COUNT] = {
+    "up", "down", "left", "right", "a", "b", "l", "r", "select", "start", "menu",
+};
+
+static const char* const sAnchorNames[] = { "left", "center", "right" };
+
+static const char* const sFilterNames[PORT_FILTER_COUNT] = { "none", "lcd", "crt" };
+
 const char* PortConfig_InputName(int input)
 {
     return (input >= 0 && input < PORT_INPUT_COUNT) ? sInputNames[input] : "?";
 }
 
-void PortConfig_Defaults(PortConfig* cfg)
+const char* PortConfig_FilterName(int filter)
+{
+    return (filter >= 0 && filter < PORT_FILTER_COUNT) ? sFilterNames[filter] : "none";
+}
+
+void PortConfig_DefaultTouchLayout(PortConfig* cfg)
+{
+    static const PortTouchButton defaults[PORT_TOUCH_BUTTON_COUNT] = {
+        [PORT_TOUCH_UP] = { PORT_ANCHOR_LEFT, 0.255f, 0.55f, 0.075f, PORT_INPUT_UP },
+        [PORT_TOUCH_DOWN] = { PORT_ANCHOR_LEFT, 0.255f, 0.85f, 0.075f, PORT_INPUT_DOWN },
+        [PORT_TOUCH_LEFT] = { PORT_ANCHOR_LEFT, 0.105f, 0.70f, 0.075f, PORT_INPUT_LEFT },
+        [PORT_TOUCH_RIGHT] = { PORT_ANCHOR_LEFT, 0.405f, 0.70f, 0.075f, PORT_INPUT_RIGHT },
+        [PORT_TOUCH_A] = { PORT_ANCHOR_RIGHT, 0.205f, 0.62f, 0.085f, PORT_INPUT_A },
+        [PORT_TOUCH_B] = { PORT_ANCHOR_RIGHT, 0.385f, 0.78f, 0.085f, PORT_INPUT_B },
+        [PORT_TOUCH_L] = { PORT_ANCHOR_LEFT, 0.17f, 0.12f, 0.07f, PORT_INPUT_L },
+        [PORT_TOUCH_R] = { PORT_ANCHOR_RIGHT, 0.17f, 0.12f, 0.07f, PORT_INPUT_R },
+        [PORT_TOUCH_SELECT] = { PORT_ANCHOR_CENTER, -0.0585f, 0.94f, 0.045f, PORT_INPUT_SELECT },
+        [PORT_TOUCH_START] = { PORT_ANCHOR_CENTER, 0.0585f, 0.94f, 0.045f, PORT_INPUT_START },
+        [PORT_TOUCH_MENU] = { PORT_ANCHOR_CENTER, 0.0f, 0.06f, 0.04f, -1 },
+    };
+    memcpy(cfg->touch, defaults, sizeof(defaults));
+}
+
+void PortConfig_DefaultBindings(PortConfig* cfg)
 {
     static const PortBinding defaults[PORT_INPUT_COUNT] = {
         // GBA A/B on the right face buttons, matching the GBA's layout:
@@ -48,6 +81,11 @@ void PortConfig_Defaults(PortConfig* cfg)
         [PORT_INPUT_FAST_FORWARD] = { SDL_SCANCODE_TAB, SDL_GAMEPAD_BUTTON_RIGHT_STICK, SDL_GAMEPAD_AXIS_INVALID, 0 },
     };
 
+    memcpy(cfg->bindings, defaults, sizeof(defaults));
+}
+
+void PortConfig_Defaults(PortConfig* cfg)
+{
     memset(cfg, 0, sizeof(*cfg));
     cfg->windowScale = 4;
     cfg->fullscreen = false;
@@ -59,7 +97,10 @@ void PortConfig_Defaults(PortConfig* cfg)
     cfg->touchOpacity = 35;
     cfg->stickDeadzone = 40;
     cfg->fastForwardSpeed = 3;
-    memcpy(cfg->bindings, defaults, sizeof(defaults));
+    cfg->fastForwardToggle = false;
+    cfg->filter = PORT_FILTER_NONE;
+    PortConfig_DefaultBindings(cfg);
+    PortConfig_DefaultTouchLayout(cfg);
 #ifdef __ANDROID__
     cfg->fullscreen = true;
 #endif
@@ -98,6 +139,37 @@ static int FindInput(const char* name)
             return i;
     }
     return -1;
+}
+
+static int FindName(const char* const* names, int count, const char* name)
+{
+    for (int i = 0; i < count; i++) {
+        if (SDL_strcasecmp(name, names[i]) == 0)
+            return i;
+    }
+    return -1;
+}
+
+// "right 0.205 0.620 0.085 a"
+static void ParseTouchButton(PortTouchButton* b, int button, char* value)
+{
+    char anchor[16], input[16] = "";
+    float x, y, r;
+
+    if (sscanf(value, "%15s %f %f %f %15s", anchor, &x, &y, &r, input) < 4)
+        return;
+    const int a = FindName(sAnchorNames, 3, anchor);
+    if (a < 0 || x < -1.0f || x > 2.0f || y < 0.0f || y > 1.0f || r < 0.01f || r > 0.3f)
+        return;
+    b->anchor = a;
+    b->x = x;
+    b->y = y;
+    b->r = r;
+    if (button != PORT_TOUCH_MENU && input[0]) {
+        const int in = FindInput(input);
+        if (in >= 0 && in < PORT_INPUT_GBA_COUNT)
+            b->input = in;
+    }
 }
 
 static void ParseGamepadBinding(PortBinding* b, char* value)
@@ -169,6 +241,11 @@ bool PortConfig_Load(PortConfig* cfg, const char* path)
                 cfg->integerScaling = ParseBool(value);
             else if (strcmp(key, "smooth_scaling") == 0)
                 cfg->smoothScaling = ParseBool(value);
+            else if (strcmp(key, "filter") == 0) {
+                const int f = FindName(sFilterNames, PORT_FILTER_COUNT, value);
+                if (f >= 0)
+                    cfg->filter = f;
+            }
         } else if (strcmp(section, "audio") == 0) {
             if (strcmp(key, "volume") == 0)
                 cfg->volume = ParseInt(value, 0, 100, cfg->volume);
@@ -186,6 +263,8 @@ bool PortConfig_Load(PortConfig* cfg, const char* path)
                 cfg->stickDeadzone = ParseInt(value, 5, 95, cfg->stickDeadzone);
             } else if (strcmp(key, "fast_forward_speed") == 0) {
                 cfg->fastForwardSpeed = ParseInt(value, 2, 10, cfg->fastForwardSpeed);
+            } else if (strcmp(key, "fast_forward_toggle") == 0) {
+                cfg->fastForwardToggle = ParseBool(value);
             }
         } else if (strcmp(section, "keyboard") == 0) {
             const int input = FindInput(key);
@@ -196,6 +275,10 @@ bool PortConfig_Load(PortConfig* cfg, const char* path)
             const int input = FindInput(key);
             if (input >= 0)
                 ParseGamepadBinding(&cfg->bindings[input], value);
+        } else if (strcmp(section, "touch") == 0) {
+            const int button = FindName(sTouchNames, PORT_TOUCH_BUTTON_COUNT, key);
+            if (button >= 0)
+                ParseTouchButton(&cfg->touch[button], button, value);
         }
     }
 
@@ -217,7 +300,8 @@ bool PortConfig_Save(const PortConfig* cfg, const char* path)
     fprintf(f, "fullscreen = %s\n", cfg->fullscreen ? "true" : "false");
     fprintf(f, "vsync = %s\n", cfg->vsync ? "true" : "false");
     fprintf(f, "integer_scaling = %s\n", cfg->integerScaling ? "true" : "false");
-    fprintf(f, "smooth_scaling = %s\n\n", cfg->smoothScaling ? "true" : "false");
+    fprintf(f, "smooth_scaling = %s\n", cfg->smoothScaling ? "true" : "false");
+    fprintf(f, "filter = %s ; none | lcd | crt\n\n", sFilterNames[cfg->filter]);
 
     fprintf(f, "[audio]\n");
     fprintf(f, "volume = %d ; percent, 0 = muted\n\n", cfg->volume);
@@ -226,7 +310,8 @@ bool PortConfig_Save(const PortConfig* cfg, const char* path)
     fprintf(f, "touch_controls = %s ; auto | on | off\n", touchNames[cfg->touchControls]);
     fprintf(f, "touch_opacity = %d\n", cfg->touchOpacity);
     fprintf(f, "stick_deadzone = %d\n", cfg->stickDeadzone);
-    fprintf(f, "fast_forward_speed = %d\n\n", cfg->fastForwardSpeed);
+    fprintf(f, "fast_forward_speed = %d\n", cfg->fastForwardSpeed);
+    fprintf(f, "fast_forward_toggle = %s\n\n", cfg->fastForwardToggle ? "true" : "false");
 
     fprintf(f, "[keyboard]\n");
     for (int i = 0; i < PORT_INPUT_COUNT; i++) {
@@ -246,6 +331,15 @@ bool PortConfig_Save(const PortConfig* cfg, const char* path)
             fprintf(f, "%s%s%c", button ? ", " : "", axis, b->axisSign < 0 ? '-' : '+');
         if (!button && !axis)
             fprintf(f, "none");
+        fputc('\n', f);
+    }
+
+    fprintf(f, "\n[touch]\n");
+    for (int i = 0; i < PORT_TOUCH_BUTTON_COUNT; i++) {
+        const PortTouchButton* b = &cfg->touch[i];
+        fprintf(f, "%s = %s %.3f %.3f %.3f", sTouchNames[i], sAnchorNames[b->anchor], b->x, b->y, b->r);
+        if (b->input >= 0)
+            fprintf(f, " %s", sInputNames[b->input]);
         fputc('\n', f);
     }
 

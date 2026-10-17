@@ -58,11 +58,29 @@ Sin ventana (pruebas/CI): `-DMZM_HOST=headless`, que vuelca fotogramas a PPM:
     --press 400:S:5      # pulsa Start en el frame 400 durante 5 frames
 ```
 
+`--state-save FRAME:FICHERO` y `--state-load FRAME:FICHERO` guardan o cargan un
+estado en ese frame (para pruebas reproducibles).
+
 ## Controles y ajustes
 
-Todo se configura en `settings.ini`, en la carpeta de datos de la app
-(Linux: `~/.local/share/mzm-android/mzm/`). Se crea con los valores por
-defecto la primera vez.
+El menú de opciones pausa el juego y se abre con **Esc** o **F1**, con
+**Select+Start** (o el botón Guía) en el mando, con el botón **Atrás** de
+Android o con el botón `=` de arriba del mando táctil. Desde ahí:
+
+- **Guardados rápidos**: 4 ranuras con miniatura y fecha. `F5` guarda y `F8`
+  carga la última ranura usada. No tocan la partida normal (`.sav`).
+- **Controles**: cambiar cualquier botón del teclado o del mando (pulsa la
+  casilla y luego la tecla/botón nuevo) y la zona muerta del stick.
+- **Vídeo**: pantalla completa, escalado entero, filtro suave, efecto LCD
+  (rejilla de píxeles) o CRT (líneas de barrido) y VSync.
+- **Sonido y velocidad**: volumen, velocidad del avance rápido (x2-x10) y si
+  su botón se mantiene o activa/desactiva.
+- **Mando táctil**: cuándo se muestra, opacidad y un editor para mover cada
+  botón, cambiar su tamaño y qué botón de la GBA pulsa.
+
+Los ajustes se guardan en `settings.ini`, en la carpeta de datos de la app
+(Linux: `~/.local/share/mzm-android/mzm/`), que también se puede editar a mano.
+Se crea con los valores por defecto la primera vez.
 
 | GBA | Teclado | Mando |
 | --- | --- | --- |
@@ -74,7 +92,8 @@ defecto la primera vez.
 
 `F11` alterna la pantalla completa. En pantallas táctiles aparece un mando
 virtual (`touch_controls = auto | on | off`) que se oculta al usar un mando
-físico, como los controles de la AYN Thor.
+físico, como los controles de la AYN Thor. Select+Start abre el menú; el reset
+del juego (A+B+Select+Start) sigue funcionando si A y B se pulsan antes.
 
 Las partidas se guardan en `mzm.sav` con el mismo formato que la GBA, así que
 un `.sav` de mGBA de la versión USA sirve tal cual.
@@ -84,7 +103,8 @@ un `.sav` de mGBA de la versión USA sirve tal cual.
 - `src/`, `include/`: la decompilación. Los cambios para el build nativo van
   entre `#ifdef PLATFORM_PC` y no alteran la ROM de GBA.
 - `port/src/`: memoria emulada, DMA, BIOS en C, bucle de frame con IRQs de
-  VBlank/HBlank/VCount, carga de la ROM y frontends (SDL3 y headless).
+  VBlank/HBlank/VCount, carga de la ROM, save states y frontends (SDL3 con el
+  menú en [Dear ImGui](https://github.com/ocornut/imgui), y headless).
 - `port/ppu/`: PPU por software de [Project Picori](https://github.com/999sian/tmc)
   (el port nativo de Minish Cap).
 - `tools/port/gen_assets.py`: compila los datos de `src/data` a cero y genera

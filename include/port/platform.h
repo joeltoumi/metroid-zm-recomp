@@ -56,6 +56,9 @@ struct Voice;
 void Port_SoundInit(const unsigned char* rom, unsigned int size);
 /* Host copy of the voicegroup at a GBA address (never NULL). */
 struct Voice* Port_SoundVoicegroup(unsigned int gbaAddress);
+/* Converts the cached voicegroups again from their addresses (after a save
+ * state restored the cache's address list). */
+void Port_SoundRebuildVoicegroups(void);
 /* The next 16 samples sound DMA 1/2 would feed to FIFO A/B. Returns 0 when
  * the sound engine hasn't set up its buffers yet. */
 int Port_SoundFifoBlock(const signed char** fifoA, const signed char** fifoB);

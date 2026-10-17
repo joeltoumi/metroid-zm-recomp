@@ -590,6 +590,10 @@
  */
 #ifndef MODERN
 #define IWRAM_DATA __attribute__((section("iwram_data")))
+#elif defined(PLATFORM_PC)
+// mzm-android: the game's variables are grouped so save states can copy them
+// in one block (port/src/savestate.c).
+#define IWRAM_DATA __attribute__((section("mzm_state")))
 #else
 #define IWRAM_DATA
 #endif

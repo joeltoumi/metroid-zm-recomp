@@ -175,7 +175,7 @@ void UpdateMusic(void)
         // then reads and writes the BIOS area through the NULL pointer.
         if (pVariables == NULL)
         {
-            static struct TrackVariables sNoVariables;
+            static IWRAM_DATA struct TrackVariables sNoVariables;
             pVariables = &sNoVariables;
         }
 #endif // PLATFORM_PC

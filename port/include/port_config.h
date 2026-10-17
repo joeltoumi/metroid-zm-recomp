@@ -6,6 +6,10 @@
 #include <SDL3/SDL.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Inputs in GBA KEYINPUT bit order, then port-only actions.
 enum {
     PORT_INPUT_A,
@@ -29,6 +33,44 @@ enum {
     PORT_TOUCH_OFF,
 };
 
+enum {
+    PORT_FILTER_NONE,
+    PORT_FILTER_LCD, // pixel grid, like the GBA screen
+    PORT_FILTER_CRT, // scanlines
+    PORT_FILTER_COUNT
+};
+
+// On-screen touch buttons.
+enum {
+    PORT_TOUCH_UP,
+    PORT_TOUCH_DOWN,
+    PORT_TOUCH_LEFT,
+    PORT_TOUCH_RIGHT,
+    PORT_TOUCH_A,
+    PORT_TOUCH_B,
+    PORT_TOUCH_L,
+    PORT_TOUCH_R,
+    PORT_TOUCH_SELECT,
+    PORT_TOUCH_START,
+    PORT_TOUCH_MENU, // opens the options menu
+    PORT_TOUCH_BUTTON_COUNT
+};
+
+enum {
+    PORT_ANCHOR_LEFT,
+    PORT_ANCHOR_CENTER,
+    PORT_ANCHOR_RIGHT,
+};
+
+// Position in units of the window height, measured from the anchor (left
+// edge, center or right edge, towards the middle of the screen), so the
+// layout keeps its shape on any aspect ratio.
+typedef struct PortTouchButton {
+    int anchor;
+    float x, y, r;
+    int input; // PORT_INPUT_* it presses (-1: the menu button)
+} PortTouchButton;
+
 typedef struct PortBinding {
     SDL_Scancode key;
     SDL_GamepadButton button;
@@ -43,6 +85,7 @@ typedef struct PortConfig {
     bool vsync;
     bool integerScaling;
     bool smoothScaling;
+    int filter; // PORT_FILTER_*
     // [audio]
     int volume; // percent, 0 = muted
     // [input]
@@ -50,12 +93,22 @@ typedef struct PortConfig {
     int touchOpacity; // percent
     int stickDeadzone; // percent
     int fastForwardSpeed;
+    bool fastForwardToggle; // the key switches it on/off instead of holding
     PortBinding bindings[PORT_INPUT_COUNT];
+    // [touch]
+    PortTouchButton touch[PORT_TOUCH_BUTTON_COUNT];
 } PortConfig;
 
 void PortConfig_Defaults(PortConfig* cfg);
 bool PortConfig_Load(PortConfig* cfg, const char* path);
 bool PortConfig_Save(const PortConfig* cfg, const char* path);
 const char* PortConfig_InputName(int input);
+void PortConfig_DefaultBindings(PortConfig* cfg);
+void PortConfig_DefaultTouchLayout(PortConfig* cfg);
+const char* PortConfig_FilterName(int filter);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PORT_CONFIG_H

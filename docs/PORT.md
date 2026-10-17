@@ -70,6 +70,30 @@ Se ha comparado con mGBA grabando lo mismo en los dos (intro y Brinstar con
 la ROM europea): la forma de onda coincide (correlación 0,98-0,99 en la
 música de Brinstar) y el volumen también.
 
+## Save states
+
+`port/src/savestate.c`. El estado de la máquina es la memoria de la GBA
+(EWRAM, IWRAM, I/O, paletas, VRAM, OAM; la SRAM no, para no tocar la partida
+real) más la sección `mzm_state`: con `PLATFORM_PC`, `IWRAM_DATA` mete ahí
+todas las variables globales del juego, y `PORT_STATE` las del port que forman
+parte del "hardware" (canales DMA, chip de sonido).
+
+Solo se guarda o carga en el `Halt` del final del bucle de `agbmain` (el único
+`SWI 2` del juego; el host recibe `Port_HostFrameBoundary`), donde la pila de
+C es siempre la misma y no hace falta guardarla. Por eso el menú se ejecuta
+ahí, con el juego en pausa.
+
+En nativo muchas variables son punteros (al código y datos del ejecutable o a
+la ROM del jugador, que el motor de sonido lee en su sitio), y esas direcciones
+cambian en cada ejecución (ASLR, `malloc`). El estado guarda dónde estaban y al
+cargar desliza cada valor de 64 bits que cae en uno de esos rangos. Un estado
+de otro build (otra versión de la app) se rechaza. Los voicegroups convertidos
+se reconstruyen en el mismo orden a partir de sus direcciones.
+
+Probado con `mzm_headless`: un estado guardado en un proceso y cargado en otro
+produce exactamente los mismos fotogramas, y los dos estados difieren solo en
+los punteros reubicados.
+
 ## Guardado
 
 `struct Sram` tiene el mismo tamaño y layout que en la GBA (32 608 bytes). El

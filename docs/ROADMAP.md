@@ -29,13 +29,15 @@
 - [x] Emular los canales PSG (1-4) y el FIFO A/B; salida por SDL_AudioStream
 - [x] Comparado con mGBA (intro y Brinstar, ROM EU)
 
-## M4 — Menú de opciones en el juego
+## M4 — Menú de opciones en el juego ✅
 
-- [ ] Overlay (ImGui) accesible con Select+Start o un botón táctil
-- [ ] Remapeo de controles desde el menú (teclado, mando, táctil)
-- [ ] Vídeo: escalado entero, filtro, shaders LCD/CRT, sincronización
-- [ ] Guardados rápidos (save states) y avance rápido configurable
-- [ ] Editor de posición/tamaño/opacidad del mando táctil
+- [x] Overlay (ImGui) accesible con Select+Start, Esc/F1, Atrás o un botón táctil
+- [x] Remapeo de controles desde el menú (teclado, mando, táctil)
+- [x] Vídeo: escalado entero, filtro, efectos LCD/CRT, sincronización
+- [x] Guardados rápidos (save states, 4 ranuras con miniatura) y avance
+      rápido configurable (velocidad, mantener/alternar)
+- [x] Editor de posición/tamaño/opacidad del mando táctil
+- [ ] Probar el menú con mando y táctil en un dispositivo real (AYN Thor)
 
 ## M5 — Mejoras
 

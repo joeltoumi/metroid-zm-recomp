@@ -2,14 +2,18 @@
 // mzm-android — SDL3 frontend (desktop and Android).
 //
 // Video: the 240x160 frame is uploaded to a streaming texture and scaled to
-// the window (aspect-correct, optional integer scaling / smooth filter).
+// the window (aspect-correct, optional integer scaling / smooth filter / LCD
+// or CRT effect).
 // Audio: the port's 48 kHz output goes to an SDL audio stream.
 // Input: keyboard, gamepads (the AYN Thor's built-in controls show up as one)
 // and, on touch screens, an on-screen pad drawn over the game.
+// Menu: Esc / F1, Select+Start, the Android back button or the touch menu
+// button open the options menu (port/src/menu.cpp) with save states.
 // Everything configurable lives in settings.ini in the app's pref folder.
 #include "port.h"
 #include "port_config.h"
 #include "port_assets.h"
+#include "port_menu.h"
 
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -17,6 +21,7 @@
 #include <stdlib.h>
 
 #define GBA_FRAME_NS 16742706ull // 280896 cycles / 16.777216 MHz
+#define THUMB_BYTES (GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT * 4)
 
 static SDL_Window* sWindow;
 static SDL_Renderer* sRenderer;
@@ -30,31 +35,57 @@ static char sConfigPath[1024];
 static const char* sRomArgPath; // mzm [path/to/rom.gba]
 
 static PortConfig sConfig;
-static bool sFastForward;
+static bool sFastForwardHeld;
+static bool sFastForwardOn; // toggle mode
 static bool sTouchVisible;
 static uint64_t sNextFrameNs;
+static uint32_t sLastFrame[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
+
+static bool sMenuRequested; // opened at the next frame boundary
+static bool sMenuReady;
+static bool sInputLatch;    // ignore the game's input until everything is released
+static int sStateSlot = 1;  // F5 / F8
+static int sPendingState;   // 0, or +slot (save) / -slot (load), from hotkeys
+
+static char sToast[96];
+static uint64_t sToastUntilNs;
+
+static SDL_Texture* sMask; // LCD/CRT effect, multiplied over the game
+static int sMaskW, sMaskH, sMaskFilter;
+
+static SDL_Texture* sThumbs[PORT_STATE_SLOTS + 1];
+static bool sThumbsValid[PORT_STATE_SLOTS + 1];
+
+static void Toast(const char* fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    SDL_vsnprintf(sToast, sizeof(sToast), fmt, ap);
+    va_end(ap);
+    sToastUntilNs = SDL_GetTicksNS() + 2000000000ull;
+}
+
+// ---- layout -------------------------------------------------------------------
+
+static void OutputSize(int* w, int* h)
+{
+    if (!SDL_GetCurrentRenderOutputSize(sRenderer, w, h))
+        SDL_GetWindowSizeInPixels(sWindow, w, h);
+}
+
+// Where the GBA screen goes in the window (pixels).
+static SDL_FRect GameRect(void)
+{
+    int w, h;
+    OutputSize(&w, &h);
+    float scale = SDL_min((float)w / GBA_SCREEN_WIDTH, (float)h / GBA_SCREEN_HEIGHT);
+    if (sConfig.integerScaling && scale >= 1.0f)
+        scale = SDL_floorf(scale);
+    const float gw = SDL_floorf(GBA_SCREEN_WIDTH * scale), gh = SDL_floorf(GBA_SCREEN_HEIGHT * scale);
+    return (SDL_FRect){ SDL_floorf((w - gw) * 0.5f), SDL_floorf((h - gh) * 0.5f), gw, gh };
+}
 
 // ---- touch pad ----------------------------------------------------------------
-
-typedef struct TouchButton {
-    uint16_t key;      // PORT_KEY_* bits (diagonals combine two)
-    float cx, cy, r;   // center/radius in normalized window coordinates
-    bool leftSide;     // anchored to the left or right edge
-} TouchButton;
-
-// Layout in units of the window height (so it scales on any aspect ratio).
-static const TouchButton sTouchButtons[] = {
-    { PORT_KEY_UP, 0.18f, 0.55f, 0.075f, true },
-    { PORT_KEY_DOWN, 0.18f, 0.85f, 0.075f, true },
-    { PORT_KEY_LEFT, 0.03f, 0.70f, 0.075f, true },
-    { PORT_KEY_RIGHT, 0.33f, 0.70f, 0.075f, true },
-    { PORT_KEY_A, 0.12f, 0.62f, 0.085f, false },
-    { PORT_KEY_B, 0.30f, 0.78f, 0.085f, false },
-    { PORT_KEY_L, 0.10f, 0.12f, 0.07f, true },
-    { PORT_KEY_R, 0.10f, 0.12f, 0.07f, false },
-    { PORT_KEY_SELECT, 0.48f, 0.94f, 0.045f, true },
-    { PORT_KEY_START, 0.48f, 0.94f, 0.045f, false },
-};
 
 #define MAX_FINGERS 10
 static struct {
@@ -63,39 +94,73 @@ static struct {
     float x, y; // window pixels
 } sFingers[MAX_FINGERS];
 
-static void TouchButtonCenter(const TouchButton* b, int w, int h, float* x, float* y, float* r)
+static void TouchButtonCircle(int i, float* x, float* y, float* r)
 {
-    const float unit = (float)h;
-    *r = b->r * unit;
-    *y = b->cy * unit;
-    if (b->leftSide)
-        *x = b->cx * unit + *r;
-    else
-        *x = (float)w - b->cx * unit - *r;
-    if (b->key == PORT_KEY_SELECT)
-        *x = (float)w * 0.5f - 1.3f * *r;
-    if (b->key == PORT_KEY_START)
-        *x = (float)w * 0.5f + 1.3f * *r;
+    const PortTouchButton* b = &sConfig.touch[i];
+    int w, h;
+    OutputSize(&w, &h);
+    *r = b->r * (float)h;
+    *y = b->y * (float)h;
+    switch (b->anchor) {
+    case PORT_ANCHOR_LEFT:
+        *x = b->x * (float)h;
+        break;
+    case PORT_ANCHOR_RIGHT:
+        *x = (float)w - b->x * (float)h;
+        break;
+    default:
+        *x = (float)w * 0.5f + b->x * (float)h;
+        break;
+    }
+}
+
+// Layout editor: put button i's center at (x, y), anchored to the nearest
+// third of the screen.
+static void MoveTouchButton(int i, float x, float y)
+{
+    PortTouchButton* b = &sConfig.touch[i];
+    int w, h;
+    OutputSize(&w, &h);
+    if (h <= 0)
+        return;
+    x = SDL_clamp(x, 0.0f, (float)w);
+    y = SDL_clamp(y, 0.0f, (float)h);
+    if (x < w / 3.0f) {
+        b->anchor = PORT_ANCHOR_LEFT;
+        b->x = x / h;
+    } else if (x > w * 2.0f / 3.0f) {
+        b->anchor = PORT_ANCHOR_RIGHT;
+        b->x = (w - x) / h;
+    } else {
+        b->anchor = PORT_ANCHOR_CENTER;
+        b->x = (x - w * 0.5f) / h;
+    }
+    b->y = y / h;
+}
+
+// Touch button under (x, y), or -1. Generous hit area so thumbs can roll
+// between buttons.
+static bool TouchHit(int i, float px, float py)
+{
+    float x, y, r;
+    TouchButtonCircle(i, &x, &y, &r);
+    const float dx = px - x, dy = py - y;
+    return dx * dx + dy * dy <= (r * 1.35f) * (r * 1.35f);
 }
 
 static uint16_t TouchKeys(void)
 {
-    int w, h;
     uint16_t keys = 0;
 
     if (!sTouchVisible)
         return 0;
-    SDL_GetWindowSizeInPixels(sWindow, &w, &h);
     for (int f = 0; f < MAX_FINGERS; f++) {
         if (!sFingers[f].down)
             continue;
-        for (size_t i = 0; i < SDL_arraysize(sTouchButtons); i++) {
-            float x, y, r;
-            TouchButtonCenter(&sTouchButtons[i], w, h, &x, &y, &r);
-            const float dx = sFingers[f].x - x, dy = sFingers[f].y - y;
-            // Generous hit area so thumbs can roll between buttons.
-            if (dx * dx + dy * dy <= (r * 1.35f) * (r * 1.35f))
-                keys |= sTouchButtons[i].key;
+        for (int i = 0; i < PORT_TOUCH_BUTTON_COUNT; i++) {
+            const int input = sConfig.touch[i].input;
+            if (input >= 0 && input < PORT_INPUT_GBA_COUNT && TouchHit(i, sFingers[f].x, sFingers[f].y))
+                keys |= (uint16_t)(1u << input);
         }
     }
     return keys;
@@ -105,37 +170,381 @@ static void DrawCircle(float cx, float cy, float r)
 {
     // Filled circle from horizontal spans; cheap enough for ~10 buttons.
     for (float dy = -r; dy <= r; dy += 1.0f) {
-        const float dx = SDL_sqrtf(r * r - dy * dy);
+        const float dx = SDL_sqrtf(SDL_max(r * r - dy * dy, 0.0f));
         SDL_RenderLine(sRenderer, cx - dx, cy + dy, cx + dx, cy + dy);
     }
 }
 
-static void DrawTouchPad(uint16_t pressed)
+static void DrawRing(float cx, float cy, float r)
 {
-    int w, h;
-    if (!sTouchVisible || sConfig.touchOpacity <= 0)
-        return;
-    SDL_GetWindowSizeInPixels(sWindow, &w, &h);
-    SDL_SetRenderDrawBlendMode(sRenderer, SDL_BLENDMODE_BLEND);
-    for (size_t i = 0; i < SDL_arraysize(sTouchButtons); i++) {
-        float x, y, r;
-        const bool down = (pressed & sTouchButtons[i].key) != 0;
-        const Uint8 alpha = (Uint8)(sConfig.touchOpacity * (down ? 2.0f : 1.0f) * 255.0f / 100.0f);
-        TouchButtonCenter(&sTouchButtons[i], w, h, &x, &y, &r);
-        SDL_SetRenderDrawColor(sRenderer, 255, 255, 255, alpha);
-        DrawCircle(x, y, r);
+    for (int i = 0; i < 48; i++) {
+        const float a0 = (float)i * SDL_PI_F * 2.0f / 48.0f, a1 = (float)(i + 1) * SDL_PI_F * 2.0f / 48.0f;
+        SDL_RenderLine(sRenderer, cx + r * SDL_cosf(a0), cy + r * SDL_sinf(a0), cx + r * SDL_cosf(a1),
+                       cy + r * SDL_sinf(a1));
     }
 }
 
-// ---- configuration -------------------------------------------------------------
+static void DrawButtonLabel(int i, float x, float y, float r)
+{
+    static const char* const labels[PORT_INPUT_GBA_COUNT] = { "A", "B", "SEL", "STA", ">", "<", "^", "v", "R", "L" };
+    const int input = sConfig.touch[i].input;
+    const char* text = input >= 0 ? labels[input] : "=";
+    const float scale = SDL_max(1.0f, SDL_floorf(r / 12.0f));
+    const float tw = (float)SDL_strlen(text) * SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * scale;
+
+    SDL_SetRenderScale(sRenderer, scale, scale);
+    SDL_RenderDebugText(sRenderer, (x - tw * 0.5f) / scale, (y - 4.0f * scale) / scale, text);
+    SDL_SetRenderScale(sRenderer, 1.0f, 1.0f);
+}
+
+// highlight >= 0: layout editor, draws every button with outlines and labels.
+static void DrawTouchPad(uint16_t pressed, int highlight)
+{
+    const bool editing = highlight >= -1 && PortMenu_EditingTouchPad();
+    const int opacity = editing ? SDL_max(sConfig.touchOpacity, 25) : sConfig.touchOpacity;
+
+    if (opacity <= 0)
+        return;
+    SDL_SetRenderDrawBlendMode(sRenderer, SDL_BLENDMODE_BLEND);
+    for (int i = 0; i < PORT_TOUCH_BUTTON_COUNT; i++) {
+        float x, y, r;
+        const int input = sConfig.touch[i].input;
+        const bool down = input >= 0 && (pressed & (1u << input)) != 0;
+        const Uint8 alpha = (Uint8)SDL_min(255.0f, opacity * (down ? 2.0f : 1.0f) * 255.0f / 100.0f);
+        TouchButtonCircle(i, &x, &y, &r);
+        SDL_SetRenderDrawColor(sRenderer, 255, 255, 255, alpha);
+        DrawCircle(x, y, r);
+        if (i == PORT_TOUCH_MENU || editing) {
+            SDL_SetRenderDrawColor(sRenderer, 255, 255, 255, (Uint8)SDL_min(255, alpha * 3));
+            DrawButtonLabel(i, x, y, r);
+        }
+        if (editing) {
+            if (i == highlight)
+                SDL_SetRenderDrawColor(sRenderer, 255, 200, 40, 255);
+            else
+                SDL_SetRenderDrawColor(sRenderer, 255, 255, 255, 160);
+            DrawRing(x, y, r);
+            DrawRing(x, y, r + 1.0f);
+        }
+    }
+}
+
+static void MenuDrawTouchPad(int highlight)
+{
+    DrawTouchPad(0, highlight);
+}
+
+// ---- video --------------------------------------------------------------------
+
+static void OpenAudio(void)
+{
+    const SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, PORT_AUDIO_RATE };
+    sAudio = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
+    if (sAudio)
+        SDL_ResumeAudioStreamDevice(sAudio);
+    else
+        Port_Log("no sound: %s", SDL_GetError()); // the game still runs
+}
 
 static void ApplyVideoConfig(void)
 {
     SDL_SetRenderVSync(sRenderer, sConfig.vsync ? 1 : 0);
     SDL_SetTextureScaleMode(sTexture, sConfig.smoothScaling ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
-    SDL_SetRenderLogicalPresentation(sRenderer, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT,
-                                     sConfig.integerScaling ? SDL_LOGICAL_PRESENTATION_INTEGER_SCALE
-                                                            : SDL_LOGICAL_PRESENTATION_LETTERBOX);
+    if (sAudio)
+        SDL_SetAudioStreamGain(sAudio, sConfig.volume / 100.0f);
+}
+
+// The LCD/CRT effect is a texture the size of the game on screen, multiplied
+// over it: an exact pattern for each output pixel, rebuilt when the size
+// changes.
+static void UpdateMask(int w, int h)
+{
+    if (sMask && sMaskW == w && sMaskH == h && sMaskFilter == sConfig.filter)
+        return;
+    if (sMask)
+        SDL_DestroyTexture(sMask);
+    sMask = NULL;
+    if (w <= 0 || h <= 0 || w > 8192 || h > 8192)
+        return;
+    uint32_t* px = malloc((size_t)w * h * 4);
+    if (!px)
+        return;
+
+    const float sx = (float)GBA_SCREEN_WIDTH / w, sy = (float)GBA_SCREEN_HEIGHT / h;
+    const float cell = (float)w / GBA_SCREEN_WIDTH; // output pixels per GBA pixel
+    for (int y = 0; y < h; y++) {
+        const float fy = (y + 0.5f) * sy - SDL_floorf((y + 0.5f) * sy);
+        for (int x = 0; x < w; x++) {
+            const float fx = (x + 0.5f) * sx - SDL_floorf((x + 0.5f) * sx);
+            float r = 1.0f, g = 1.0f, b = 1.0f;
+            if (sConfig.filter == PORT_FILTER_LCD) {
+                // Thin dark gap between pixels (one output pixel when they are small).
+                const float gap = cell >= 4.0f ? 0.2f : 1.0f / SDL_max(cell, 1.0f);
+                if (cell >= 2.0f && (fx >= 1.0f - gap || fy >= 1.0f - gap))
+                    r = g = b = 0.72f;
+            } else if (sConfig.filter == PORT_FILTER_CRT) {
+                // Scanlines plus a faint aperture grille.
+                const float line = 0.68f + 0.32f * SDL_sinf(SDL_PI_F * fy);
+                r = g = b = line;
+                switch (x % 3) {
+                case 0: g *= 0.9f; b *= 0.9f; break;
+                case 1: r *= 0.9f; b *= 0.9f; break;
+                default: r *= 0.9f; g *= 0.9f; break;
+                }
+            }
+            px[(size_t)y * w + x] = 0xFF000000u | (uint32_t)(b * 255.0f) << 16 | (uint32_t)(g * 255.0f) << 8 |
+                                    (uint32_t)(r * 255.0f);
+        }
+    }
+    sMask = SDL_CreateTexture(sRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC, w, h);
+    if (sMask) {
+        SDL_UpdateTexture(sMask, NULL, px, w * 4);
+        SDL_SetTextureBlendMode(sMask, SDL_BLENDMODE_MOD);
+        SDL_SetTextureScaleMode(sMask, SDL_SCALEMODE_NEAREST);
+    }
+    free(px);
+    sMaskW = w;
+    sMaskH = h;
+    sMaskFilter = sConfig.filter;
+}
+
+static void DrawToast(void)
+{
+    int w, h;
+    if (sToast[0] == '\0' || SDL_GetTicksNS() > sToastUntilNs)
+        return;
+    OutputSize(&w, &h);
+    const float scale = SDL_max(1.0f, SDL_floorf(h / 240.0f));
+    const float tw = (float)SDL_strlen(sToast) * SDL_DEBUG_TEXT_FONT_CHARACTER_SIZE * scale;
+    SDL_SetRenderDrawBlendMode(sRenderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawColor(sRenderer, 0, 0, 0, 170);
+    SDL_RenderFillRect(sRenderer, &(SDL_FRect){ 8 * scale, 8 * scale, tw + 8 * scale, 16 * scale });
+    SDL_SetRenderDrawColor(sRenderer, 255, 255, 255, 255);
+    SDL_SetRenderScale(sRenderer, scale, scale);
+    SDL_RenderDebugText(sRenderer, 12, 12, sToast);
+    SDL_SetRenderScale(sRenderer, 1.0f, 1.0f);
+}
+
+// Game screen (+ effect), touch pad and messages. The caller presents.
+static void DrawScene(bool touchPad)
+{
+    const SDL_FRect dst = GameRect();
+
+    SDL_SetRenderDrawColor(sRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(sRenderer);
+    SDL_RenderTexture(sRenderer, sTexture, NULL, &dst);
+    if (sConfig.filter != PORT_FILTER_NONE) {
+        UpdateMask((int)dst.w, (int)dst.h);
+        if (sMask)
+            SDL_RenderTexture(sRenderer, sMask, NULL, &dst);
+    }
+    if (touchPad && sTouchVisible)
+        DrawTouchPad(TouchKeys(), -2);
+    DrawToast();
+}
+
+// ---- save states -----------------------------------------------------------------
+
+static void StatePath(int slot, char* out, size_t size)
+{
+    SDL_snprintf(out, size, "%sstate%s_%d.mzs", sPrefPath ? sPrefPath : "", sRegionSuffix, slot);
+}
+
+// File: the port's state image followed by a 240x160 thumbnail (ABGR8888).
+static bool SaveState(int slot, char* error, size_t errorSize)
+{
+    char path[1100];
+    const size_t size = Port_StateSize();
+    uint8_t* buf = malloc(size + THUMB_BYTES);
+
+    if (!buf) {
+        SDL_snprintf(error, errorSize, "out of memory");
+        return false;
+    }
+    Port_StateSave(buf);
+    memcpy(buf + size, sLastFrame, THUMB_BYTES);
+    StatePath(slot, path, sizeof(path));
+    const bool ok = SDL_SaveFile(path, buf, size + THUMB_BYTES);
+    free(buf);
+    if (!ok) {
+        SDL_snprintf(error, errorSize, "%s", SDL_GetError());
+        return false;
+    }
+    sThumbsValid[slot] = false;
+    sStateSlot = slot;
+    return true;
+}
+
+static bool LoadState(int slot, char* error, size_t errorSize)
+{
+    char path[1100];
+    size_t len = 0;
+    StatePath(slot, path, sizeof(path));
+    void* buf = SDL_LoadFile(path, &len);
+    if (!buf) {
+        SDL_snprintf(error, errorSize, "ranura vacia");
+        return false;
+    }
+    const size_t size = Port_StateSize();
+    const PortStateResult r = Port_StateLoad(buf, len < size ? len : size);
+    if (r == PORT_STATE_OK && len >= size + THUMB_BYTES) {
+        // Show the saved picture until the game draws the next frame.
+        memcpy(sLastFrame, (uint8_t*)buf + size, THUMB_BYTES);
+        SDL_UpdateTexture(sTexture, NULL, sLastFrame, GBA_SCREEN_WIDTH * 4);
+    }
+    SDL_free(buf);
+    if (r != PORT_STATE_OK) {
+        Port_Log("state %s: %s", path, Port_StateResultText(r));
+        SDL_snprintf(error, errorSize, "%s",
+                     r == PORT_STATE_OTHER_BUILD ? "es de otra version del juego" : "archivo no valido");
+        return false;
+    }
+    sStateSlot = slot;
+    if (sAudio)
+        SDL_ClearAudioStream(sAudio);
+    return true;
+}
+
+static bool StateInfo(int slot, char* text, size_t textSize, SDL_Texture** thumbnail)
+{
+    char path[1100];
+    SDL_PathInfo info;
+    SDL_DateTime dt;
+
+    *thumbnail = NULL;
+    StatePath(slot, path, sizeof(path));
+    if (!SDL_GetPathInfo(path, &info) || info.type != SDL_PATHTYPE_FILE) {
+        sThumbsValid[slot] = false;
+        return false;
+    }
+    if (SDL_TimeToDateTime(info.modify_time, &dt, true))
+        SDL_snprintf(text, textSize, "%02d/%02d/%04d %02d:%02d", dt.day, dt.month, dt.year, dt.hour, dt.minute);
+    else
+        SDL_snprintf(text, textSize, "?");
+
+    if (!sThumbsValid[slot]) {
+        const size_t size = Port_StateSize();
+        size_t len = 0;
+        void* buf = SDL_LoadFile(path, &len);
+        if (buf && len >= size + THUMB_BYTES) {
+            if (!sThumbs[slot])
+                sThumbs[slot] = SDL_CreateTexture(sRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STATIC,
+                                                  GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT);
+            if (sThumbs[slot]) {
+                SDL_UpdateTexture(sThumbs[slot], NULL, (uint8_t*)buf + size, GBA_SCREEN_WIDTH * 4);
+                SDL_SetTextureScaleMode(sThumbs[slot], SDL_SCALEMODE_LINEAR);
+            }
+        }
+        SDL_free(buf);
+        sThumbsValid[slot] = true;
+    }
+    *thumbnail = sThumbs[slot];
+    return true;
+}
+
+// ---- menu -----------------------------------------------------------------------
+
+static void MenuQuit(void)
+{
+    Port_RequestQuit();
+}
+
+static void MenuToast(const char* text)
+{
+    Toast("%s", text);
+}
+
+static void MenuApplyConfig(void)
+{
+    if (!sAudio && sConfig.volume > 0) {
+        OpenAudio();
+        if (sAudio)
+            SDL_PauseAudioStreamDevice(sAudio); // resumed when the menu closes
+    }
+    ApplyVideoConfig();
+    if (sConfig.touchControls == PORT_TOUCH_ON)
+        sTouchVisible = true;
+    else if (sConfig.touchControls == PORT_TOUCH_OFF)
+        sTouchVisible = false;
+#ifndef __ANDROID__
+    SDL_SetWindowFullscreen(sWindow, sConfig.fullscreen);
+#endif
+}
+
+static void InitMenu(void)
+{
+    const PortMenuHost host = {
+        .window = sWindow,
+        .renderer = sRenderer,
+        .config = &sConfig,
+        .applyConfig = MenuApplyConfig,
+        .saveState = SaveState,
+        .loadState = LoadState,
+        .stateInfo = StateInfo,
+        .touchButtonCircle = TouchButtonCircle,
+        .moveTouchButton = MoveTouchButton,
+        .drawTouchPad = MenuDrawTouchPad,
+        .toast = MenuToast,
+        .quit = MenuQuit,
+    };
+    sMenuReady = PortMenu_Init(&host);
+    if (!sMenuReady)
+        Port_Log("options menu unavailable");
+}
+
+// Runs the menu until it closes; the game is paused meanwhile.
+static void RunMenu(void)
+{
+    if (sAudio) {
+        SDL_PauseAudioStreamDevice(sAudio);
+        SDL_ClearAudioStream(sAudio);
+    }
+    PortMenu_Open();
+    while (PortMenu_IsOpen() && !Port_QuitRequested()) {
+        SDL_Event e;
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_EVENT_QUIT) {
+                Port_RequestQuit();
+                break;
+            }
+            if (e.type == SDL_EVENT_GAMEPAD_ADDED && !sGamepad)
+                sGamepad = SDL_OpenGamepad(e.gdevice.which);
+            PortMenu_HandleEvent(&e);
+        }
+        DrawScene(false);
+        PortMenu_Render();
+        SDL_RenderPresent(sRenderer);
+        if (!sConfig.vsync)
+            SDL_Delay(16);
+    }
+    PortConfig_Save(&sConfig, sConfigPath);
+    ApplyVideoConfig();
+    if (sAudio)
+        SDL_ResumeAudioStreamDevice(sAudio);
+    for (int i = 0; i < MAX_FINGERS; i++)
+        sFingers[i].down = false;
+    sInputLatch = true;
+    sFastForwardHeld = false;
+    sNextFrameNs = SDL_GetTicksNS();
+}
+
+void Port_HostFrameBoundary(void)
+{
+    if (sPendingState != 0) {
+        char error[128];
+        const int slot = sPendingState > 0 ? sPendingState : -sPendingState;
+        const bool load = sPendingState < 0;
+        sPendingState = 0;
+        if (load ? LoadState(slot, error, sizeof(error)) : SaveState(slot, error, sizeof(error)))
+            Toast(load ? "Estado %d cargado" : "Estado %d guardado", slot);
+        else
+            Toast("Estado %d: %s", slot, error);
+    }
+    if (sMenuRequested) {
+        sMenuRequested = false;
+        if (sMenuReady)
+            RunMenu();
+    }
 }
 
 // ---- host interface -------------------------------------------------------------
@@ -177,30 +586,31 @@ bool Port_HostInit(const PortHostConfig* cfg)
         Port_Log("SDL_CreateTexture: %s", SDL_GetError());
         return false;
     }
-    ApplyVideoConfig();
 
-    if (sConfig.volume > 0) {
-        const SDL_AudioSpec spec = { SDL_AUDIO_S16, 2, PORT_AUDIO_RATE };
-        sAudio = SDL_OpenAudioDeviceStream(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, &spec, NULL, NULL);
-        if (sAudio) {
-            SDL_SetAudioStreamGain(sAudio, sConfig.volume / 100.0f);
-            SDL_ResumeAudioStreamDevice(sAudio);
-        } else {
-            Port_Log("no sound: %s", SDL_GetError()); // the game still runs
-        }
-    }
+    if (sConfig.volume > 0)
+        OpenAudio();
+    ApplyVideoConfig();
 
 #ifdef __ANDROID__
     sTouchVisible = sConfig.touchControls != PORT_TOUCH_OFF;
 #else
     sTouchVisible = sConfig.touchControls == PORT_TOUCH_ON;
 #endif
+    InitMenu();
     sNextFrameNs = SDL_GetTicksNS();
     return true;
 }
 
 void Port_HostShutdown(void)
 {
+    if (sMenuReady)
+        PortMenu_Shutdown();
+    for (int i = 0; i <= PORT_STATE_SLOTS; i++) {
+        if (sThumbs[i])
+            SDL_DestroyTexture(sThumbs[i]);
+    }
+    if (sMask)
+        SDL_DestroyTexture(sMask);
     if (sAudio)
         SDL_DestroyAudioStream(sAudio);
     if (sGamepad)
@@ -224,11 +634,11 @@ static void OpenFirstGamepad(void)
     SDL_free(ids);
 }
 
-static void HandleFinger(const SDL_TouchFingerEvent* e, bool down)
+static void HandleFinger(const SDL_TouchFingerEvent* e, bool down, bool pressed)
 {
     int w, h;
     int slot = -1;
-    SDL_GetWindowSizeInPixels(sWindow, &w, &h);
+    OutputSize(&w, &h);
     for (int i = 0; i < MAX_FINGERS; i++) {
         if (sFingers[i].down && sFingers[i].id == e->fingerID) {
             slot = i;
@@ -251,8 +661,15 @@ static void HandleFinger(const SDL_TouchFingerEvent* e, bool down)
     sFingers[slot].down = down;
     sFingers[slot].x = e->x * (float)w;
     sFingers[slot].y = e->y * (float)h;
+    if (pressed && sTouchVisible && TouchHit(PORT_TOUCH_MENU, sFingers[slot].x, sFingers[slot].y))
+        sMenuRequested = true;
     if (sConfig.touchControls == PORT_TOUCH_AUTO)
         sTouchVisible = true;
+}
+
+static bool IsFastForwardButton(SDL_GamepadButton button)
+{
+    return button != SDL_GAMEPAD_BUTTON_INVALID && button == sConfig.bindings[PORT_INPUT_FAST_FORWARD].button;
 }
 
 static bool PumpEvents(void)
@@ -263,10 +680,20 @@ static bool PumpEvents(void)
         case SDL_EVENT_QUIT:
             return false;
         case SDL_EVENT_KEY_DOWN:
-            if (e.key.key == SDLK_F11 && !e.key.repeat) {
+            if (e.key.repeat)
+                break;
+            if (e.key.key == SDLK_F11) {
                 sConfig.fullscreen = !sConfig.fullscreen;
                 SDL_SetWindowFullscreen(sWindow, sConfig.fullscreen);
                 PortConfig_Save(&sConfig, sConfigPath);
+            } else if (e.key.key == SDLK_ESCAPE || e.key.key == SDLK_F1 || e.key.key == SDLK_AC_BACK) {
+                sMenuRequested = true;
+            } else if (e.key.key == SDLK_F5) {
+                sPendingState = sStateSlot;
+            } else if (e.key.key == SDLK_F8) {
+                sPendingState = -sStateSlot;
+            } else if (sConfig.fastForwardToggle && e.key.scancode == sConfig.bindings[PORT_INPUT_FAST_FORWARD].key) {
+                sFastForwardOn = !sFastForwardOn;
             }
             break;
         case SDL_EVENT_GAMEPAD_ADDED:
@@ -281,17 +708,31 @@ static bool PumpEvents(void)
                 OpenFirstGamepad();
             }
             break;
-        case SDL_EVENT_GAMEPAD_BUTTON_DOWN:
+        case SDL_EVENT_GAMEPAD_BUTTON_DOWN: {
+            SDL_Gamepad* pad = SDL_GetGamepadFromID(e.gbutton.which);
             if (sConfig.touchControls == PORT_TOUCH_AUTO)
                 sTouchVisible = false;
+            if (e.gbutton.button == SDL_GAMEPAD_BUTTON_GUIDE)
+                sMenuRequested = true;
+            // Select+Start (not A+B+Select+Start: that is the game's soft reset).
+            if (pad && (e.gbutton.button == SDL_GAMEPAD_BUTTON_BACK || e.gbutton.button == SDL_GAMEPAD_BUTTON_START) &&
+                SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_BACK) && SDL_GetGamepadButton(pad, SDL_GAMEPAD_BUTTON_START) &&
+                !SDL_GetGamepadButton(pad, sConfig.bindings[PORT_INPUT_A].button) &&
+                !SDL_GetGamepadButton(pad, sConfig.bindings[PORT_INPUT_B].button))
+                sMenuRequested = true;
+            if (sConfig.fastForwardToggle && IsFastForwardButton((SDL_GamepadButton)e.gbutton.button))
+                sFastForwardOn = !sFastForwardOn;
             break;
+        }
         case SDL_EVENT_FINGER_DOWN:
+            HandleFinger(&e.tfinger, true, true);
+            break;
         case SDL_EVENT_FINGER_MOTION:
-            HandleFinger(&e.tfinger, true);
+            HandleFinger(&e.tfinger, true, false);
             break;
         case SDL_EVENT_FINGER_UP:
         case SDL_EVENT_FINGER_CANCELED:
-            HandleFinger(&e.tfinger, false);
+            HandleFinger(&e.tfinger, false, false);
             break;
         default:
             break;
@@ -302,20 +743,13 @@ static bool PumpEvents(void)
 
 bool Port_HostPresent(const uint32_t* abgr, int width, int height)
 {
-    (void)height;
     if (!PumpEvents())
         return false;
 
+    memcpy(sLastFrame, abgr, sizeof(sLastFrame));
     SDL_UpdateTexture(sTexture, NULL, abgr, width * (int)sizeof(uint32_t));
-    SDL_SetRenderDrawColor(sRenderer, 0, 0, 0, 255);
-    SDL_RenderClear(sRenderer);
-    SDL_RenderTexture(sRenderer, sTexture, NULL, NULL);
-
-    // The touch pad is drawn in window pixels, outside the logical GBA canvas.
-    SDL_SetRenderLogicalPresentation(sRenderer, 0, 0, SDL_LOGICAL_PRESENTATION_DISABLED);
-    DrawTouchPad(TouchKeys());
-    ApplyVideoConfig();
-
+    (void)height;
+    DrawScene(true);
     SDL_RenderPresent(sRenderer);
     return true;
 }
@@ -325,7 +759,7 @@ uint16_t Port_HostPollKeys(void)
     const bool* kb = SDL_GetKeyboardState(NULL);
     uint16_t keys = 0;
 
-    for (int k = 0; k < PORT_INPUT_COUNT; k++) {
+    for (int k = 0; k < PORT_INPUT_GBA_COUNT; k++) {
         const PortBinding* b = &sConfig.bindings[k];
         bool down = false;
         if (b->key != SDL_SCANCODE_UNKNOWN && kb[b->key])
@@ -338,16 +772,25 @@ uint16_t Port_HostPollKeys(void)
             if ((b->axisSign > 0 && v > threshold) || (b->axisSign < 0 && v < -threshold))
                 down = true;
         }
-        if (!down)
-            continue;
-        if (k < PORT_INPUT_GBA_COUNT)
+        if (down)
             keys |= (uint16_t)(1u << k);
     }
 
-    sFastForward = kb[sConfig.bindings[PORT_INPUT_FAST_FORWARD].key] ||
-                   (sGamepad && SDL_GetGamepadButton(sGamepad, sConfig.bindings[PORT_INPUT_FAST_FORWARD].button));
+    {
+        const PortBinding* ff = &sConfig.bindings[PORT_INPUT_FAST_FORWARD];
+        sFastForwardHeld = (ff->key != SDL_SCANCODE_UNKNOWN && kb[ff->key]) ||
+                           (sGamepad && ff->button != SDL_GAMEPAD_BUTTON_INVALID && SDL_GetGamepadButton(sGamepad, ff->button));
+    }
 
     keys |= TouchKeys();
+
+    // After the menu closes, the buttons that closed it may still be held:
+    // the game only sees input again once everything was released.
+    if (sInputLatch) {
+        if (keys != 0)
+            return 0;
+        sInputLatch = false;
+    }
 
     // Opposite directions can't be held on a real d-pad; the game misbehaves.
     if ((keys & (PORT_KEY_LEFT | PORT_KEY_RIGHT)) == (PORT_KEY_LEFT | PORT_KEY_RIGHT))
@@ -370,7 +813,8 @@ void Port_HostQueueAudio(const int16_t* samples, int frames)
 
 void Port_HostWaitFrame(void)
 {
-    const uint64_t frameNs = sFastForward ? GBA_FRAME_NS / (uint64_t)sConfig.fastForwardSpeed : GBA_FRAME_NS;
+    const bool fast = sConfig.fastForwardToggle ? sFastForwardOn : sFastForwardHeld;
+    const uint64_t frameNs = fast ? GBA_FRAME_NS / (uint64_t)sConfig.fastForwardSpeed : GBA_FRAME_NS;
     const uint64_t now = SDL_GetTicksNS();
 
     sNextFrameNs += frameNs;

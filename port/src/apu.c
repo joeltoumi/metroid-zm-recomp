@@ -88,7 +88,7 @@ typedef struct Apu {
     float hpInLeft, hpInRight, hpLeft, hpRight;
 } Apu;
 
-static Apu sApu;
+static Apu sApu PORT_STATE;
 
 void Port_ApuReset(void)
 {

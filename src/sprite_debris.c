@@ -402,6 +402,11 @@ void SpriteDebrisInit(u8 cloudType, u8 debrisType, u16 yPosition, u16 xPosition)
         }
         if (prev_counter == UCHAR_MAX)
             return;
+#ifdef PLATFORM_PC
+        // pDebris is past the end of the array here: the GBA writes the new
+        // debris over the variables that follow it, where it is never drawn.
+        return;
+#endif // PLATFORM_PC
     }
 
     pDebris->pOam = sSpriteDebrisOam;

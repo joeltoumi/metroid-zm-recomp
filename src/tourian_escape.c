@@ -23,6 +23,13 @@
 #include "structs/display.h"
 #include "structs/tourian_escape.h"
 
+#ifdef PLATFORM_PC
+// The frame counters index these tables past their end; on the GBA that reads
+// the data that follows them in the ROM, so read them from there.
+#define sTourianEscape_47ce20 ROM_DATA_ARRAY(sTourianEscape_47ce20)
+#define sTourianEscape_47cf50 ROM_DATA_ARRAY(sTourianEscape_47cf50)
+#endif // PLATFORM_PC
+
 /**
  * @brief 81248 | d8 | V-blank for the tourian escape
  * 
@@ -438,7 +445,7 @@ static void unk_81ad8(void)
 
     if (MOD_AND(TOURIAN_ESCAPE_DATA.timer, 8) < 4)
     {
-        pal = sTourianEscape_479f00 - 16;
+        pal = ROM_DATA_ARRAY(sTourianEscape_479f00) - 16;
     }
     else
     {
@@ -1255,11 +1262,11 @@ static u8 TourianEscapeSamusFlyingIn(void)
             LZ77UncompVram(sIntroSpaceBackgroundTileTable, VRAM_BASE + 0xF000);
 
 #ifdef REGION_EU
-            DmaTransfer(3, sIntroTextAndShipPal, PALRAM_BASE, sizeof(sIntroTextAndShipPal) + PAL_ROW_SIZE, 16);
-            DmaTransfer(3, sIntroTextAndShipPal, PALRAM_OBJ, sizeof(sIntroTextAndShipPal) + PAL_ROW_SIZE, 16);
+            DmaTransfer(3, ROM_DATA(sIntroTextAndShipPal), PALRAM_BASE, sizeof(sIntroTextAndShipPal) + PAL_ROW_SIZE, 16);
+            DmaTransfer(3, ROM_DATA(sIntroTextAndShipPal), PALRAM_OBJ, sizeof(sIntroTextAndShipPal) + PAL_ROW_SIZE, 16);
 #else // !REGION_EU
-            DMA3_COPY_16(sIntroTextAndShipPal, PALRAM_BASE, ARRAY_SIZE(sIntroTextAndShipPal) + PAL_ROW);
-            DMA3_COPY_16(sIntroTextAndShipPal, PALRAM_OBJ, ARRAY_SIZE(sIntroTextAndShipPal) + PAL_ROW);
+            DMA3_COPY_16(ROM_DATA(sIntroTextAndShipPal), PALRAM_BASE, ARRAY_SIZE(sIntroTextAndShipPal) + PAL_ROW);
+            DMA3_COPY_16(ROM_DATA(sIntroTextAndShipPal), PALRAM_OBJ, ARRAY_SIZE(sIntroTextAndShipPal) + PAL_ROW);
 #endif // REGION_EU
 
             WRITE_16(REG_BG0CNT, CREATE_BGCNT(0, 30, BGCNT_HIGH_PRIORITY, BGCNT_SIZE_256x256));

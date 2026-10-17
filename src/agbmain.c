@@ -33,6 +33,9 @@ void agbmain(void)
 
         UpdateInput();
         SoftResetCheck();
+#ifdef PLATFORM_PC
+        Port_WarpUpdate();
+#endif // PLATFORM_PC
         // Increment frame counters
         APPLY_DELTA_TIME_INC(gFrameCounter8Bit);
         APPLY_DELTA_TIME_INC(gFrameCounter16Bit);

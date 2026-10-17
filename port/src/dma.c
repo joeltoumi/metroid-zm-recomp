@@ -107,7 +107,9 @@ void Port_DmaSet(unsigned int channel, const void* src, void* dst, unsigned int 
     if (units == 0)
         units = (channel == 3) ? 0x10000 : 0x4000;
 
-    ch->src = (const uint8_t*)src;
+    // Copies from ROM data come from the ROM image, so a copy that runs past
+    // the end of the array reads the next data, as on the GBA.
+    ch->src = (const uint8_t*)Port_RomMirror(src);
     ch->dst = (uint8_t*)dst;
     ch->dstReload = (uint8_t*)dst;
     ch->units = units;
@@ -157,7 +159,7 @@ void DmaTransfer(uint8_t channel, const void* src, void* dst, uint32_t len, uint
     (void)channel;
     (void)bitSize;
     if (len != 0)
-        memmove(dst, src, len);
+        memmove(dst, Port_RomMirror(src), len); // see Port_DmaSet
 }
 
 void BitFill(uint8_t channel, uint32_t value, void* dst, uint32_t len, uint8_t bitSize)

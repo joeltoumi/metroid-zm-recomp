@@ -7496,6 +7496,16 @@ void SamusUpdateGraphicsOam(struct SamusData* pData, u8 direction)
     pPhysics->pScrewShinesparkGfx = &pGraphics[pPhysics->screwSpeedGfxSize];
 }
 
+#ifdef PLATFORM_PC
+// The saving/map download palettes are picked for every pose, with an
+// animation frame that can be past the end of their table (the result is only
+// used in those poses). Natively that read can fault, so stay in the table.
+#define SAMUS_PAL_FRAME(table) \
+    (table)[pData->currentAnimationFrame < ARRAY_SIZE(table) ? pData->currentAnimationFrame : 0]
+#else // !PLATFORM_PC
+#define SAMUS_PAL_FRAME(table) (table)[pData->currentAnimationFrame]
+#endif // PLATFORM_PC
+
 /**
  * @brief b46c | 3fc | Updates the palette of Samus
  * 
@@ -7540,9 +7550,9 @@ void SamusUpdatePalette(struct SamusData* pData)
             pSpeedboostPal = sSamusPal_GravitySuit_Speedboost;
             pUnmorphPal = sSamusPal_GravitySuit_Unmorph;
             pChargingPal = sSamusPal_GravitySuit_ChargingBeam;
-            pSavingPal = sSamusPal_GravitySuit_SavingPointers[pData->currentAnimationFrame];
+            pSavingPal = SAMUS_PAL_FRAME(sSamusPal_GravitySuit_SavingPointers);
             pDyingPal = sSamusPal_GravitySuit_Dying;
-            pMapDownloadPal = sSamusPal_GravitySuit_DownloadingMapPointers[pData->currentAnimationFrame];
+            pMapDownloadPal = SAMUS_PAL_FRAME(sSamusPal_GravitySuit_DownloadingMapPointers);
         }
         else
         {
@@ -7552,9 +7562,9 @@ void SamusUpdatePalette(struct SamusData* pData)
             pSpeedboostPal = sSamusPal_FullSuit_Speedboost;
             pUnmorphPal = sSamusPal_FullSuit_Unmorph;
             pChargingPal = sSamusPal_FullSuit_ChargingBeam;
-            pSavingPal = sSamusPal_FullSuit_SavingPointers[pData->currentAnimationFrame];
+            pSavingPal = SAMUS_PAL_FRAME(sSamusPal_FullSuit_SavingPointers);
             pDyingPal = sSamusPal_FullSuit_Dying;
-            pMapDownloadPal = sSamusPal_FullSuit_DownloadingMapPointers[pData->currentAnimationFrame];
+            pMapDownloadPal = SAMUS_PAL_FRAME(sSamusPal_FullSuit_DownloadingMapPointers);
         }
     }
     else if (pEquipment->suitType == SUIT_NORMAL)
@@ -7567,9 +7577,9 @@ void SamusUpdatePalette(struct SamusData* pData)
             pSpeedboostPal = sSamusPal_VariaSuit_Speedboost;
             pUnmorphPal = sSamusPal_VariaSuit_Unmorph;
             pChargingPal = sSamusPal_VariaSuit_ChargingBeam;
-            pSavingPal = sSamusPal_VariaSuit_SavingPointers[pData->currentAnimationFrame];
+            pSavingPal = SAMUS_PAL_FRAME(sSamusPal_VariaSuit_SavingPointers);
             pDyingPal = sSamusPal_VariaSuit_Dying;
-            pMapDownloadPal = sSamusPal_VariaSuit_DownloadingMapPointers[pData->currentAnimationFrame];
+            pMapDownloadPal = SAMUS_PAL_FRAME(sSamusPal_VariaSuit_DownloadingMapPointers);
         }
         else
         {
@@ -7579,9 +7589,9 @@ void SamusUpdatePalette(struct SamusData* pData)
             pSpeedboostPal = sSamusPal_PowerSuit_Speedboost;
             pUnmorphPal = sSamusPal_PowerSuit_Unmorph;
             pChargingPal = sSamusPal_PowerSuit_ChargingBeam;
-            pSavingPal = sSamusPal_PowerSuit_SavingPointers[pData->currentAnimationFrame];
+            pSavingPal = SAMUS_PAL_FRAME(sSamusPal_PowerSuit_SavingPointers);
             pDyingPal = sSamusPal_PowerSuit_Dying;
-            pMapDownloadPal = sSamusPal_PowerSuit_DownloadingMapPointers[pData->currentAnimationFrame];
+            pMapDownloadPal = SAMUS_PAL_FRAME(sSamusPal_PowerSuit_DownloadingMapPointers);
         }
     }
     else
@@ -7592,9 +7602,9 @@ void SamusUpdatePalette(struct SamusData* pData)
         pSpeedboostPal = sSamusPal_PowerSuit_Speedboost;
         pUnmorphPal = sSamusPal_PowerSuit_Unmorph;
         pChargingPal = sSamusPal_Suitless_ChargingBeam;
-        pSavingPal = sSamusPal_Suitless_SavingPointers[pData->currentAnimationFrame];
+        pSavingPal = SAMUS_PAL_FRAME(sSamusPal_Suitless_SavingPointers);
         pDyingPal = sSamusPal_Generic_Dying;
-        pMapDownloadPal = sSamusPal_Suitless_DownloadingMapPointers[pData->currentAnimationFrame];
+        pMapDownloadPal = SAMUS_PAL_FRAME(sSamusPal_Suitless_DownloadingMapPointers);
     }
 
     if (pData->pose == SPOSE_DYING)

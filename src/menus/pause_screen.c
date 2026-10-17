@@ -34,6 +34,12 @@
 #include "structs/game_state.h"
 #include "structs/text.h"
 
+#ifdef PLATFORM_PC
+// The map screen also asks for areas past the end of sBossIcons (the debug
+// ones): on the GBA they read the data that follows it in the ROM.
+#define sBossIcons ROM_DATA_ARRAY(sBossIcons)
+#endif // PLATFORM_PC
+
 static struct PauseScreenStateData sPauseScreenStateInfo_Empty = {
     .state = PAUSE_SCREEN_STATE_MAP_SCREEN,
     .padding_1 = { 0, 0, 0 },
@@ -2275,7 +2281,7 @@ void PauseScreenInit(void)
     DmaTransfer(3, sPauseScreen_3fcef0, PALRAM_BASE + 0xA0, sizeof(sPauseScreen_3fcef0), 16);
     sBgPalramPointer[0] = 0;
 
-    DmaTransfer(3, sMinimapTilesGfx, VRAM_BASE + 0x8000, 0x3000, 16);
+    DmaTransfer(3, ROM_DATA(sMinimapTilesGfx), VRAM_BASE + 0x8000, 0x3000, 16);
 #ifdef REGION_JP
     if (gLanguage == LANGUAGE_HIRAGANA)
         DmaTransfer(3, VRAM_BASE + 0xAC20, VRAM_BASE + 0xA820, 0x3E0, 32);

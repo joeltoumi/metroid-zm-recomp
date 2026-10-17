@@ -49,6 +49,16 @@ void Port_SramWritten(void);
  * (0x08xxxxxx) to the host copy, or returns NULL if it is outside the ROM. */
 const void* Port_RomPointer(unsigned int gbaAddress);
 
+/* The same bytes as `data` (a ROM data array), but inside the ROM copy. For
+ * the few places where the game reads past the end of an array: on the GBA
+ * that reads the next data in the ROM, and through this pointer it does too.
+ * Returns `data` itself if it isn't ROM data. */
+const void* Port_RomMirror(const void* data);
+/* Same for any array of `size` bytes: data compiled into the game (not
+ * copied from the ROM) is found in the ROM by its contents (it must appear
+ * there only once). */
+const void* Port_RomFind(const void* data, unsigned int size);
+
 /* Game side of the sound port (port/game/audio_engine.c). */
 struct Voice;
 /* Builds the sound tables that hold ROM pointers (called once the ROM is
@@ -62,6 +72,22 @@ void Port_SoundRebuildVoicegroups(void);
 /* The next 16 samples sound DMA 1/2 would feed to FIFO A/B. Returns 0 when
  * the sound engine hasn't set up its buffers yet. */
 int Port_SoundFifoBlock(const signed char** fifoA, const signed char** fifoB);
+
+/* Test warp (MZM_WARP): target `index` of the list, room -1 = every room of
+ * the area. Returns 0 past the end. The interval is how many frames each
+ * target lasts (0 = stay in the only one). */
+int Port_WarpTarget(int index, int* area, int* room);
+/* "Areas" of the warp list that start a game mode; room = its number. */
+enum {
+    PORT_WARP_CUTSCENE = 100,
+    PORT_WARP_TOURIAN_ESCAPE,
+    PORT_WARP_CHOZODIA_ESCAPE,
+    PORT_WARP_CREDITS,
+};
+unsigned int Port_WarpInterval(void);
+/* Game side (port/game/warp.c): called once per frame, and after SamusInit. */
+void Port_WarpUpdate(void);
+void Port_WarpEquip(void);
 
 void Port_Log(const char* fmt, ...);
 

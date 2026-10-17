@@ -17,6 +17,12 @@
 #include "structs/samus.h"
 #include "structs/room.h"
 
+#ifdef PLATFORM_PC
+// Map tiles with a high number read past the end of sMinimapTilesGfx; on the
+// GBA they get the data that follows it in the ROM, so read it from there.
+#define sMinimapTilesGfx ((const u8*)Port_RomMirror(sMinimapTilesGfx))
+#endif // PLATFORM_PC
+
 #ifdef DEBUG
 static void MinimapDrawNumber(u8 value, void* dst);
 #endif // DEBUG

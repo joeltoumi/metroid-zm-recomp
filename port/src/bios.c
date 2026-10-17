@@ -12,7 +12,7 @@ void CpuSet(const void* src, void* dst, uint32_t control)
     const uint32_t count = control & 0x1FFFFF;
     const bool fill = (control >> 24) & 1;
     const uint32_t unit = ((control >> 26) & 1) ? 4 : 2;
-    const uint8_t* s = (const uint8_t*)src;
+    const uint8_t* s = (const uint8_t*)Port_RomMirror(src); // see Port_DmaSet
     uint8_t* d = (uint8_t*)dst;
 
     if (!fill) {
@@ -28,7 +28,7 @@ void CpuFastSet(const void* src, void* dst, uint32_t control)
 {
     const uint32_t count = ((control & 0x1FFFFF) + 7) & ~7u;
     const bool fill = (control >> 24) & 1;
-    const uint8_t* s = (const uint8_t*)src;
+    const uint8_t* s = (const uint8_t*)Port_RomMirror(src);
     uint8_t* d = (uint8_t*)dst;
 
     if (!fill) {

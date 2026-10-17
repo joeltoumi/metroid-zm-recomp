@@ -27,6 +27,10 @@ typedef struct AssetChunk {
 static uint8_t* sRom;
 static size_t sRomSize;
 
+// Every asset sorted by host address, for Port_RomMirror().
+static const PortAsset** sByHost;
+static size_t sByHostCount;
+
 static AssetChunk* sChunks;
 static size_t sChunkCount;
 static size_t sChunkCap;
@@ -59,6 +63,95 @@ const uint8_t* Port_RomData(size_t* size)
 {
     *size = sRomSize;
     return sRom;
+}
+
+static int CompareHost(const void* a, const void* b)
+{
+    const uintptr_t x = (uintptr_t)(*(const PortAsset* const*)a)->dst;
+    const uintptr_t y = (uintptr_t)(*(const PortAsset* const*)b)->dst;
+    return (x > y) - (x < y);
+}
+
+static void IndexAssets(void)
+{
+    size_t n = 0;
+
+    for (size_t c = 0; c < sChunkCount; c++)
+        n += sChunks[c].count;
+    free(sByHost);
+    sByHost = malloc(n * sizeof(*sByHost));
+    if (!sByHost)
+        Port_Fatal("out of memory (asset index)");
+    sByHostCount = 0;
+    for (size_t c = 0; c < sChunkCount; c++) {
+        for (unsigned long i = 0; i < sChunks[c].count; i++)
+            sByHost[sByHostCount++] = &sChunks[c].assets[i];
+    }
+    qsort(sByHost, sByHostCount, sizeof(*sByHost), CompareHost);
+}
+
+const void* Port_RomMirror(const void* data)
+{
+    const uintptr_t p = (uintptr_t)data;
+    size_t lo = 0;
+    size_t hi = sByHostCount;
+
+    // Last asset that starts at or before `data`.
+    while (lo < hi) {
+        size_t mid = (lo + hi) / 2;
+        if ((uintptr_t)sByHost[mid]->dst <= p)
+            lo = mid + 1;
+        else
+            hi = mid;
+    }
+    if (lo != 0 && sRom != NULL) {
+        const PortAsset* a = sByHost[lo - 1];
+        if (p < (uintptr_t)a->dst + a->size)
+            return sRom + a->romOffset + (p - (uintptr_t)a->dst);
+    }
+    return data;
+}
+
+const void* Port_RomFind(const void* data, unsigned int size)
+{
+    enum { CACHE_SIZE = 16 };
+    static struct {
+        const void* data;
+        const void* found;
+    } sCache[CACHE_SIZE];
+    static int sCached;
+    const uint8_t* hit = NULL;
+
+    if (sRom == NULL || size == 0)
+        return data;
+    hit = Port_RomMirror(data);
+    if (hit != data)
+        return hit;
+    hit = NULL;
+    for (int i = 0; i < sCached; i++) {
+        if (sCache[i].data == data)
+            return sCache[i].found;
+    }
+
+    // The array must appear exactly once in the ROM (4-byte aligned).
+    for (size_t off = 0; off + size <= sRomSize; off += 4) {
+        if (memcmp(sRom + off, data, size) != 0)
+            continue;
+        if (hit != NULL) {
+            Port_Log("Port_RomFind: %u bytes found more than once in the ROM", size);
+            hit = NULL;
+            break;
+        }
+        hit = sRom + off;
+    }
+    if (hit == NULL)
+        hit = data;
+    if (sCached < CACHE_SIZE) {
+        sCache[sCached].data = data;
+        sCache[sCached].found = hit;
+        sCached++;
+    }
+    return hit;
 }
 
 const char* Port_RomRegionName(void)
@@ -126,6 +219,7 @@ PortRomStatus Port_LoadRom(const uint8_t* rom, size_t size)
         Port_Fatal("out of memory (ROM copy)");
     memcpy(sRom, rom, size);
     sRomSize = size;
+    IndexAssets();
     Port_SoundInit(sRom, (unsigned int)size);
     return PORT_ROM_OK;
 }

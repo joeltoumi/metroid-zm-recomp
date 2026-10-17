@@ -42,6 +42,24 @@ Al arrancar, `port/src/assets.c` verifica el SHA-1 de la ROM y copia cada
 bloque. `MZM_DEV_SKIP_ROM_CHECK=1` permite arrancar con una imagen falsa
 (solo para el smoke test de CI).
 
+### Lecturas más allá del final de un array
+
+Hay sitios donde el juego lee más bytes de los que tiene el array (copias de
+tamaño fijo, índices que se pasan: el mapa, las tablas de colisión, la paleta
+común, la intro, la huida de Tourian...). En la GBA eso lee los datos que
+siguen en la ROM; en nativo cada array es una variable aparte. Para leer lo
+mismo:
+
+- `ROM_DATA(ptr)` (`include/macros.h`) devuelve el mismo dato dentro de la
+  copia de la ROM, usando la tabla de assets (`Port_RomMirror`).
+- `ROM_DATA_ARRAY(array)` hace lo mismo con arrays que están compilados en el
+  juego en vez de extraídos: los localiza en la ROM por su contenido
+  (`Port_RomFind`, que exige que aparezcan una sola vez).
+
+Cuando lo que se lee de más no se usa nunca (las tablas de colisión, las
+paletas de Samus fuera de su pose, un escombro sin hueco libre) se recorta la
+lectura o se descarta la escritura.
+
 ## Sonido
 
 El motor de MZM es casi todo C (`src/audio.c`, `src/audio_wrappers.c`,
@@ -93,6 +111,28 @@ se reconstruyen en el mismo orden a partir de sus direcciones.
 Probado con `mzm_headless`: un estado guardado en un proceso y cargado en otro
 produce exactamente los mismos fotogramas, y los dos estados difieren solo en
 los punteros reubicados.
+
+## Modo de prueba (warp)
+
+Para probar zonas sin jugar hasta ellas, la variable de entorno `MZM_WARP`
+empieza una partida nueva directamente en una sala, con todos los objetos
+(`port/src/warp.c` y `port/game/warp.c`):
+
+```sh
+MZM_WARP=kraid:3 ./mzm                      # una sala
+MZM_WARP=norfair:* MZM_WARP_FRAMES=150 \
+  ./mzm_headless --dump-every 150 ...        # todas las salas de una zona
+MZM_WARP=cutscene:* MZM_WARP_FRAMES=1500 ...  # las 14 cinemáticas
+MZM_WARP=tourianescape:0                     # también chozodiaescape, credits
+```
+
+Las zonas van por nombre (`brinstar`, `kraid`, `norfair`, `ridley`,
+`tourian`, `crateria`, `chozodia`) o número. Con varias salas, cada una dura
+`MZM_WARP_FRAMES` frames (300 por defecto).
+
+Con esto se han cargado las 324 salas de las 7 zonas, las 14 cinemáticas, las
+dos huidas, los créditos y las demos de la pantalla de título con
+AddressSanitizer, sin errores.
 
 ## Guardado
 

@@ -16,11 +16,15 @@
 - [x] Proyecto Android + APK en CI
 - [x] Validar con la ROM real (EU, en headless): idioma, intro, título,
       selección de partida, primera sala de Brinstar y mapa de pausa
-- [ ] Recorrer el juego y arreglar lo que falle (efectos de raster, modos de
-      vídeo, cinemáticas)
-- [ ] Lecturas fuera de rango que detecta AddressSanitizer en la intro
-      (`IntroFuzz`), `InGameHandler`, el minimapa de pausa y las paletas de
-      Samus (en la GBA leen los datos vecinos de la ROM)
+- [x] Modo de prueba `MZM_WARP` para cargar cualquier sala, cinemática o
+      huida (ver docs/PORT.md)
+- [x] Las 324 salas, las 14 cinemáticas, las huidas, los créditos y las demos
+      se cargan y se ven bien (ROM EU)
+- [x] Lecturas y escrituras fuera de rango que detecta AddressSanitizer
+      (salas, mapa, intro, pausa, paletas de Samus, escombros, huida de
+      Tourian): ahora leen de la ROM como en la GBA
+- [ ] Partida completa jugada a mano (en el móvil) para encontrar lo que las
+      pruebas automáticas no ven
 
 ## M3 — Sonido ✅
 

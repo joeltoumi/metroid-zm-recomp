@@ -196,6 +196,19 @@ void RoomLoad(void)
     }
 }
 
+#ifdef PLATFORM_PC
+// The tables have one entry per clipdata value, but 1024 entries are copied:
+// on the GBA the rest is the data that follows them in the ROM, which no
+// room uses. Natively they are compiled in, so copy them and clear the rest.
+#define COPY_CLIPDATA_TYPES(src, dst)                         \
+do {                                                          \
+    DmaTransfer(3, src, dst, sizeof(src), 16);                \
+    BitFill(3, 0, (u8*)(dst) + sizeof(src), sizeof(dst) - sizeof(src), 16); \
+} while (0)
+#else // !PLATFORM_PC
+#define COPY_CLIPDATA_TYPES(src, dst) DmaTransfer(3, src, dst, sizeof(dst), 16)
+#endif // PLATFORM_PC
+
 /**
  * @brief 561e8 | 21c | Loads the tileset of the current room
  * 
@@ -211,22 +224,22 @@ void RoomLoadTileset(void)
     gTilemapAndClipPointers.pClipCollisions = gClipdataCollisionTypes;
     gTilemapAndClipPointers.pClipBehaviors = gClipdataBehaviorTypes;
 
-    DmaTransfer(3, entry.pTilemap + 2, gTilemap, sizeof(gTilemap) * 2 * sizeof(u16), 16); // write past?
+    DmaTransfer(3, (const u8*)ROM_DATA(entry.pTilemap) + 2, gTilemap, sizeof(gTilemap) * 2 * sizeof(u16), 16); // write past?
 
     if (gCurrentArea > AREA_TEST)
     {
-        DmaTransfer(3, sClipdataCollisionTypes_Test, gClipdataCollisionTypes, sizeof(gClipdataCollisionTypes), 16);
-        DmaTransfer(3, sClipdataBehaviorTypes_Test, gClipdataBehaviorTypes, sizeof(gClipdataBehaviorTypes), 16);
+        COPY_CLIPDATA_TYPES(sClipdataCollisionTypes_Test, gClipdataCollisionTypes);
+        COPY_CLIPDATA_TYPES(sClipdataBehaviorTypes_Test, gClipdataBehaviorTypes);
     }
     else
     {
-        DmaTransfer(3, sClipdataCollisionTypes, gClipdataCollisionTypes, sizeof(gClipdataCollisionTypes), 16);
-        DmaTransfer(3, sClipdataBehaviorTypes, gClipdataBehaviorTypes, sizeof(gClipdataBehaviorTypes), 16);
+        COPY_CLIPDATA_TYPES(sClipdataCollisionTypes, gClipdataCollisionTypes);
+        COPY_CLIPDATA_TYPES(sClipdataBehaviorTypes, gClipdataBehaviorTypes);
     }
 
-    DmaTransfer(3, sCommonTilemap, gCommonTilemap, sizeof(gCommonTilemap) * 2, 16); // write past?
-    DmaTransfer(3, sClipdataCollisionTypes_Tilemap, gClipdataCollisionTypes_Tilemap, sizeof(gClipdataCollisionTypes_Tilemap), 16);
-    DmaTransfer(3, sClipdataBehaviorTypes_Tilemap, gClipdataBehaviorTypes_Tilemap, sizeof(gClipdataBehaviorTypes_Tilemap), 16);
+    DmaTransfer(3, ROM_DATA(sCommonTilemap), gCommonTilemap, sizeof(gCommonTilemap) * 2, 16); // write past?
+    COPY_CLIPDATA_TYPES(sClipdataCollisionTypes_Tilemap, gClipdataCollisionTypes_Tilemap);
+    COPY_CLIPDATA_TYPES(sClipdataBehaviorTypes_Tilemap, gClipdataBehaviorTypes_Tilemap);
 
     CallLZ77UncompVram(entry.pTileGraphics, VRAM_BASE + 0x5800);
     DmaTransfer(3, entry.pPalette + 1 * PAL_ROW, PALRAM_BASE + 3 * PAL_ROW_SIZE, PAL_SIZE - 3 * PAL_ROW_SIZE, 16);
@@ -236,13 +249,13 @@ void RoomLoadTileset(void)
     {
         DmaTransfer(3, sCommonTilesMothershipGfx, VRAM_BASE + 0x4800, sizeof(sCommonTilesMothershipGfx), 16);
         // Don't overwrite first color in PALRAM
-        DmaTransfer(3, sCommonTilesMotherShipPal + 1, PALRAM_BASE + 2, 3 * PAL_ROW_SIZE - 1 * sizeof(u16), 16);
+        DmaTransfer(3, (const u16*)ROM_DATA(sCommonTilesMotherShipPal) + 1, PALRAM_BASE + 2, 3 * PAL_ROW_SIZE - 1 * sizeof(u16), 16);
     }
     else
     {
         DmaTransfer(3, sCommonTilesGfx, VRAM_BASE + 0x4800, sizeof(sCommonTilesGfx), 16);
         // Don't overwrite first color in PALRAM
-        DmaTransfer(3, sCommonTilesPal + 1, PALRAM_BASE + 2, 3 * PAL_ROW_SIZE - 1 * sizeof(u16), 16);
+        DmaTransfer(3, (const u16*)ROM_DATA(sCommonTilesPal) + 1, PALRAM_BASE + 2, 3 * PAL_ROW_SIZE - 1 * sizeof(u16), 16);
     }
 
     gTilesetTransparentColor.transparentColor = *entry.pPalette;

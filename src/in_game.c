@@ -480,6 +480,9 @@ void InitAndLoadGenerics(void)
 #endif // !DEBUG
     DMA3_COPY_16(sCommonSpritesPal, PALRAM_BASE + 0x240, sizeof(sCommonSpritesPal) / 2);
     SamusInit();
+#ifdef PLATFORM_PC
+    Port_WarpEquip();
+#endif // PLATFORM_PC
 
     do {
     } while ((u16)(READ_16(REG_VCOUNT) - 21) < 140); // READ_16(REG_VCOUNT) <= SCREEN_SIZE_Y

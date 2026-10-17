@@ -166,7 +166,7 @@ static u8 BeforeRuinsTestWallAndGreyVoice(void)
             SEND_TO_PALRAM(sBeforeRuinsTestChozoWallPal, PALRAM_BASE);
             SET_BACKDROP_COLOR(COLOR_BLACK);
 
-            ApplyMonochromeToPalette(sBeforeRuinsTestChozoWallPal, BEFORE_RUINS_TEST_EWRAM.wallPalMonochrome, 0);
+            ApplyMonochromeToPalette(ROM_DATA(sBeforeRuinsTestChozoWallPal), BEFORE_RUINS_TEST_EWRAM.wallPalMonochrome, 0);
             DmaTransfer(3, sBeforeRuinsTestChozoWallPal, BEFORE_RUINS_TEST_EWRAM.wallPal, sizeof(sBeforeRuinsTestChozoWallPal), 16);
 
             CallLZ77UncompVram(sBeforeRuinsTestChozoWallBackgroundGfx, BGCNT_TO_VRAM_CHAR_BASE(sBeforeRuinsTestPageData[2].graphicsPage));

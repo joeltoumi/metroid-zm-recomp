@@ -340,7 +340,7 @@ void HudDrawEnergy(u8 fileNumber)
         gEnergyDigits.tens = digit;
         needUpdate++;
 
-        DMA3_COPY_16(&sEnergyDigitsTensGfx[digit * 32], dst, 16);
+        DMA3_COPY_16(&ROM_DATA_ARRAY(sEnergyDigitsTensGfx)[digit * 32], dst, 16);
     }
 
     digit = energy % 10;
@@ -349,7 +349,7 @@ void HudDrawEnergy(u8 fileNumber)
         gEnergyDigits.ones = digit;
         needUpdate++;
 
-        DMA3_COPY_16(&sEnergyDigitsOnesGfx[digit * 32], dst + 32, 16);
+        DMA3_COPY_16(&ROM_DATA_ARRAY(sEnergyDigitsOnesGfx)[digit * 32], dst + 32, 16);
     }
 
     if (needUpdate)
@@ -419,26 +419,26 @@ void HudDrawEnergy(u8 fileNumber)
     {
         if (gEnergyRefillAnimation == 13)
         {
-            DMA3_COPY_16(&sEnergyDigitsRefill1Gfx[gEnergyDigits.tens * 32], dst, 16);
-            DMA3_COPY_16(&sEnergyDigitsRefill1Gfx[gEnergyDigits.ones * 32 + 10 * 32], dst + 32, 16);
+            DMA3_COPY_16(&ROM_DATA_ARRAY(sEnergyDigitsRefill1Gfx)[gEnergyDigits.tens * 32], dst, 16);
+            DMA3_COPY_16(&ROM_DATA_ARRAY(sEnergyDigitsRefill1Gfx)[gEnergyDigits.ones * 32 + 10 * 32], dst + 32, 16);
             needUpdate = 0;
         }
         else if (gEnergyRefillAnimation == 10)
         {
-            DMA3_COPY_16(&sEnergyDigitsRefill2Gfx[gEnergyDigits.tens * 32], dst, 16);
-            DMA3_COPY_16(&sEnergyDigitsRefill2Gfx[gEnergyDigits.ones * 32 + 10 * 32], dst + 32, 16);
+            DMA3_COPY_16(&ROM_DATA_ARRAY(sEnergyDigitsRefill2Gfx)[gEnergyDigits.tens * 32], dst, 16);
+            DMA3_COPY_16(&ROM_DATA_ARRAY(sEnergyDigitsRefill2Gfx)[gEnergyDigits.ones * 32 + 10 * 32], dst + 32, 16);
             needUpdate = 1;
         }
         else if (gEnergyRefillAnimation == 4)
         {
-            DMA3_COPY_16(&sEnergyDigitsRefill3Gfx[gEnergyDigits.tens * 32], dst, 16);
-            DMA3_COPY_16(&sEnergyDigitsRefill3Gfx[gEnergyDigits.ones * 32 + 10 * 32], dst + 32, 16);
+            DMA3_COPY_16(&ROM_DATA_ARRAY(sEnergyDigitsRefill3Gfx)[gEnergyDigits.tens * 32], dst, 16);
+            DMA3_COPY_16(&ROM_DATA_ARRAY(sEnergyDigitsRefill3Gfx)[gEnergyDigits.ones * 32 + 10 * 32], dst + 32, 16);
             needUpdate = 2;
         }
         else if (gEnergyRefillAnimation == 1)
         {
-            DMA3_COPY_16(&sEnergyDigitsTensGfx[gEnergyDigits.tens * 32], dst, 16);
-            DMA3_COPY_16(&sEnergyDigitsTensGfx[gEnergyDigits.ones * 32 + 10 * 32], dst + 32, 16);
+            DMA3_COPY_16(&ROM_DATA_ARRAY(sEnergyDigitsTensGfx)[gEnergyDigits.tens * 32], dst, 16);
+            DMA3_COPY_16(&ROM_DATA_ARRAY(sEnergyDigitsTensGfx)[gEnergyDigits.ones * 32 + 10 * 32], dst + 32, 16);
             needUpdate = 3;
         }
         else

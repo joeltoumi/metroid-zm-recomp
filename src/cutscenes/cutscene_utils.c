@@ -923,7 +923,12 @@ void CutsceneUpdateScreenShake(u8 affectVertical, struct CutsceneScreenShake* pS
 
     // Check not overflowing
     size = sCutsceneScreenShakeOffsetSetSizes[pShake->set];
+#ifdef PLATFORM_PC
+    // BUG: lets currentSubSet reach the size, reading one byte past the set
+    if (pShake->currentSubSet >= size)
+#else // !PLATFORM_PC
     if (pShake->currentSubSet > size)
+#endif // PLATFORM_PC
         pShake->currentSubSet = 0;
 
     // Get screen offset

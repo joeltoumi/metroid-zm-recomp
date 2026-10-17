@@ -640,3 +640,18 @@ enum name ##_
  * 
  */
 #define ENUM_FLAG
+
+/**
+ * @brief Source of a copy that reads past the end of a ROM data array. On the
+ * GBA the extra bytes are the next data in the ROM; natively each array is a
+ * separate variable, so the copy is made from the ROM image instead.
+ */
+#ifdef PLATFORM_PC
+#define ROM_DATA(ptr) Port_RomMirror(ptr)
+// Same for an array, typed; also works for arrays compiled into the game
+// (they are located in the ROM by their contents)
+#define ROM_DATA_ARRAY(array) ((__typeof__(&(array)[0]))Port_RomFind(array, sizeof(array)))
+#else // !PLATFORM_PC
+#define ROM_DATA(ptr) (ptr)
+#define ROM_DATA_ARRAY(array) (array)
+#endif // PLATFORM_PC

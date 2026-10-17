@@ -962,7 +962,7 @@ static u8 IntroFuzz(void)
 
         case 6:
 #ifdef REGION_EU
-            DmaTransfer(3, sSpriteYHalfRadius[1], INTRO_DATA.fuzzPalette, sizeof(INTRO_DATA.fuzzPalette), 16);
+            DmaTransfer(3, ROM_DATA_ARRAY(sSpriteYHalfRadius)[1], INTRO_DATA.fuzzPalette, sizeof(INTRO_DATA.fuzzPalette), 16);
 #else // !REGION_EU
             DMA3_COPY_16(sSpriteYHalfRadius[1], INTRO_DATA.fuzzPalette, ARRAY_SIZE(INTRO_DATA.fuzzPalette));
 #endif // REGION_EU

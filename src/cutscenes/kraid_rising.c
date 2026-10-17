@@ -146,7 +146,7 @@ static u8 KraidRisingRising(void)
             {
                 CUTSCENE_DATA.oam[i].xPosition = sKraidRisingDebrisSpawnXPosition[i];
                 CUTSCENE_DATA.oam[i].yPosition = -HALF_BLOCK_SIZE;
-                CUTSCENE_DATA.oam[i].timer = MOD_AND(sRandomNumberTable[gFrameCounter8Bit + i], 128);
+                CUTSCENE_DATA.oam[i].timer = MOD_AND(ROM_DATA_ARRAY(sRandomNumberTable)[gFrameCounter8Bit + i], 128);
             }
 
             CUTSCENE_DATA.timeInfo.subStage++;

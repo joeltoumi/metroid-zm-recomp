@@ -26,6 +26,20 @@ do {                        \
 gHazeInfo.active = FALSE;   \
 } while(0);
 
+#ifdef PLATFORM_PC
+// Native code can't run from a copy in RAM: call the function directly
+#define HAZE_SETUP_CODE(func)                                  \
+do {                                                           \
+gHazeProcessCodePointer = (HazeFunc_T)(func);                  \
+} while(0)
+#else // !PLATFORM_PC
+#define HAZE_SETUP_CODE(func)                                                                                \
+do {                                                                                                         \
+DmaTransfer(3, func, gNonGameplayRam.inGame.hazeCode, sizeof(gNonGameplayRam.inGame.hazeCode), 16);          \
+gHazeProcessCodePointer = (HazeFunc_T)(gNonGameplayRam.inGame.hazeCode + 1);                                 \
+} while(0)
+#endif // PLATFORM_PC
+
 /**
  * @brief Haze data for each room effect
  * 0 : Haze value
@@ -164,8 +178,7 @@ void HazeSetupCode(HazeValue hazeValue)
             break;
 
         case HAZE_VALUE_BG3:
-            DmaTransfer(3, Haze_Bg3, gNonGameplayRam.inGame.hazeCode, sizeof(gNonGameplayRam.inGame.hazeCode), 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(gNonGameplayRam.inGame.hazeCode + 1);
+            HAZE_SETUP_CODE(Haze_Bg3);
 
             gHazeInfo.enabled = TRUE;
             
@@ -175,8 +188,7 @@ void HazeSetupCode(HazeValue hazeValue)
             break;
 
         case HAZE_VALUE_BG3_STRONG_WEAK:
-            DmaTransfer(3, Haze_Bg3StrongWeak, gNonGameplayRam.inGame.hazeCode, sizeof(gNonGameplayRam.inGame.hazeCode), 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(gNonGameplayRam.inGame.hazeCode + 1);
+            HAZE_SETUP_CODE(Haze_Bg3StrongWeak);
 
             gHazeInfo.enabled = TRUE;
             
@@ -186,8 +198,7 @@ void HazeSetupCode(HazeValue hazeValue)
             break;
  
         case HAZE_VALUE_BG3_NONE_WEAK:
-            DmaTransfer(3, Haze_Bg3NoneWeak, gNonGameplayRam.inGame.hazeCode, sizeof(gNonGameplayRam.inGame.hazeCode), 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(gNonGameplayRam.inGame.hazeCode + 1);
+            HAZE_SETUP_CODE(Haze_Bg3NoneWeak);
 
             gHazeInfo.enabled = TRUE;
             
@@ -197,8 +208,7 @@ void HazeSetupCode(HazeValue hazeValue)
             break;
 
         case HAZE_VALUE_BG3_BG2_STRONG_WEAK_MEDIUM:
-            DmaTransfer(3, Haze_Bg3Bg2StrongWeakMedium, gNonGameplayRam.inGame.hazeCode, sizeof(gNonGameplayRam.inGame.hazeCode), 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(gNonGameplayRam.inGame.hazeCode + 1);
+            HAZE_SETUP_CODE(Haze_Bg3Bg2StrongWeakMedium);
 
             gHazeInfo.enabled = TRUE;
             
@@ -208,8 +218,7 @@ void HazeSetupCode(HazeValue hazeValue)
             break;
 
         case HAZE_VALUE_BG3_BG2_BG1:
-            DmaTransfer(3, Haze_Bg3Bg2Bg1, gNonGameplayRam.inGame.hazeCode, sizeof(gNonGameplayRam.inGame.hazeCode), 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(gNonGameplayRam.inGame.hazeCode + 1);
+            HAZE_SETUP_CODE(Haze_Bg3Bg2Bg1);
 
             gHazeInfo.enabled = TRUE;
             
@@ -241,8 +250,7 @@ void HazeSetupCode(HazeValue hazeValue)
 
             gBackdropColor = COLOR_WHITE;
 
-            DmaTransfer(3, Haze_PowerBombExpanding, gNonGameplayRam.inGame.hazeCode, sizeof(gNonGameplayRam.inGame.hazeCode), 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(gNonGameplayRam.inGame.hazeCode + 1);
+            HAZE_SETUP_CODE(Haze_PowerBombExpanding);
 
             gHazeInfo.enabled = TRUE;
             
@@ -255,8 +263,7 @@ void HazeSetupCode(HazeValue hazeValue)
             break;
 
         case HAZE_VALUE_POWER_BOMB_RETRACTING:
-            DmaTransfer(3, Haze_PowerBombRetracting, gNonGameplayRam.inGame.hazeCode, sizeof(gNonGameplayRam.inGame.hazeCode), 16);
-            gHazeProcessCodePointer = (HazeFunc_T)(gNonGameplayRam.inGame.hazeCode + 1);
+            HAZE_SETUP_CODE(Haze_PowerBombRetracting);
 
             gHazeInfo.enabled = TRUE;
 

@@ -65,7 +65,7 @@ Código de la GBA que no tiene sentido en nativo y se sustituye:
 | `asm/crt0.s`, `asm/intr_main.s` | `port/src/main.c`, `port/src/frame.c` |
 | `asm/syscalls.s` (BIOS) | `port/src/bios.c` |
 | `src/dma.c` | `port/src/dma.c` |
-| copias de código a RAM (SRAM, sonido) | llamadas directas |
+| copias de código a RAM (SRAM, sonido, colisiones, haze, HBlank de la huida de Chozodia) | llamadas directas |
 | `asm/audio_internal.s`, `asm/soundcode.s` | `port/src/audio_stubs.c` (silencio, ver M3) |
 | `MultiBootWaitCycles` (cable link) | no-op |
 | Metroid NES embebido | no incluido |

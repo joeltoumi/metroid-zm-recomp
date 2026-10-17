@@ -2,6 +2,7 @@
 // mzm-android — entry point (replaces asm/crt0.s).
 #include "port.h"
 #include "port_game.h"
+#include "port_assets.h"
 
 #include <setjmp.h>
 #include <stdarg.h>
@@ -78,6 +79,27 @@ int Port_Main(int argc, char** argv)
 
     if (!Port_HostInit(&cfg))
         return 1;
+
+    // Game data comes from the player's ROM (nothing is embedded in the build).
+    {
+        const char* error = NULL;
+        for (;;) {
+            size_t size = 0;
+            uint8_t* rom = Port_HostLoadRom(&size, error);
+            if (!rom) {
+                Port_HostShutdown();
+                return 1;
+            }
+            PortRomStatus status = Port_LoadRom(rom, size);
+            if (status == PORT_ROM_OK)
+                Port_HostRomAccepted(rom, size);
+            free(rom);
+            if (status == PORT_ROM_OK)
+                break;
+            error = Port_RomStatusText(status);
+            Port_Log("ROM rejected: %s", error);
+        }
+    }
 
     Port_MemReset();
     Port_DmaReset();

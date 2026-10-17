@@ -87,6 +87,12 @@ bool Port_HostPresent(const uint32_t* abgr, int width, int height);
 uint16_t Port_HostPollKeys(void);
 // Block until the next 1/59.73 s tick (no-op when running unthrottled).
 void Port_HostWaitFrame(void);
+// The player's ROM. Returns a malloc'd copy of the whole file, or NULL if
+// the user gave up (the game then quits). `error` is set on a retry after
+// a ROM was rejected, so the host can tell the user why.
+uint8_t* Port_HostLoadRom(size_t* size, const char* error);
+// Remember a validated ROM for next time (copy it into the app's storage).
+void Port_HostRomAccepted(const uint8_t* rom, size_t size);
 // Persistent save data (the 64 KiB SRAM/Flash image).
 void Port_HostLoadSave(uint8_t* data, size_t size);
 void Port_HostWriteSave(const uint8_t* data, size_t size);

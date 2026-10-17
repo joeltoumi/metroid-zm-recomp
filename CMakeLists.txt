@@ -4,7 +4,8 @@
 #   cmake --build build
 #
 # The GBA ROM build is still the upstream Makefile; this file only drives the
-# native port. Game data comes from `make extract` (your own ROM).
+# native port. No ROM is needed to build: game data is read from the player's
+# own ROM when the game starts.
 cmake_minimum_required(VERSION 3.22)
 project(mzm_android C)
 
@@ -22,16 +23,30 @@ endif()
 
 string(TOUPPER "${MZM_REGION}" MZM_REGION_UPPER)
 
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/include/extracted")
-    message(FATAL_ERROR
-        "No extracted game data. Put your ROM at mzm_${MZM_REGION}_baserom.gba and run "
-        "`python3 tools/extractor.py -r ${MZM_REGION}` (or `make extract`).")
-endif()
-
 # ---------------------------------------------------------------------------
 # Game code (the decomp), compiled natively.
 # ---------------------------------------------------------------------------
 file(GLOB_RECURSE MZM_GAME_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.c")
+list(FILTER MZM_GAME_SOURCES EXCLUDE REGEX "/src/data/")
+
+# Game data (src/data/**.c) is never compiled with real ROM contents: each file
+# is wrapped so its arrays are zero-filled at build time and registered for
+# loading from the player's ROM at startup (tools/port/gen_assets.py).
+file(GLOB_RECURSE MZM_DATA_SOURCES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/data/*.c")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+    "${CMAKE_SOURCE_DIR}/database.json" "${CMAKE_SOURCE_DIR}/tools/port/gen_assets.py" ${MZM_DATA_SOURCES})
+set(MZM_GEN_DIR "${CMAKE_BINARY_DIR}/gen_assets")
+execute_process(
+    COMMAND ${Python3_EXECUTABLE} "${CMAKE_SOURCE_DIR}/tools/port/gen_assets.py"
+            --root "${CMAKE_SOURCE_DIR}" --out "${MZM_GEN_DIR}" --region ${MZM_REGION}
+            --cc "${CMAKE_C_COMPILER}"
+    OUTPUT_VARIABLE MZM_DATA_WRAPPERS
+    RESULT_VARIABLE gen_result
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+if(NOT gen_result EQUAL 0)
+    message(FATAL_ERROR "tools/port/gen_assets.py failed")
+endif()
+string(REPLACE "\n" ";" MZM_DATA_WRAPPERS "${MZM_DATA_WRAPPERS}")
 
 # A few files carry INCTEXT()/SHIFT_JIS() string macros that tools/preproc.py
 # turns into byte arrays; run it on those only.
@@ -56,9 +71,13 @@ foreach(src IN LISTS MZM_GAME_SOURCES)
     endif()
 endforeach()
 
-add_library(mzm_game STATIC ${MZM_GAME_COMPILE_SOURCES}
+add_library(mzm_game STATIC ${MZM_GAME_COMPILE_SOURCES} ${MZM_DATA_WRAPPERS}
     port/game/linker_glue.c)
-target_include_directories(mzm_game PRIVATE "${CMAKE_SOURCE_DIR}/include")
+# The zero-filled .inc stubs shadow any real `make extract` output.
+target_include_directories(mzm_game PRIVATE "${MZM_GEN_DIR}/stub" "${CMAKE_SOURCE_DIR}/include")
+# Data arrays must be writable to receive the ROM contents (they are mostly
+# zero-initialized, so they land in .bss and cost nothing in the binary).
+set_source_files_properties(${MZM_DATA_WRAPPERS} PROPERTIES COMPILE_DEFINITIONS "const=")
 target_compile_definitions(mzm_game PRIVATE PLATFORM_PC REGION_${MZM_REGION_UPPER})
 if(NOT MZM_BUGFIX)
     target_compile_definitions(mzm_game PRIVATE PORT_NO_BUGFIX)
@@ -76,6 +95,8 @@ target_compile_options(mzm_game PRIVATE
 # Port layer.
 # ---------------------------------------------------------------------------
 add_library(mzm_port STATIC
+    port/src/assets.c
+    port/src/sha1.c
     port/src/gba_mem.c
     port/src/dma.c
     port/src/bios.c
@@ -85,6 +106,10 @@ add_library(mzm_port STATIC
     port/ppu/src/virtuappu.c
     port/ppu/src/mode1.c)
 target_include_directories(mzm_port PUBLIC port/include PRIVATE port/ppu/include)
+file(READ "${CMAKE_SOURCE_DIR}/mzm_${MZM_REGION}.sha1" MZM_SHA1_LINE)
+string(REGEX MATCH "^[0-9a-f]+" MZM_ROM_SHA1 "${MZM_SHA1_LINE}")
+target_compile_definitions(mzm_port PRIVATE
+    MZM_ROM_SHA1="${MZM_ROM_SHA1}" MZM_ROM_REGION_NAME="${MZM_REGION_UPPER}")
 target_compile_options(mzm_port PRIVATE -std=gnu11 -Wall -Wextra -Wno-unused-parameter)
 find_package(OpenMP COMPONENTS C)
 if(OpenMP_C_FOUND)
@@ -103,10 +128,10 @@ elseif(MZM_HOST STREQUAL "sdl")
     find_package(SDL3 REQUIRED CONFIG)
     if(ANDROID)
         # SDLActivity loads libmain.so and calls SDL_main.
-        add_library(main SHARED port/src/host_sdl.c)
+        add_library(main SHARED port/src/host_sdl.c port/src/config.c)
         set(MZM_EXE main)
     else()
-        add_executable(mzm port/src/host_sdl.c)
+        add_executable(mzm port/src/host_sdl.c port/src/config.c)
         set(MZM_EXE mzm)
     endif()
     target_compile_options(${MZM_EXE} PRIVATE -std=gnu11 -Wall -Wextra)

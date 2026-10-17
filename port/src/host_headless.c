@@ -2,7 +2,7 @@
 // mzm-android — headless host: runs the game without a window, as fast as
 // possible, for automated tests and CI.
 //
-//   mzm_headless [--frames N] [--dump-every K] [--out DIR] [--save FILE]
+//   mzm_headless [--rom FILE] [--frames N] [--dump-every K] [--out DIR] [--save FILE]
 //                [--press FRAME:KEYS:LEN ...]
 //
 // Frames are written as PPM images (no dependencies). KEYS is a combination
@@ -24,6 +24,7 @@ static uint64_t sMaxFrames = 600;
 static uint64_t sDumpEvery = 60;
 static const char* sOutDir = "frames";
 static const char* sSavePath = "mzm_headless.sav";
+static const char* sRomPath = "mzm_us_baserom.gba";
 static Press sPresses[64];
 static int sPressCount;
 
@@ -61,6 +62,9 @@ bool Port_HostInit(const PortHostConfig* cfg)
             i++;
         } else if (strcmp(a, "--out") == 0 && v) {
             sOutDir = v;
+            i++;
+        } else if (strcmp(a, "--rom") == 0 && v) {
+            sRomPath = v;
             i++;
         } else if (strcmp(a, "--save") == 0 && v) {
             sSavePath = v;
@@ -136,6 +140,39 @@ uint16_t Port_HostPollKeys(void)
 
 void Port_HostWaitFrame(void)
 {
+}
+
+uint8_t* Port_HostLoadRom(size_t* size, const char* error)
+{
+    FILE* f;
+    long len;
+    uint8_t* data;
+
+    if (error) // no one to ask for another file
+        return NULL;
+    f = fopen(sRomPath, "rb");
+    if (!f) {
+        Port_Log("can't open ROM %s (use --rom FILE)", sRomPath);
+        return NULL;
+    }
+    fseek(f, 0, SEEK_END);
+    len = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    data = malloc(len > 0 ? (size_t)len : 1);
+    if (!data || fread(data, 1, (size_t)len, f) != (size_t)len) {
+        fclose(f);
+        free(data);
+        return NULL;
+    }
+    fclose(f);
+    *size = (size_t)len;
+    return data;
+}
+
+void Port_HostRomAccepted(const uint8_t* rom, size_t size)
+{
+    (void)rom;
+    (void)size;
 }
 
 void Port_HostLoadSave(uint8_t* data, size_t size)

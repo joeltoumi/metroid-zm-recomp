@@ -47,8 +47,8 @@
 
 - [ ] Pantalla panorámica (como Picori con Minish Cap)
 - [ ] 60 FPS de lógica / interpolación
-- [ ] Segunda pantalla de la AYN Thor: mapa o estado de Samus
-- [ ] Vibración
+- [x] Segunda pantalla de la AYN Thor: mapa o estado de Samus
+- [x] Vibración
 - [x] Build EU (APK propio, CI con las dos regiones)
 - [x] Build JP (APK propio y CI; sin probar aún con la ROM japonesa real)
 

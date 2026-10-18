@@ -81,6 +81,10 @@ Android o con el botón `=` de arriba del mando táctil. Desde ahí:
   su botón se mantiene o activa/desactiva.
 - **Mando táctil**: cuándo se muestra, opacidad y un editor para mover cada
   botón, cambiar su tamaño y qué botón de la GBA pulsa.
+- **Mapa y vibración**: vibración del mando y del dispositivo (con su
+  intensidad) y qué muestra la segunda pantalla: el mapa de la zona con la
+  posición de Samus o su estado (energía, tanques, munición y equipo). En la
+  AYN Thor va en la pantalla de abajo; en PC abre una segunda ventana.
 
 Los ajustes se guardan en `settings.ini`, en la carpeta de datos de la app
 (Linux: `~/.local/share/mzm-android/mzm/`), que también se puede editar a mano.

@@ -3,6 +3,8 @@
 #ifndef PORT_CONFIG_H
 #define PORT_CONFIG_H
 
+#include "port_extras.h"
+
 #include <SDL3/SDL.h>
 #include <stdbool.h>
 
@@ -97,6 +99,12 @@ typedef struct PortConfig {
     PortBinding bindings[PORT_INPUT_COUNT];
     // [touch]
     PortTouchButton touch[PORT_TOUCH_BUTTON_COUNT];
+    // [rumble]
+    bool rumbleGamepad; // the gamepad's motors
+    bool rumbleDevice;  // the phone's / handheld's own vibrator (Android)
+    int rumbleStrength; // percent
+    // [second_screen]
+    int secondScreen; // PORT_SCREEN2_*: AYN Thor's lower screen, a window on PC
 } PortConfig;
 
 void PortConfig_Defaults(PortConfig* cfg);
@@ -106,6 +114,7 @@ const char* PortConfig_InputName(int input);
 void PortConfig_DefaultBindings(PortConfig* cfg);
 void PortConfig_DefaultTouchLayout(PortConfig* cfg);
 const char* PortConfig_FilterName(int filter);
+const char* PortConfig_SecondScreenName(int mode);
 
 #ifdef __cplusplus
 }

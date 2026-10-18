@@ -89,6 +89,77 @@ unsigned int Port_WarpInterval(void);
 void Port_WarpUpdate(void);
 void Port_WarpEquip(void);
 
+/* Game state read by the port's extras (second screen, rumble). Filled once
+ * per frame by port/game/status.c, which only reads the game's globals. */
+enum {
+    /* Things that happened since the previous call (PortGameStatus.events). */
+    PORT_EVENT_DAMAGE = 1 << 0,      /* Samus got hurt (damage = energy lost) */
+    PORT_EVENT_DRAIN = 1 << 1,       /* energy lost without a hit (lava, acid, metroid) */
+    PORT_EVENT_BOMB = 1 << 2,        /* a bomb exploded */
+    PORT_EVENT_POWER_BOMB = 1 << 3,  /* a power bomb exploded */
+    PORT_EVENT_LANDING = 1 << 4,     /* hard landing after a long fall */
+    PORT_EVENT_SHINESPARK = 1 << 5,  /* a shinespark hit a wall */
+    PORT_EVENT_DEATH = 1 << 6,       /* Samus died */
+    PORT_EVENT_ITEM = 1 << 7,        /* an item or tank was collected */
+};
+
+enum {
+    /* Equipment bits (PortGameStatus.items / itemsActive). */
+    PORT_ITEM_LONG_BEAM = 1 << 0,
+    PORT_ITEM_ICE_BEAM = 1 << 1,
+    PORT_ITEM_WAVE_BEAM = 1 << 2,
+    PORT_ITEM_PLASMA_BEAM = 1 << 3,
+    PORT_ITEM_CHARGE_BEAM = 1 << 4,
+    PORT_ITEM_BOMBS = 1 << 5,
+    PORT_ITEM_HIGH_JUMP = 1 << 6,
+    PORT_ITEM_SPEED_BOOSTER = 1 << 7,
+    PORT_ITEM_SPACE_JUMP = 1 << 8,
+    PORT_ITEM_SCREW_ATTACK = 1 << 9,
+    PORT_ITEM_VARIA_SUIT = 1 << 10,
+    PORT_ITEM_GRAVITY_SUIT = 1 << 11,
+    PORT_ITEM_MORPH_BALL = 1 << 12,
+    PORT_ITEM_POWER_GRIP = 1 << 13,
+    PORT_ITEM_COUNT = 14,
+};
+
+#define PORT_MAP_SIZE 32
+
+struct PortGameStatus {
+    int playing;  /* in a room (not a menu, cutscene, demo...): events are valid */
+    int paused;   /* pause screen (the map and equipment are still valid) */
+    int area;     /* 0-6, or -1 */
+    int mapX, mapY; /* Samus' cell on the area map */
+    int energy, maxEnergy;
+    int missiles, maxMissiles;
+    int superMissiles, maxSuperMissiles;
+    int powerBombs, maxPowerBombs;
+    unsigned int items, itemsActive; /* PORT_ITEM_* */
+    int suitType; /* 0 normal, 1 fully powered, 2 suitless */
+    int hours, minutes, seconds; /* in-game time */
+
+    unsigned int events; /* PORT_EVENT_* */
+    int damage;          /* energy lost this frame */
+    int fallHeight;      /* height of a hard landing's fall (64 per block) */
+    int shake;           /* screen shake strength this frame (0 = none) */
+    int powerBombBlast;  /* a power bomb explosion is on screen */
+
+    /* Area map as the pause screen draws it (explored / downloaded rooms):
+     * 32x32 BG map entries (tile | flip << 10 | palette << 12), NULL when
+     * there's none. The tiles (4bpp, 32 bytes each) and palettes (16 colors
+     * each, BGR555) it uses; mapMinX..mapMaxY bound the cells that have a room. */
+    const unsigned short* map;
+    const unsigned char* mapTiles;
+    unsigned int mapTileCount;
+    const unsigned short* mapPalettes;
+    unsigned int mapPaletteCount;
+    int mapMinX, mapMinY, mapMaxX, mapMaxY;
+};
+/* Fills `status` from the game's globals. Never changes the game. */
+void Port_GameStatus(struct PortGameStatus* status);
+/* Forget the previous frame (after loading a save state), so the jump in
+ * energy, poses... isn't reported as an event. */
+void Port_GameStatusReset(void);
+
 void Port_Log(const char* fmt, ...);
 
 #endif /* PLATFORM_PC */

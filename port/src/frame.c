@@ -11,7 +11,8 @@
 //      line, the previous line's HBlank events run (HBlank DMA, HBlank IRQ)
 //      plus the VCount-match IRQ, so raster effects work.
 //   3. Sound: play the frame's audio (DirectSound FIFOs + PSG).
-//   4. Present the frame, read input, wait for the next tick.
+//   4. Present the frame, read input, wait for the next tick (before that,
+//      the extras read the game state: rumble, second screen).
 #include "port.h"
 #include "port_game.h"
 
@@ -192,7 +193,8 @@ void Port_RunFrame(void)
     // 3. Sound.
     Port_ApuRunFrame();
 
-    // 4. Present + input + pacing.
+    // 4. Rumble and second screen, then present + input + pacing.
+    Port_ExtrasFrame();
     if (!Port_HostPresent(frame, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT))
         Port_RequestQuit();
     UpdateKeys();

@@ -134,6 +134,44 @@ Con esto se han cargado las 324 salas de las 7 zonas, las 14 cinemáticas, las
 dos huidas, los créditos y las demos de la pantalla de título con
 AddressSanitizer, sin errores.
 
+## Vibración y segunda pantalla
+
+`port/game/status.c` lee una vez por frame (desde `Port_RunFrame`, antes de
+presentar) las variables globales del juego: energía, munición, equipo, pose
+y posición de Samus, bombas y power bombs, el temblor de pantalla y el mapa
+de la zona que el juego mantiene para el minimapa. Solo lee; el código del
+juego no cambia. Comparando con el frame anterior detecta los eventos: daño
+(energía perdida + frames de invencibilidad), pérdida continua (lava, ácido,
+metroides), bomba o power bomb que explota, caída desde más de 7 bloques,
+choque de un shinespark, muerte de Samus y objeto recogido. El temblor de
+pantalla (jefes, terremotos de las huidas) vibra mientras dura. Esa copia del
+frame anterior no es estado de la máquina: al cargar un save state se olvida
+para no ver eventos falsos.
+
+- **Vibración** (`port/src/extras.c`): cada evento lanza un efecto corto; el
+  más fuerte manda en los dos motores del mando (`SDL_RumbleGamepad`). El
+  vibrador del dispositivo (en Android es el dispositivo háptico
+  `VIBRATOR_SERVICE` de SDL) solo admite pulsos, así que recibe uno cada vez
+  que la vibración empieza o sube. `MZM_RUMBLE_LOG=1` escribe cada evento en
+  el log (también con `mzm_headless`, para probarlo con `MZM_WARP` y `--press`).
+- **Segunda pantalla** (`port/src/second_screen.c`): se dibuja por software
+  en un lienzo de 256 píxeles de ancho. El mapa usa los tiles y paletas del
+  mapa de pausa con las salas exploradas/descargadas
+  (`gDecompressedMinimapVisitedTiles`), encuadrado en las salas de la zona, y
+  la casilla de Samus parpadea; el estado es texto con una fuente 8x8. En PC
+  es una segunda ventana SDL (en otro monitor si lo hay; cerrarla la
+  desactiva). En Android, SDL solo tiene una ventana, así que `MzmActivity`
+  busca un display secundario (`DisplayManager`, primero los de categoría
+  *presentation*), muestra ahí una `Presentation` que nunca toma el foco y
+  recoge la imagen por JNI (`host_sdl.c`) en cada refresco. Sin segunda
+  pantalla no hace nada. `mzm_headless --screen2 map|status` vuelca también
+  esa imagen con cada captura.
+
+Opciones en `settings.ini` (`[rumble] gamepad, device, strength` y
+`[second_screen] mode = off | map | status`) y en el menú. La vibración viene
+desactivada; la segunda pantalla, en Android, muestra el mapa (solo hace algo
+si hay un segundo display) y en PC está apagada.
+
 ## Guardado
 
 `struct Sram` tiene el mismo tamaño y layout que en la GBA (32 608 bytes). El

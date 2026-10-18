@@ -17,6 +17,12 @@
 //   left = dpleft, leftx-        ; button and/or axis with a sign
 //   [touch]
 //   a = right 0.205 0.620 0.085 a ; anchor, x, y, radius (window heights), input
+//   [rumble]
+//   gamepad = true               ; gamepad motors
+//   device = true                ; the phone's vibrator (Android)
+//   strength = 100               ; percent
+//   [second_screen]
+//   mode = map                   ; off | map | status
 #include "port_config.h"
 
 #include <stdio.h>
@@ -35,6 +41,8 @@ static const char* const sAnchorNames[] = { "left", "center", "right" };
 
 static const char* const sFilterNames[PORT_FILTER_COUNT] = { "none", "lcd", "crt" };
 
+static const char* const sSecondScreenNames[PORT_SCREEN2_COUNT] = { "off", "map", "status" };
+
 const char* PortConfig_InputName(int input)
 {
     return (input >= 0 && input < PORT_INPUT_COUNT) ? sInputNames[input] : "?";
@@ -43,6 +51,11 @@ const char* PortConfig_InputName(int input)
 const char* PortConfig_FilterName(int filter)
 {
     return (filter >= 0 && filter < PORT_FILTER_COUNT) ? sFilterNames[filter] : "none";
+}
+
+const char* PortConfig_SecondScreenName(int mode)
+{
+    return (mode >= 0 && mode < PORT_SCREEN2_COUNT) ? sSecondScreenNames[mode] : "off";
 }
 
 void PortConfig_DefaultTouchLayout(PortConfig* cfg)
@@ -101,8 +114,14 @@ void PortConfig_Defaults(PortConfig* cfg)
     cfg->filter = PORT_FILTER_NONE;
     PortConfig_DefaultBindings(cfg);
     PortConfig_DefaultTouchLayout(cfg);
+    cfg->rumbleGamepad = false;
+    cfg->rumbleDevice = false;
+    cfg->rumbleStrength = 100;
+    cfg->secondScreen = PORT_SCREEN2_OFF;
 #ifdef __ANDROID__
     cfg->fullscreen = true;
+    // Only does something on devices with a second display (AYN Thor).
+    cfg->secondScreen = PORT_SCREEN2_MAP;
 #endif
 }
 
@@ -266,6 +285,19 @@ bool PortConfig_Load(PortConfig* cfg, const char* path)
             } else if (strcmp(key, "fast_forward_toggle") == 0) {
                 cfg->fastForwardToggle = ParseBool(value);
             }
+        } else if (strcmp(section, "rumble") == 0) {
+            if (strcmp(key, "gamepad") == 0)
+                cfg->rumbleGamepad = ParseBool(value);
+            else if (strcmp(key, "device") == 0)
+                cfg->rumbleDevice = ParseBool(value);
+            else if (strcmp(key, "strength") == 0)
+                cfg->rumbleStrength = ParseInt(value, 0, 100, cfg->rumbleStrength);
+        } else if (strcmp(section, "second_screen") == 0) {
+            if (strcmp(key, "mode") == 0) {
+                const int m = FindName(sSecondScreenNames, PORT_SCREEN2_COUNT, value);
+                if (m >= 0)
+                    cfg->secondScreen = m;
+            }
         } else if (strcmp(section, "keyboard") == 0) {
             const int input = FindInput(key);
             if (input >= 0)
@@ -312,6 +344,14 @@ bool PortConfig_Save(const PortConfig* cfg, const char* path)
     fprintf(f, "stick_deadzone = %d\n", cfg->stickDeadzone);
     fprintf(f, "fast_forward_speed = %d\n", cfg->fastForwardSpeed);
     fprintf(f, "fast_forward_toggle = %s\n\n", cfg->fastForwardToggle ? "true" : "false");
+
+    fprintf(f, "[rumble]\n");
+    fprintf(f, "gamepad = %s\n", cfg->rumbleGamepad ? "true" : "false");
+    fprintf(f, "device = %s ; the phone's own vibrator (Android)\n", cfg->rumbleDevice ? "true" : "false");
+    fprintf(f, "strength = %d ; percent\n\n", cfg->rumbleStrength);
+
+    fprintf(f, "[second_screen]\n");
+    fprintf(f, "mode = %s ; off | map | status\n\n", sSecondScreenNames[cfg->secondScreen]);
 
     fprintf(f, "[keyboard]\n");
     for (int i = 0; i < PORT_INPUT_COUNT; i++) {

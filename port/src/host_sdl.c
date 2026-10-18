@@ -9,6 +9,8 @@
 // and, on touch screens, an on-screen pad drawn over the game.
 // Menu: Esc / F1, Select+Start, the Android back button or the touch menu
 // button open the options menu (port/src/menu.cpp) with save states.
+// Rumble: gamepad motors and the device's vibrator, from game events.
+// Second screen: area map or Samus' status on a second display / window.
 // Everything configurable lives in settings.ini in the app's pref folder.
 #include "port.h"
 #include "port_config.h"
@@ -442,6 +444,328 @@ static bool StateInfo(int slot, char* text, size_t textSize, SDL_Texture** thumb
     return true;
 }
 
+// ---- rumble ---------------------------------------------------------------------
+// port/src/extras.c turns game events into motor levels every frame. Gamepads
+// get them with SDL_RumbleGamepad; the device's own vibrator (the phone's, or
+// the AYN Thor's) is an SDL haptic device that plays one-shot pulses.
+
+static SDL_Haptic* sHaptic;
+static bool sHapticTried;
+static float sRumbleLow, sRumbleHigh; // last levels sent to the gamepad
+static int sRumbleRefresh;
+
+static void OpenDeviceHaptic(void)
+{
+    int count = 0;
+    SDL_HapticID* ids;
+
+    if (sHapticTried)
+        return;
+    sHapticTried = true;
+    if (!SDL_InitSubSystem(SDL_INIT_HAPTIC)) {
+        Port_Log("rumble: no haptics: %s", SDL_GetError());
+        return;
+    }
+    ids = SDL_GetHaptics(&count);
+    // On Android the device vibrator is "VIBRATOR_SERVICE"; gamepads rumble
+    // through SDL_RumbleGamepad instead.
+    for (int pass = 0; pass < 2 && !sHaptic && ids; pass++) {
+        for (int i = 0; i < count && !sHaptic; i++) {
+            const char* name = SDL_GetHapticNameForID(ids[i]);
+            if (pass == 0 && !(name && SDL_strstr(name, "VIBRATOR")))
+                continue;
+            sHaptic = SDL_OpenHaptic(ids[i]);
+            if (sHaptic && !SDL_InitHapticRumble(sHaptic)) {
+                SDL_CloseHaptic(sHaptic);
+                sHaptic = NULL;
+            }
+            if (sHaptic)
+                Port_Log("rumble: vibrator %s", name ? name : "?");
+        }
+    }
+    SDL_free(ids);
+}
+
+static void StopRumble(void)
+{
+    if (sGamepad && (sRumbleLow > 0.0f || sRumbleHigh > 0.0f))
+        SDL_RumbleGamepad(sGamepad, 0, 0, 0);
+    sRumbleLow = sRumbleHigh = 0.0f;
+    if (sHaptic)
+        SDL_StopHapticRumble(sHaptic);
+}
+
+void Port_HostRumble(float low, float high, float pulse, int pulseMs)
+{
+    const float k = sConfig.rumbleStrength / 100.0f;
+
+    if (sConfig.rumbleGamepad && sGamepad) {
+        // Sent when it changes, and refreshed while it lasts.
+        const bool changed = SDL_fabsf(low - sRumbleLow) > 0.02f || SDL_fabsf(high - sRumbleHigh) > 0.02f;
+        const bool on = low > 0.0f || high > 0.0f;
+        if (changed || (on && --sRumbleRefresh <= 0)) {
+            SDL_RumbleGamepad(sGamepad, (Uint16)(SDL_min(low * k, 1.0f) * 0xFFFF),
+                              (Uint16)(SDL_min(high * k, 1.0f) * 0xFFFF), on ? 150 : 0);
+            sRumbleLow = low;
+            sRumbleHigh = high;
+            sRumbleRefresh = 5;
+        }
+    } else if (sRumbleLow > 0.0f || sRumbleHigh > 0.0f) {
+        StopRumble();
+    }
+
+    if (sConfig.rumbleDevice && pulse > 0.0f && k > 0.0f) {
+        OpenDeviceHaptic();
+        if (sHaptic)
+            SDL_PlayHapticRumble(sHaptic, SDL_min(pulse * k, 1.0f), (Uint32)pulseMs);
+    }
+}
+
+// ---- second screen ------------------------------------------------------------
+// The area map or Samus' status (port/src/second_screen.c) on a second display.
+// PC: a second window (on the second monitor if there is one). Android: the
+// Java side (MzmActivity) shows it on the secondary display as a Presentation
+// and pulls the pixels through JNI; on a device with one screen it does nothing.
+
+#define SCREEN2_MAX_H 448
+static uint32_t sScreen2Px[256 * SCREEN2_MAX_H];
+
+#ifdef __ANDROID__
+#include <jni.h>
+
+static SDL_Mutex* sScreen2Lock;
+static int sScreen2W, sScreen2H;    // canvas the Java side asked for
+static uint64_t sScreen2Frame;      // frame drawn in sScreen2Px
+static uint64_t sScreen2Copied;     // last frame handed to Java
+static uint64_t sScreen2PolledNs;   // Java asked recently: keep drawing
+static SDL_AtomicInt sScreen2Mode;  // sConfig.secondScreen, readable from the UI thread
+
+static void Screen2Init(void)
+{
+    sScreen2Lock = SDL_CreateMutex();
+    SDL_SetAtomicInt(&sScreen2Mode, sConfig.secondScreen);
+}
+
+static void Screen2Apply(void)
+{
+    SDL_SetAtomicInt(&sScreen2Mode, sConfig.secondScreen);
+}
+
+static void Screen2Present(void)
+{
+    if (!sScreen2Lock || sConfig.secondScreen == PORT_SCREEN2_OFF)
+        return;
+    SDL_LockMutex(sScreen2Lock);
+    if (sScreen2W > 0 && SDL_GetTicksNS() - sScreen2PolledNs < 1000000000ull) {
+        Port_SecondScreenRender(sScreen2Px, sScreen2W, sScreen2H, sConfig.secondScreen);
+        sScreen2Frame = Port_FrameCount() + 1;
+    }
+    SDL_UnlockMutex(sScreen2Lock);
+}
+
+static void Screen2Shutdown(void)
+{
+    SDL_SetAtomicInt(&sScreen2Mode, PORT_SCREEN2_OFF);
+}
+
+// MzmActivity (UI thread): PORT_SCREEN2_*, OFF until the game has started.
+JNIEXPORT jint JNICALL Java_dev_mzm_android_MzmActivity_nativeSecondScreenMode(JNIEnv* env, jclass cls)
+{
+    (void)env;
+    (void)cls;
+    return sScreen2Lock ? SDL_GetAtomicInt(&sScreen2Mode) : PORT_SCREEN2_OFF;
+}
+
+// Called by MzmActivity's second-screen view on the UI thread. Returns the
+// canvas size for that display ((width << 16) | height), or 0 when the second
+// screen is off.
+JNIEXPORT jint JNICALL Java_dev_mzm_android_MzmActivity_nativeSecondScreenCanvas(JNIEnv* env, jclass cls, jint displayW,
+                                                                              jint displayH)
+{
+    int w, h;
+    (void)env;
+    (void)cls;
+    if (!sScreen2Lock || SDL_GetAtomicInt(&sScreen2Mode) == PORT_SCREEN2_OFF || displayW <= 0 || displayH <= 0)
+        return 0;
+    Port_SecondScreenSize(displayW, displayH, &w, &h);
+    SDL_LockMutex(sScreen2Lock);
+    if (w != sScreen2W || h != sScreen2H) {
+        sScreen2W = w;
+        sScreen2H = h;
+        sScreen2Frame = sScreen2Copied = 0;
+    }
+    sScreen2PolledNs = SDL_GetTicksNS();
+    SDL_UnlockMutex(sScreen2Lock);
+    return (jint)((w << 16) | h);
+}
+
+// Copies the latest picture (ARGB, as android.graphics.Bitmap wants) into
+// `pixels` (width * height of the canvas). Returns false if there is no new one.
+JNIEXPORT jboolean JNICALL Java_dev_mzm_android_MzmActivity_nativeSecondScreenPixels(JNIEnv* env, jclass cls,
+                                                                                  jintArray pixels)
+{
+    jboolean copied = JNI_FALSE;
+    (void)cls;
+    if (!sScreen2Lock)
+        return JNI_FALSE;
+    SDL_LockMutex(sScreen2Lock);
+    const int count = sScreen2W * sScreen2H;
+    if (sScreen2Frame != 0 && sScreen2Frame != sScreen2Copied && pixels &&
+        (*env)->GetArrayLength(env, pixels) == count) {
+        jint* dst = (*env)->GetIntArrayElements(env, pixels, NULL);
+        if (dst) {
+            for (int i = 0; i < count; i++) {
+                const uint32_t p = sScreen2Px[i]; // 0xAABBGGRR
+                dst[i] = (jint)((p & 0xFF00FF00u) | (p & 0xFFu) << 16 | (p >> 16 & 0xFFu));
+            }
+            (*env)->ReleaseIntArrayElements(env, pixels, dst, 0);
+            sScreen2Copied = sScreen2Frame;
+            copied = JNI_TRUE;
+        }
+    }
+    SDL_UnlockMutex(sScreen2Lock);
+    return copied;
+}
+
+#else // desktop: a second window
+
+static SDL_Window* sScreen2Window;
+static SDL_Renderer* sScreen2Renderer;
+static SDL_Texture* sScreen2Texture;
+static int sScreen2W, sScreen2H;
+
+static void Screen2Close(void)
+{
+    if (sScreen2Texture)
+        SDL_DestroyTexture(sScreen2Texture);
+    if (sScreen2Renderer)
+        SDL_DestroyRenderer(sScreen2Renderer);
+    if (sScreen2Window)
+        SDL_DestroyWindow(sScreen2Window);
+    sScreen2Texture = NULL;
+    sScreen2Renderer = NULL;
+    sScreen2Window = NULL;
+}
+
+static void Screen2Open(void)
+{
+    int count = 0;
+    SDL_DisplayID* displays = SDL_GetDisplays(&count);
+    const SDL_DisplayID main = SDL_GetDisplayForWindow(sWindow);
+    SDL_DisplayID target = 0;
+
+    // Another monitor if there is one; next to the game otherwise.
+    for (int i = 0; displays && i < count; i++) {
+        if (displays[i] != main) {
+            target = displays[i];
+            break;
+        }
+    }
+    SDL_free(displays);
+
+    SDL_PropertiesID props = SDL_CreateProperties();
+    SDL_SetStringProperty(props, SDL_PROP_WINDOW_CREATE_TITLE_STRING, "Metroid: Zero Mission - segunda pantalla");
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_WIDTH_NUMBER, 512);
+    SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_HEIGHT_NUMBER, 480);
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_RESIZABLE_BOOLEAN, true);
+    SDL_SetBooleanProperty(props, SDL_PROP_WINDOW_CREATE_HIGH_PIXEL_DENSITY_BOOLEAN, true);
+    if (target) {
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, SDL_WINDOWPOS_CENTERED_DISPLAY(target));
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, SDL_WINDOWPOS_CENTERED_DISPLAY(target));
+    } else {
+        int x = 0, y = 0, w = 0;
+        SDL_GetWindowPosition(sWindow, &x, &y);
+        SDL_GetWindowSize(sWindow, &w, NULL);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_X_NUMBER, x + w + 16);
+        SDL_SetNumberProperty(props, SDL_PROP_WINDOW_CREATE_Y_NUMBER, y);
+    }
+    sScreen2Window = SDL_CreateWindowWithProperties(props);
+    SDL_DestroyProperties(props);
+    if (sScreen2Window)
+        sScreen2Renderer = SDL_CreateRenderer(sScreen2Window, NULL);
+    if (!sScreen2Renderer) {
+        Port_Log("second window: %s", SDL_GetError());
+        Screen2Close();
+        return;
+    }
+    // The game's window sets the pace (vsync there, if any).
+    SDL_SetRenderVSync(sScreen2Renderer, 0);
+    SDL_RaiseWindow(sWindow);
+}
+
+static void Screen2Init(void)
+{
+}
+
+static void Screen2Apply(void)
+{
+    if (sConfig.secondScreen != PORT_SCREEN2_OFF && !sScreen2Window)
+        Screen2Open();
+    else if (sConfig.secondScreen == PORT_SCREEN2_OFF && sScreen2Window)
+        Screen2Close();
+}
+
+static void Screen2Present(void)
+{
+    int ww, wh, w, h;
+
+    if (!sScreen2Renderer)
+        return;
+    if (!SDL_GetCurrentRenderOutputSize(sScreen2Renderer, &ww, &wh) || ww <= 0 || wh <= 0)
+        return;
+    Port_SecondScreenSize(ww, wh, &w, &h);
+    if (!sScreen2Texture || w != sScreen2W || h != sScreen2H) {
+        if (sScreen2Texture)
+            SDL_DestroyTexture(sScreen2Texture);
+        sScreen2Texture =
+            SDL_CreateTexture(sScreen2Renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, w, h);
+        if (!sScreen2Texture)
+            return;
+        SDL_SetTextureScaleMode(sScreen2Texture, SDL_SCALEMODE_NEAREST);
+        sScreen2W = w;
+        sScreen2H = h;
+    }
+    Port_SecondScreenRender(sScreen2Px, w, h, sConfig.secondScreen);
+    SDL_UpdateTexture(sScreen2Texture, NULL, sScreen2Px, w * 4);
+
+    // Aspect-correct, whole pixels when it fits.
+    float scale = SDL_min((float)ww / w, (float)wh / h);
+    if (scale >= 1.0f)
+        scale = SDL_floorf(scale);
+    const SDL_FRect dst = { SDL_floorf((ww - w * scale) * 0.5f), SDL_floorf((wh - h * scale) * 0.5f), w * scale,
+                            h * scale };
+    SDL_SetRenderDrawColor(sScreen2Renderer, 0, 0, 0, 255);
+    SDL_RenderClear(sScreen2Renderer);
+    SDL_RenderTexture(sScreen2Renderer, sScreen2Texture, NULL, &dst);
+    SDL_RenderPresent(sScreen2Renderer);
+}
+
+static void Screen2Shutdown(void)
+{
+    Screen2Close();
+}
+
+#endif // __ANDROID__
+
+// Window events shared by the game loop and the menu loop. Returns false if
+// the game should quit.
+static bool HandleWindowEvent(const SDL_Event* e)
+{
+    if (e->type != SDL_EVENT_WINDOW_CLOSE_REQUESTED)
+        return true;
+#ifndef __ANDROID__
+    if (sScreen2Window && e->window.windowID == SDL_GetWindowID(sScreen2Window)) {
+        // Closing the second window switches it off.
+        sConfig.secondScreen = PORT_SCREEN2_OFF;
+        Screen2Close();
+        PortConfig_Save(&sConfig, sConfigPath);
+        return true;
+    }
+#endif
+    // With two windows SDL only sends SDL_EVENT_QUIT once both are closed.
+    return e->window.windowID != SDL_GetWindowID(sWindow);
+}
+
 // ---- menu -----------------------------------------------------------------------
 
 static void MenuQuit(void)
@@ -469,6 +793,7 @@ static void MenuApplyConfig(void)
 #ifndef __ANDROID__
     SDL_SetWindowFullscreen(sWindow, sConfig.fullscreen);
 #endif
+    Screen2Apply();
 }
 
 static void InitMenu(void)
@@ -495,6 +820,7 @@ static void InitMenu(void)
 // Runs the menu until it closes; the game is paused meanwhile.
 static void RunMenu(void)
 {
+    StopRumble();
     if (sAudio) {
         SDL_PauseAudioStreamDevice(sAudio);
         SDL_ClearAudioStream(sAudio);
@@ -503,7 +829,7 @@ static void RunMenu(void)
     while (PortMenu_IsOpen() && !Port_QuitRequested()) {
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
-            if (e.type == SDL_EVENT_QUIT) {
+            if (e.type == SDL_EVENT_QUIT || !HandleWindowEvent(&e)) {
                 Port_RequestQuit();
                 break;
             }
@@ -514,6 +840,7 @@ static void RunMenu(void)
         DrawScene(false);
         PortMenu_Render();
         SDL_RenderPresent(sRenderer);
+        Screen2Present(); // follows the menu's second-screen setting
         if (!sConfig.vsync)
             SDL_Delay(16);
     }
@@ -597,12 +924,17 @@ bool Port_HostInit(const PortHostConfig* cfg)
     sTouchVisible = sConfig.touchControls == PORT_TOUCH_ON;
 #endif
     InitMenu();
+    Screen2Init();
     sNextFrameNs = SDL_GetTicksNS();
     return true;
 }
 
 void Port_HostShutdown(void)
 {
+    StopRumble();
+    if (sHaptic)
+        SDL_CloseHaptic(sHaptic);
+    Screen2Shutdown();
     if (sMenuReady)
         PortMenu_Shutdown();
     for (int i = 0; i <= PORT_STATE_SLOTS; i++) {
@@ -679,6 +1011,10 @@ static bool PumpEvents(void)
         switch (e.type) {
         case SDL_EVENT_QUIT:
             return false;
+        case SDL_EVENT_WINDOW_CLOSE_REQUESTED:
+            if (!HandleWindowEvent(&e))
+                return false;
+            break;
         case SDL_EVENT_KEY_DOWN:
             if (e.key.repeat)
                 break;
@@ -751,6 +1087,14 @@ bool Port_HostPresent(const uint32_t* abgr, int width, int height)
     (void)height;
     DrawScene(true);
     SDL_RenderPresent(sRenderer);
+
+    // The second window opens with the first game frame (not over the ROM screen).
+    static bool sScreen2Started;
+    if (!sScreen2Started) {
+        sScreen2Started = true;
+        Screen2Apply();
+    }
+    Screen2Present();
     return true;
 }
 

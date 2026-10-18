@@ -142,6 +142,41 @@ ROM) se guarda como un `u32` opaco y los efectos activos se descartan al cargar,
 porque en 64 bits no puede reconstruirse. Resultado: los `.sav` son
 intercambiables con mGBA.
 
+## Regiones (US, EU, JP)
+
+Cada región es un build distinto (`-DMZM_REGION=us|eu|jp`, un sabor de
+producto en Android): el código del juego cambia con `#ifdef REGION_*`, los
+offsets de los datos salen de la columna de la región en `database.json` y
+el SHA-1 esperado de `mzm_<región>.sha1`. La cabecera se comprueba solo por
+el prefijo `ZEROMISSION` (`...E`, `...P`, `...J`). El layout de EWRAM de
+`linker.ld` es igual en las tres.
+
+El build JP compila, enlaza y pasa el smoke test (`MZM_DEV_SKIP_ROM_CHECK`),
+y la tabla de assets de JP no tiene solapes y cabe en la ROM, pero **no se ha
+probado con la ROM japonesa**. Lo que se busca en la ROM por contenido y solo
+se ha verificado con la europea:
+
+- `sSoundDataEntries`: se busca la primera racha de 708 entradas válidas. La
+  tabla es la misma en todas las regiones, va justo antes de las muestras
+  (`direct_sound_samples/080908e4.bin`) y la precede `music_track_data`, con
+  punteros a IWRAM que no pasan por entradas válidas. En JP debería salir
+  `0x0808F31C` (EU: `0x0808FF4C`).
+- `ROM_DATA_ARRAY` sobre arrays compilados en el juego, que deben aparecer
+  una sola vez en la ROM (offsets esperados en JP, calculados a partir de
+  los assets vecinos en `database.json`): `sTourianEscape_47ce20`
+  (`0x47CE7C`), `sTourianEscape_47cf50` (`0x47CFAC`), `sSpriteYHalfRadius`
+  (`0x45FD8C`), `sBossIcons` (`0x40D254` o `0x40D25C`) y
+  `sRandomNumberTable` (`~0x8C9F8`). Los arrays extraídos (`ROM_DATA`, dígitos
+  de energía del HUD...) salen de la tabla de assets y no dependen de esto.
+- Los textos y fuentes japoneses (incluido el hiragana) son datos extraídos
+  con offset JP en `database.json`; las únicas cadenas `SHIFT_JIS()` del
+  código son del menú de depuración.
+
+Al probar con la ROM JP: el log debe decir `sound: 708 sounds (table at
+0x0808F31C)` y no debe aparecer ningún `Port_RomFind: ... not found` ni
+`... more than once`; después, el recorrido de `MZM_WARP` con AddressSanitizer
+(salas, cinemáticas, huidas) y la pantalla de mapa en hiragana y katakana.
+
 ## Cambios en la decompilación
 
 Todos van entre `#ifdef PLATFORM_PC` salvo dos que no alteran la ROM:

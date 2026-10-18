@@ -45,7 +45,7 @@
 
 ## M5 — Mejoras
 
-- [ ] Pantalla panorámica (como Picori con Minish Cap)
+- [x] Pantalla panorámica (como Picori con Minish Cap)
 - [ ] 60 FPS de lógica / interpolación
 - [ ] Segunda pantalla de la AYN Thor: mapa o estado de Samus
 - [ ] Vibración

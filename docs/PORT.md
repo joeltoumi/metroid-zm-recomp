@@ -134,6 +134,51 @@ Con esto se han cargado las 324 salas de las 7 zonas, las 14 cinemáticas, las
 dos huidas, los créditos y las demos de la pantalla de título con
 AddressSanitizer, sin errores.
 
+## Pantalla panorámica
+
+Opción `widescreen` (`off | auto | 16:10 | 16:9 | 2:1`, menú Vídeo; `--width N`
+en headless). La imagen pasa de 240 a 256, 284 o 320 px de ancho con los
+mismos 160 de alto. **El juego no cambia**: su cámara, su pantalla de 240 px,
+el estado "en pantalla" de los sprites (que lee la IA) y la lógica son los de
+la GBA, así que una partida o una demo hace exactamente lo mismo con la opción
+o sin ella. Solo se dibuja más:
+
+- **PPU** (`port/ppu`, `ws_origin`/`ws_obj`): la pantalla de la GBA se dibuja
+  en la columna `origin` del fotograma ancho y los fondos siguen a los lados
+  (columna GBA `x - origin` + scroll, también con el haze por línea). Las
+  ventanas se desplazan igual, y un borde de ventana en el borde de la
+  pantalla GBA se estira hasta el borde del fotograma. Cada entrada de OAM
+  tiene su colocación: objeto de la sala, HUD pegado a la izquierda o a la
+  derecha, rótulo centrado, o "como en la GBA" (recortada a sus 240 px; lo
+  que no es del juego en curso).
+- **Tilemaps** (`port/game/widescreen.c`): las salas son un anillo de 32x16
+  bloques en VRAM que el juego rellena para su pantalla (bloques x-2..x+16).
+  Cada frame se reescriben desde los datos de la sala las columnas que faltan
+  para el ancho elegido (como hace `RoomUpdateHorizontalTilemap`).
+- **Sprites**: `SpriteDrawAll_*` dibujan también los que están en las
+  columnas extra (`Port_WideSpriteStatus`, sin tocar su estado), dejando 32
+  entradas de OAM libres para Samus y los disparos, que se dibujan después.
+  Partículas y proyectiles ya tienen margen suficiente.
+- **Encuadre** (`port/src/widescreen.c`): el juego dice dónde está la cámara
+  y qué parte de la sala puede enseñar (los límites de scroll actuales, o la
+  sala sin su borde de 2 bloques). Normalmente la pantalla GBA queda centrada;
+  cerca de un borde la imagen se para en el borde y la pantalla GBA se
+  desplaza (hasta `2 * extra` px, suavizado 2 px por frame si cambian los
+  límites); si la zona es más estrecha que la imagen (pozos verticales,
+  salas de jefe) se centra con negro a los lados. Nunca se enseña lo que la
+  cámara de la GBA no podría enseñar. El HUD va pegado a los bordes de lo
+  visible.
+- Lo que no es el bucle de juego (título, menús, mapa, cinemáticas,
+  créditos) se dibuja a 240 px en el centro. Los save states no cambian
+  (la miniatura es el centro de la imagen).
+
+Con la opción desactivada los fotogramas son idénticos byte a byte a los de
+antes (recorrido de `MZM_WARP` por las 7 zonas, las cinemáticas, la huida y el
+arranque; la única diferencia es la cinemática de Kraid, cuyo humo ya varía de
+una ejecución a otra en el build anterior). Activada (16:9), la parte de 240 px
+de la GBA coincide píxel a píxel con la imagen original salvo el HUD y los
+rótulos, que se recolocan.
+
 ## Guardado
 
 `struct Sram` tiene el mismo tamaño y layout que en la GBA (32 608 bytes). El

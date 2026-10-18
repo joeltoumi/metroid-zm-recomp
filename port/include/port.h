@@ -106,9 +106,20 @@ void Port_HostWriteSave(const uint8_t* data, size_t size);
 // Writes the save through the host if the game changed it.
 void Port_FlushSave(void);
 
+// Rumble for this frame (port/src/extras.c). low/high: strength 0..1 of the
+// low / high frequency motors of a gamepad, sent every frame. pulse > 0: a
+// vibration of that strength and length starts now (for vibrators that only
+// take one-shot pulses, like a phone's).
+void Port_HostRumble(float low, float high, float pulse, int pulseMs);
+
 // Raises the "quit" request; the frame loop longjmps back to main.
 void Port_RequestQuit(void);
 bool Port_QuitRequested(void);
+
+// ---- extras: rumble and second screen (port_extras.h) ---------------------------
+#include "port_extras.h"
+// The game state of the last frame (map included), for the second screen.
+const struct PortGameStatus* Port_ExtrasStatus(void);
 
 // ---- save states (port/src/savestate.c) -------------------------------------
 // Port variables that are part of the machine state live in the same section

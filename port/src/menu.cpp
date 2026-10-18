@@ -18,6 +18,7 @@ enum Page {
     PAGE_VIDEO,
     PAGE_SOUND_SPEED,
     PAGE_TOUCH,
+    PAGE_EXTRAS,
     PAGE_COUNT
 };
 
@@ -27,6 +28,7 @@ const char* const kPageNames[PAGE_COUNT] = {
     "Vídeo",
     "Sonido y velocidad",
     "Mando táctil",
+    "Mapa y vibración",
 };
 
 const char* const kInputLabels[PORT_INPUT_COUNT] = {
@@ -348,6 +350,35 @@ void PageSoundSpeed()
     Hint(hint);
 }
 
+// Rumble and the second screen (AYN Thor's lower display, a window on PC).
+void PageExtras()
+{
+    PortConfig& cfg = Config();
+    static const char* const kScreen2[PORT_SCREEN2_COUNT] = { "Desactivada", "Mapa de la zona", "Estado de Samus" };
+    bool changed = false;
+
+    ImGui::SeparatorText("Vibración");
+    changed |= ImGui::Checkbox("Vibración del mando", &cfg.rumbleGamepad);
+#ifdef __ANDROID__
+    changed |= ImGui::Checkbox("Vibración del dispositivo", &cfg.rumbleDevice);
+#endif
+    changed |= ImGui::SliderInt("Intensidad", &cfg.rumbleStrength, 0, 100, "%d %%");
+    Hint("Al recibir daño, con las bombas y las bombas de poder, los temblores de los jefes, "
+         "las caídas desde muy alto y al recoger objetos.");
+
+    ImGui::Spacing();
+    ImGui::SeparatorText("Segunda pantalla");
+    changed |= ImGui::Combo("Mostrar", &cfg.secondScreen, kScreen2, PORT_SCREEN2_COUNT);
+#ifdef __ANDROID__
+    Hint("En dispositivos con dos pantallas (AYN Thor), la de abajo muestra el mapa con la posición "
+         "de Samus o su energía, munición y equipo. Con una sola pantalla no hace nada.");
+#else
+    Hint("Abre una segunda ventana (en el segundo monitor si lo hay) con el mapa de la zona o el estado de Samus.");
+#endif
+    if (changed)
+        sHost.applyConfig();
+}
+
 void PageTouch()
 {
     PortConfig& cfg = Config();
@@ -534,6 +565,7 @@ void MainWindow()
     case PAGE_VIDEO: PageVideo(); break;
     case PAGE_SOUND_SPEED: PageSoundSpeed(); break;
     case PAGE_TOUCH: PageTouch(); break;
+    case PAGE_EXTRAS: PageExtras(); break;
     default: break;
     }
     if (sStatus[0]) {

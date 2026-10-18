@@ -134,7 +134,8 @@ const void* Port_RomFind(const void* data, unsigned int size)
     }
 
     // The array must appear exactly once in the ROM (4-byte aligned).
-    for (size_t off = 0; off + size <= sRomSize; off += 4) {
+    size_t off;
+    for (off = 0; off + size <= sRomSize; off += 4) {
         if (memcmp(sRom + off, data, size) != 0)
             continue;
         if (hit != NULL) {
@@ -144,8 +145,14 @@ const void* Port_RomFind(const void* data, unsigned int size)
         }
         hit = sRom + off;
     }
-    if (hit == NULL)
+    if (hit == NULL) {
+        // Fall back to the compiled-in array: reads past its end then see
+        // other data instead of the ROM's. Never happens with the EU ROM; a
+        // region not yet tested with its real ROM (JP) would show it here.
+        if (off + size > sRomSize)
+            Port_Log("Port_RomFind: %u bytes not found in the ROM", size);
         hit = data;
+    }
     if (sCached < CACHE_SIZE) {
         sCache[sCached].data = data;
         sCache[sCached].found = hit;

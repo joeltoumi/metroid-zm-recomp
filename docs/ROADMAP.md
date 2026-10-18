@@ -50,7 +50,7 @@
 - [ ] Segunda pantalla de la AYN Thor: mapa o estado de Samus
 - [ ] Vibración
 - [x] Build EU (APK propio, CI con las dos regiones)
-- [ ] Build JP
+- [x] Build JP (APK propio y CI; sin probar aún con la ROM japonesa real)
 
 ## No soportado
 

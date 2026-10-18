@@ -318,6 +318,13 @@ void PageVideo()
     changed |= ImGui::Checkbox("Escalado entero (píxeles idénticos)", &cfg.integerScaling);
     changed |= ImGui::Checkbox("Filtro suave (bilineal)", &cfg.smoothScaling);
     changed |= ImGui::Combo("Efecto", &cfg.filter, kFilters, PORT_FILTER_COUNT);
+    static const char* const kWide[PORT_WIDE_COUNT] = { "No (como la GBA)", "Automática",
+                                                         "16:10", "16:9", "2:1" };
+    changed |= ImGui::Combo("Pantalla panorámica", &cfg.widescreen, kWide, PORT_WIDE_COUNT);
+    Hint("Muestra más escenario a los lados en lugar de bandas negras (Automática: tan ancha como la "
+         "pantalla). El juego no cambia: solo se ve más. "
+         "Los menús, el mapa y las cinemáticas siguen en 3:2 en el centro, y en las salas más estrechas "
+         "que la pantalla quedan bandas negras.");
     changed |= ImGui::Checkbox("Sincronización vertical (VSync)", &cfg.vsync);
     Hint("Con VSync la imagen no se corta, pero puede añadir algo de retraso.");
     if (changed)

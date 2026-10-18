@@ -30,6 +30,8 @@ jobs:
           head -c 8388608 /dev/zero > zero.gba
           MZM_DEV_SKIP_ROM_CHECK=1 ./build/mzm_headless --rom zero.gba --frames 3000 --dump-every 0 \
             --press 400:S:5 --press 700:A:5 --press 900:A:5
+      - name: Frame pacing test
+        run: ./build/mzm_pacing_test
 
   android:
     name: Android APK

@@ -6,6 +6,8 @@
 //   [video]
 //   window_scale = 4
 //   integer_scaling = true
+//   sync_to_display = false      ; lock the game to 60/120 Hz screens
+//   frame_blend = false          ; mix frames on 90/144 Hz screens
 //   [audio]
 //   volume = 100                 ; percent, 0 = muted
 //   [input]
@@ -112,6 +114,8 @@ void PortConfig_Defaults(PortConfig* cfg)
     cfg->fastForwardSpeed = 3;
     cfg->fastForwardToggle = false;
     cfg->filter = PORT_FILTER_NONE;
+    cfg->syncToDisplay = false;
+    cfg->frameBlend = false;
     PortConfig_DefaultBindings(cfg);
     PortConfig_DefaultTouchLayout(cfg);
     cfg->rumbleGamepad = false;
@@ -264,7 +268,10 @@ bool PortConfig_Load(PortConfig* cfg, const char* path)
                 const int f = FindName(sFilterNames, PORT_FILTER_COUNT, value);
                 if (f >= 0)
                     cfg->filter = f;
-            }
+            } else if (strcmp(key, "sync_to_display") == 0)
+                cfg->syncToDisplay = ParseBool(value);
+            else if (strcmp(key, "frame_blend") == 0)
+                cfg->frameBlend = ParseBool(value);
         } else if (strcmp(section, "audio") == 0) {
             if (strcmp(key, "volume") == 0)
                 cfg->volume = ParseInt(value, 0, 100, cfg->volume);
@@ -333,7 +340,10 @@ bool PortConfig_Save(const PortConfig* cfg, const char* path)
     fprintf(f, "vsync = %s\n", cfg->vsync ? "true" : "false");
     fprintf(f, "integer_scaling = %s\n", cfg->integerScaling ? "true" : "false");
     fprintf(f, "smooth_scaling = %s\n", cfg->smoothScaling ? "true" : "false");
-    fprintf(f, "filter = %s ; none | lcd | crt\n\n", sFilterNames[cfg->filter]);
+    fprintf(f, "filter = %s ; none | lcd | crt\n", sFilterNames[cfg->filter]);
+    fprintf(f, "sync_to_display = %s ; game speed locked to 60/120 Hz screens (+0.46 %%)\n",
+            cfg->syncToDisplay ? "true" : "false");
+    fprintf(f, "frame_blend = %s ; mix frames on 90/144 Hz screens\n\n", cfg->frameBlend ? "true" : "false");
 
     fprintf(f, "[audio]\n");
     fprintf(f, "volume = %d ; percent, 0 = muted\n\n", cfg->volume);

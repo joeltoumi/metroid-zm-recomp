@@ -172,6 +172,69 @@ Opciones en `settings.ini` (`[rumble] gamepad, device, strength` y
 desactivada; la segunda pantalla, en Android, muestra el mapa (solo hace algo
 si hay un segundo display) y en PC está apagada.
 
+## Fluidez: 60/120 Hz y mezcla de fotogramas
+
+La GBA dibuja 59,7275 fotogramas por segundo y casi todas las pantallas van a
+60 Hz (o 90, 120, 144...). Por defecto el juego sigue el reloj de la GBA
+(`Port_HostWaitFrame`), así que en una pantalla de 60 Hz con VSync cada
+~3,7 s un fotograma se ve dos veces (un tirón; sin VSync, la imagen se corta),
+y a 144 Hz los fotogramas duran 2 o 3
+refrescos de forma irregular. Hay dos opciones en `settings.ini` (`[video]`) y
+en el menú (Vídeo → Fluidez), las dos desactivadas por defecto y solo en el
+frontend SDL (`port/src/host_sdl.c` + `port/src/pacing.c`):
+
+- `sync_to_display = true` (*Ajustar la velocidad a la pantalla*): si la
+  frecuencia de la pantalla es un múltiplo de ~59,73 Hz con un margen del 1 %
+  (59,94, 60, 120, 180, 240 Hz...), el juego hace un fotograma cada N
+  refrescos y lo marca el VSync: a 60 Hz va un 0,46 % más rápido y cada
+  fotograma dura exactamente un refresco. El sonido se reproduce ese mismo
+  0,46 % más rápido (`SDL_SetAudioStreamFrequencyRatio`) con un control
+  dinámico de ±0,5 % que mantiene la cola de audio en un nivel fijo (40-70 ms),
+  así no se vacía ni se llena (los dos casos suenan como un chasquido). Si
+  presentar no espera al VSync (ventana oculta, driver que lo ignora) un reloj
+  a la frecuencia de la pantalla toma el relevo, y si el VSync va a otra
+  frecuencia de la que dice el sistema (un móvil que anuncia 120 Hz y da 60 a
+  la app) se mide y se usa la real. En pantallas que no son múltiplo (50, 75,
+  90, 144 Hz) se sigue el reloj de la GBA.
+- `frame_blend = true` (*Mezclar fotogramas*): en pantallas que no se pueden
+  sincronizar, cada refresco mezcla los dos últimos fotogramas según el
+  momento en que se ve (`PortPacing_BlendAlpha`), con dos texturas en la GPU.
+  Reparte el movimiento de forma uniforme a cambio de una ligera estela y de
+  medio fotograma más de retraso. No hace nada a 60 Hz ni con la opción
+  anterior activa.
+
+Las dos activan VSync. Ninguna toca la lógica: el juego, sus fotogramas y sus
+muestras de sonido son los mismos (comprobado con `mzm_headless`, fotogramas y
+WAV idénticos byte a byte); solo cambia cuándo se presenta y a qué velocidad se
+reproduce el sonido. `mzm_pacing_test` (se compila con el host headless y corre
+en CI) simula 10 minutos de sonido a 60, 59,94, 120 y 59,73 Hz con relojes de
+tarjeta de sonido desviados ±0,1 % y buffers de 256 y 1024 muestras: la cola
+nunca se vacía ni llega al límite; sin el control dinámico, a 60 Hz se
+descartaría sonido 161 veces. Para depurar: `MZM_SYNC_LOG=1` imprime cada 5 s
+los fps del juego, el nivel de la cola de audio y la relación de velocidad, y
+`MZM_REFRESH_HZ=N` finge otra frecuencia de pantalla.
+
+**Interpolación real de posiciones (no hecha).** Se estudió volver a dibujar
+fotogramas intermedios con el scroll de los fondos y las posiciones de los
+sprites interpolados (el PPU por software lo permitiría guardando los
+registros de cada línea y la OAM de dos fotogramas), pero en esta arquitectura
+no compensa:
+
+- a resolución nativa (240x160) las posiciones intermedias se redondean a
+  píxeles enteros: a velocidad de paseo (1-2 px por fotograma) el fotograma
+  intermedio repite uno de los dos, así que solo ayudaría a gran velocidad;
+  para medios píxeles habría que dibujar a más resolución (otro PPU);
+- el juego carga en la VRAM la columna/fila nueva del mapa justo fuera de la
+  pantalla, y con el scroll de un fotograma anterior aparecerían en el borde
+  tiles ya sobrescritos;
+- la OAM se reordena cada fotograma (los sprites cambian de ranura), así que
+  emparejar sprites entre fotogramas es heurístico, y los efectos por línea
+  (HBlank DMA del agua, ventanas) no se interpolan bien.
+
+La mezcla de fotogramas da la mitad del beneficio sin ninguno de esos
+artefactos. Si un día el PPU dibuja a 2x o más, la interpolación del scroll
+de los fondos sería el siguiente paso.
+
 ## Guardado
 
 `struct Sram` tiene el mismo tamaño y layout que en la GBA (32 608 bytes). El

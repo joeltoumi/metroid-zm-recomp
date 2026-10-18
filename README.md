@@ -77,6 +77,11 @@ Android o con el botón `=` de arriba del mando táctil. Desde ahí:
   casilla y luego la tecla/botón nuevo) y la zona muerta del stick.
 - **Vídeo**: pantalla completa, escalado entero, filtro suave, efecto LCD
   (rejilla de píxeles) o CRT (líneas de barrido) y VSync.
+- **Fluidez** (en Vídeo): *ajustar la velocidad a la pantalla* quita los
+  tirones en pantallas de 60/120 Hz (el juego va un 0,46 % más rápido, el
+  sonido se ajusta solo) y *mezclar fotogramas* suaviza el movimiento en
+  pantallas de 90/144 Hz. Las dos vienen desactivadas; ver
+  [docs/PORT.md](docs/PORT.md#fluidez-60120-hz-y-mezcla-de-fotogramas).
 - **Sonido y velocidad**: volumen, velocidad del avance rápido (x2-x10) y si
   su botón se mantiene o activa/desactiva.
 - **Mando táctil**: cuándo se muestra, opacidad y un editor para mover cada

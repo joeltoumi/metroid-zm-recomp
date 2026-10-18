@@ -1117,6 +1117,14 @@ void SpriteUpdateAnimation(struct SpriteData* pSprite)
     }
 }
 
+#ifdef PLATFORM_PC
+// mzm-android widescreen: also draw the sprites in the extra columns of a
+// wide frame (port/game/widescreen.c). Same as the status otherwise.
+#define SPRITE_DRAW_STATUS(pSprite) Port_WideSpriteStatus(pSprite)
+#else
+#define SPRITE_DRAW_STATUS(pSprite) ((pSprite)->status)
+#endif
+
 /**
  * @brief d36c | c4 | Draws all high-priority sprites based on the draw order
  * 
@@ -1141,7 +1149,7 @@ void SpriteDrawAll_HighPriority(void)
     for (i = 0; i < MAX_AMOUNT_OF_SPRITES; i++)
     {
         // Sprite doesn't exists or isn't drawn
-        if ((gSpriteData[i].status & checkStatus) != drawStatus)
+        if ((SPRITE_DRAW_STATUS(&gSpriteData[i]) & checkStatus) != drawStatus)
         {
             gSpriteDrawOrder[i] = 0;
             continue;
@@ -1199,7 +1207,7 @@ void SpriteDrawAll_MediumPriority(void)
     for (i = 0; i < MAX_AMOUNT_OF_SPRITES; i++)
     {
         // Sprite doesn't exists or isn't drawn
-        if ((gSpriteData[i].status & checkStatus) != drawStatus)
+        if ((SPRITE_DRAW_STATUS(&gSpriteData[i]) & checkStatus) != drawStatus)
         {
             gSpriteDrawOrder[i] = 0;
             continue;
@@ -1241,7 +1249,7 @@ void SpriteDrawAll_LowPriority(void)
     for (i = 0; i < MAX_AMOUNT_OF_SPRITES; i++)
     {
         // Sprite doesn't exists or isn't drawn
-        if ((gSpriteData[i].status & checkStatus) != drawStatus)
+        if ((SPRITE_DRAW_STATUS(&gSpriteData[i]) & checkStatus) != drawStatus)
         {
             gSpriteDrawOrder[i] = 0;
             continue;
@@ -1326,6 +1334,15 @@ void SpriteDraw(struct SpriteData* pSprite, s32 slot)
 
     if (partCount + prevSlot >= OAM_BUFFER_DATA_SIZE)
         return;
+
+#ifdef PLATFORM_PC
+    // Widescreen: a sprite only visible in the extra columns leaves room in
+    // the OAM for what is drawn after it (Samus, projectiles).
+    if (!(pSprite->status & SPRITE_STATUS_ONSCREEN) && partCount + prevSlot >= OAM_BUFFER_DATA_SIZE - 32)
+        return;
+    if (pSprite->properties & SP_ABSOLUTE_POSITION)
+        Port_WideMarkCenter(prevSlot, prevSlot + partCount);
+#endif // PLATFORM_PC
 
     dst = (u16*)(gOamData + prevSlot);
     yPosition = SUB_PIXEL_TO_PIXEL_(pSprite->yPosition) - SUB_PIXEL_TO_PIXEL(gBg1YPosition);

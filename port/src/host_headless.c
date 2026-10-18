@@ -4,12 +4,13 @@
 //
 //   mzm_headless [--rom FILE] [--frames N] [--dump-every K] [--out DIR] [--save FILE]
 //                [--press FRAME:KEYS:LEN ...] [--wav FILE]
-//                [--state-save FRAME:FILE] [--state-load FRAME:FILE]
+//                [--state-save FRAME:FILE] [--state-load FRAME:FILE] [--width W]
 //
 // Frames are written as PPM images (no dependencies). KEYS is a combination
 // of the letters A B s(elect) S(tart) R(ight) L(eft) U(p) D(own) r l.
 // --wav records the sound output (16-bit stereo, 48 kHz).
 // --state-save / --state-load write or restore a save state after FRAME.
+// --width renders a wider picture (widescreen option, e.g. 284 = 16:9).
 #include "port.h"
 
 #include <errno.h>
@@ -82,6 +83,9 @@ bool Port_HostInit(const PortHostConfig* cfg)
             i++;
         } else if (strcmp(a, "--save") == 0 && v) {
             sSavePath = v;
+            i++;
+        } else if (strcmp(a, "--width") == 0 && v) {
+            Port_WideSetWidth(atoi(v));
             i++;
         } else if (strcmp(a, "--wav") == 0 && v) {
             sWavPath = v;

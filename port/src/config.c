@@ -8,6 +8,7 @@
 //   integer_scaling = true
 //   sync_to_display = false      ; lock the game to 60/120 Hz screens
 //   frame_blend = false          ; mix frames on 90/144 Hz screens
+//   widescreen = off             ; off | auto | 16:10 | 16:9 | 2:1
 //   [audio]
 //   volume = 100                 ; percent, 0 = muted
 //   [input]
@@ -42,6 +43,7 @@ static const char* const sTouchNames[PORT_TOUCH_BUTTON_COUNT] = {
 static const char* const sAnchorNames[] = { "left", "center", "right" };
 
 static const char* const sFilterNames[PORT_FILTER_COUNT] = { "none", "lcd", "crt" };
+static const char* const sWideNames[PORT_WIDE_COUNT] = { "off", "auto", "16:10", "16:9", "2:1" };
 
 static const char* const sSecondScreenNames[PORT_SCREEN2_COUNT] = { "off", "map", "status" };
 
@@ -58,6 +60,26 @@ const char* PortConfig_FilterName(int filter)
 const char* PortConfig_SecondScreenName(int mode)
 {
     return (mode >= 0 && mode < PORT_SCREEN2_COUNT) ? sSecondScreenNames[mode] : "off";
+}
+
+int PortConfig_WideWidth(int widescreen, float screenAspect)
+{
+    int width;
+
+    switch (widescreen) {
+    case PORT_WIDE_AUTO:
+        width = (int)(160.0f * screenAspect + 0.5f);
+        break;
+    case PORT_WIDE_16_10: width = 256; break;
+    case PORT_WIDE_16_9: width = 284; break; // 160 * 16 / 9 = 284.4
+    case PORT_WIDE_2_1: width = 320; break;
+    default: width = 240; break;
+    }
+    if (width < 240)
+        width = 240;
+    if (width > 320)
+        width = 320;
+    return width & ~1;
 }
 
 void PortConfig_DefaultTouchLayout(PortConfig* cfg)
@@ -116,6 +138,7 @@ void PortConfig_Defaults(PortConfig* cfg)
     cfg->filter = PORT_FILTER_NONE;
     cfg->syncToDisplay = false;
     cfg->frameBlend = false;
+    cfg->widescreen = PORT_WIDE_OFF;
     PortConfig_DefaultBindings(cfg);
     PortConfig_DefaultTouchLayout(cfg);
     cfg->rumbleGamepad = false;
@@ -272,6 +295,13 @@ bool PortConfig_Load(PortConfig* cfg, const char* path)
                 cfg->syncToDisplay = ParseBool(value);
             else if (strcmp(key, "frame_blend") == 0)
                 cfg->frameBlend = ParseBool(value);
+            else if (strcmp(key, "widescreen") == 0) {
+                const int w = FindName(sWideNames, PORT_WIDE_COUNT, value);
+                if (w >= 0)
+                    cfg->widescreen = w;
+                else if (ParseBool(value))
+                    cfg->widescreen = PORT_WIDE_16_9;
+            }
         } else if (strcmp(section, "audio") == 0) {
             if (strcmp(key, "volume") == 0)
                 cfg->volume = ParseInt(value, 0, 100, cfg->volume);
@@ -343,7 +373,8 @@ bool PortConfig_Save(const PortConfig* cfg, const char* path)
     fprintf(f, "filter = %s ; none | lcd | crt\n", sFilterNames[cfg->filter]);
     fprintf(f, "sync_to_display = %s ; game speed locked to 60/120 Hz screens (+0.46 %%)\n",
             cfg->syncToDisplay ? "true" : "false");
-    fprintf(f, "frame_blend = %s ; mix frames on 90/144 Hz screens\n\n", cfg->frameBlend ? "true" : "false");
+    fprintf(f, "frame_blend = %s ; mix frames on 90/144 Hz screens\n", cfg->frameBlend ? "true" : "false");
+    fprintf(f, "widescreen = %s ; off | auto | 16:10 | 16:9 | 2:1\n\n", sWideNames[cfg->widescreen]);
 
     fprintf(f, "[audio]\n");
     fprintf(f, "volume = %d ; percent, 0 = muted\n\n", cfg->volume);

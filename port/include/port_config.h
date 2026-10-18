@@ -42,6 +42,16 @@ enum {
     PORT_FILTER_COUNT
 };
 
+// Picture width (widescreen: more of the room on the sides).
+enum {
+    PORT_WIDE_OFF,  // 240x160, like the GBA
+    PORT_WIDE_AUTO, // as wide as the screen (up to 2:1)
+    PORT_WIDE_16_10,
+    PORT_WIDE_16_9,
+    PORT_WIDE_2_1,
+    PORT_WIDE_COUNT
+};
+
 // On-screen touch buttons.
 enum {
     PORT_TOUCH_UP,
@@ -90,6 +100,7 @@ typedef struct PortConfig {
     int filter; // PORT_FILTER_*
     bool syncToDisplay; // game speed locked to the refresh rate (port_pacing.h)
     bool frameBlend;    // mix the last two frames on 90/144 Hz... screens
+    int widescreen; // PORT_WIDE_*
     // [audio]
     int volume; // percent, 0 = muted
     // [input]
@@ -117,6 +128,9 @@ void PortConfig_DefaultBindings(PortConfig* cfg);
 void PortConfig_DefaultTouchLayout(PortConfig* cfg);
 const char* PortConfig_FilterName(int filter);
 const char* PortConfig_SecondScreenName(int mode);
+// Picture width for a widescreen setting on a screen of the given aspect
+// ratio (width / height; only used by PORT_WIDE_AUTO).
+int PortConfig_WideWidth(int widescreen, float screenAspect);
 
 #ifdef __cplusplus
 }

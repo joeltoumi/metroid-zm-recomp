@@ -4,7 +4,7 @@
 //
 //   mzm_headless [--rom FILE] [--frames N] [--dump-every K] [--out DIR] [--save FILE]
 //                [--press FRAME:KEYS:LEN ...] [--wav FILE]
-//                [--state-save FRAME:FILE] [--state-load FRAME:FILE]
+//                [--state-save FRAME:FILE] [--state-load FRAME:FILE] [--width W]
 //                [--screen2 map|status]
 //
 // Frames are written as PPM images (no dependencies). KEYS is a combination
@@ -13,6 +13,7 @@
 // --state-save / --state-load write or restore a save state after FRAME.
 // --screen2 also dumps the second screen (screen2_NNNNNN.ppm) with each frame.
 // MZM_RUMBLE_LOG=1 logs the rumble events (port/src/extras.c).
+// --width renders a wider picture (widescreen option, e.g. 284 = 16:9).
 #include "port.h"
 
 #include <errno.h>
@@ -86,6 +87,9 @@ bool Port_HostInit(const PortHostConfig* cfg)
             i++;
         } else if (strcmp(a, "--save") == 0 && v) {
             sSavePath = v;
+            i++;
+        } else if (strcmp(a, "--width") == 0 && v) {
+            Port_WideSetWidth(atoi(v));
             i++;
         } else if (strcmp(a, "--wav") == 0 && v) {
             sWavPath = v;

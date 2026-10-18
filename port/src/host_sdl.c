@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // mzm-android — SDL3 frontend (desktop and Android).
 //
-// Video: the 240x160 frame is uploaded to a streaming texture and scaled to
-// the window (aspect-correct, optional integer scaling / smooth filter / LCD
-// or CRT effect).
+// Video: the 240x160 frame (wider with the widescreen option) is uploaded to
+// a streaming texture and scaled to the window (aspect-correct, optional
+// integer scaling / smooth filter / LCD or CRT effect).
 // Audio: the port's 48 kHz output goes to an SDL audio stream.
 // Input: keyboard, gamepads (the AYN Thor's built-in controls show up as one)
 // and, on touch screens, an on-screen pad drawn over the game.
@@ -46,7 +46,8 @@ static bool sFastForwardHeld;
 static bool sFastForwardOn; // toggle mode
 static bool sTouchVisible;
 static uint64_t sNextFrameNs;
-static uint32_t sLastFrame[GBA_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
+static uint32_t sLastFrame[PORT_MAX_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
+static int sFrameW = GBA_SCREEN_WIDTH; // width of sTexture / sLastFrame
 
 static bool sMenuRequested; // opened at the next frame boundary
 static bool sMenuReady;
@@ -107,10 +108,10 @@ static SDL_FRect GameRect(void)
 {
     int w, h;
     OutputSize(&w, &h);
-    float scale = SDL_min((float)w / GBA_SCREEN_WIDTH, (float)h / GBA_SCREEN_HEIGHT);
+    float scale = SDL_min((float)w / sFrameW, (float)h / GBA_SCREEN_HEIGHT);
     if (sConfig.integerScaling && scale >= 1.0f)
         scale = SDL_floorf(scale);
-    const float gw = SDL_floorf(GBA_SCREEN_WIDTH * scale), gh = SDL_floorf(GBA_SCREEN_HEIGHT * scale);
+    const float gw = SDL_floorf(sFrameW * scale), gh = SDL_floorf(GBA_SCREEN_HEIGHT * scale);
     return (SDL_FRect){ SDL_floorf((w - gw) * 0.5f), SDL_floorf((h - gh) * 0.5f), gw, gh };
 }
 
@@ -374,14 +375,64 @@ static double AudioTarget(void)
     return SDL_min(PORT_AUDIO_RATE * 0.07, SDL_max(PORT_AUDIO_RATE * 0.04, 2.0 * sAudioChunk + frame));
 }
 
+// Picture width for the widescreen setting ("auto" follows the window).
+static int WantedFrameWidth(void)
+{
+    int w = 0, h = 0;
+    if (sConfig.widescreen == PORT_WIDE_AUTO)
+        OutputSize(&w, &h);
+    return PortConfig_WideWidth(sConfig.widescreen, h > 0 ? (float)w / h : 1.5f);
+}
+
+// (Re)creates the game texture for a picture `width` pixels wide.
+static bool SetFrameWidth(int width)
+{
+    if (sTexture && width == sFrameW)
+        return true;
+    SDL_Texture* t = SDL_CreateTexture(sRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width,
+                                       GBA_SCREEN_HEIGHT);
+    if (!t) {
+        Port_Log("SDL_CreateTexture: %s", SDL_GetError());
+        return false;
+    }
+    if (sTexture)
+        SDL_DestroyTexture(sTexture);
+    sTexture = t;
+    SDL_SetTextureScaleMode(sTexture, sConfig.smoothScaling ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
+    // Until the next frame: the last one, centered (or cropped).
+    static uint32_t old[PORT_MAX_SCREEN_WIDTH * GBA_SCREEN_HEIGHT];
+    const int oldW = sFrameW;
+    memcpy(old, sLastFrame, sizeof(old));
+    for (int y = 0; y < GBA_SCREEN_HEIGHT; y++) {
+        for (int x = 0; x < width; x++) {
+            const int ox = x - (width - oldW) / 2;
+            sLastFrame[y * width + x] = (ox >= 0 && ox < oldW) ? old[y * oldW + ox] : 0xFF000000u;
+        }
+    }
+    sFrameW = width;
+    SDL_UpdateTexture(sTexture, NULL, sLastFrame, sFrameW * 4);
+    // Frame blending's previous frame must have the same size.
+    if (sPrevTexture) {
+        SDL_DestroyTexture(sPrevTexture);
+        sPrevTexture =
+            SDL_CreateTexture(sRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, width, GBA_SCREEN_HEIGHT);
+        if (sPrevTexture)
+            SDL_SetTextureScaleMode(sPrevTexture, sConfig.smoothScaling ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST);
+        sPrevValid = false;
+    }
+    return true;
+}
+
 static void ApplyVideoConfig(void)
 {
     const SDL_ScaleMode scale = sConfig.smoothScaling ? SDL_SCALEMODE_LINEAR : SDL_SCALEMODE_NEAREST;
+    Port_WideSetWidth(WantedFrameWidth());
+    SetFrameWidth(Port_WideWidth());
     SDL_SetRenderVSync(sRenderer, VsyncWanted() ? 1 : 0);
     SDL_SetTextureScaleMode(sTexture, scale);
     if (sConfig.frameBlend && !sPrevTexture) {
         sPrevTexture = SDL_CreateTexture(sRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING,
-                                         GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT);
+                                         sFrameW, GBA_SCREEN_HEIGHT);
         sPrevValid = false;
     }
     if (sPrevTexture)
@@ -407,8 +458,8 @@ static void UpdateMask(int w, int h)
     if (!px)
         return;
 
-    const float sx = (float)GBA_SCREEN_WIDTH / w, sy = (float)GBA_SCREEN_HEIGHT / h;
-    const float cell = (float)w / GBA_SCREEN_WIDTH; // output pixels per GBA pixel
+    const float sx = (float)sFrameW / w, sy = (float)GBA_SCREEN_HEIGHT / h;
+    const float cell = (float)w / sFrameW; // output pixels per GBA pixel
     for (int y = 0; y < h; y++) {
         const float fy = (y + 0.5f) * sy - SDL_floorf((y + 0.5f) * sy);
         for (int x = 0; x < w; x++) {
@@ -495,7 +546,8 @@ static void StatePath(int slot, char* out, size_t size)
     SDL_snprintf(out, size, "%sstate%s_%d.mzs", sPrefPath ? sPrefPath : "", sRegionSuffix, slot);
 }
 
-// File: the port's state image followed by a 240x160 thumbnail (ABGR8888).
+// File: the port's state image followed by a 240x160 thumbnail (ABGR8888;
+// the middle of the picture when it is wider).
 static bool SaveState(int slot, char* error, size_t errorSize)
 {
     char path[1100];
@@ -507,7 +559,9 @@ static bool SaveState(int slot, char* error, size_t errorSize)
         return false;
     }
     Port_StateSave(buf);
-    memcpy(buf + size, sLastFrame, THUMB_BYTES);
+    for (int y = 0; y < GBA_SCREEN_HEIGHT; y++)
+        memcpy(buf + size + (size_t)y * GBA_SCREEN_WIDTH * 4,
+               sLastFrame + (size_t)y * sFrameW + (sFrameW - GBA_SCREEN_WIDTH) / 2, GBA_SCREEN_WIDTH * 4);
     StatePath(slot, path, sizeof(path));
     const bool ok = SDL_SaveFile(path, buf, size + THUMB_BYTES);
     free(buf);
@@ -534,8 +588,17 @@ static bool LoadState(int slot, char* error, size_t errorSize)
     const PortStateResult r = Port_StateLoad(buf, len < size ? len : size);
     if (r == PORT_STATE_OK && len >= size + THUMB_BYTES) {
         // Show the saved picture until the game draws the next frame.
-        memcpy(sLastFrame, (uint8_t*)buf + size, THUMB_BYTES);
-        SDL_UpdateTexture(sTexture, NULL, sLastFrame, GBA_SCREEN_WIDTH * 4);
+        const uint32_t* thumb = (const uint32_t*)((uint8_t*)buf + size);
+        for (int y = 0; y < GBA_SCREEN_HEIGHT; y++) {
+            for (int x = 0; x < sFrameW; x++) {
+                const int tx = x - (sFrameW - GBA_SCREEN_WIDTH) / 2;
+                uint32_t p = 0xFF000000u;
+                if (tx >= 0 && tx < GBA_SCREEN_WIDTH)
+                    memcpy(&p, &thumb[y * GBA_SCREEN_WIDTH + tx], sizeof(p));
+                sLastFrame[y * sFrameW + x] = p;
+            }
+        }
+        SDL_UpdateTexture(sTexture, NULL, sLastFrame, sFrameW * 4);
     }
     sPrevValid = false; // don't blend with the frame from before the load
     SDL_free(buf);
@@ -1050,17 +1113,14 @@ bool Port_HostInit(const PortHostConfig* cfg)
 
     const SDL_WindowFlags flags = SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIGH_PIXEL_DENSITY |
                                   (sConfig.fullscreen ? SDL_WINDOW_FULLSCREEN : 0);
-    if (!SDL_CreateWindowAndRenderer("Metroid: Zero Mission", GBA_SCREEN_WIDTH * sConfig.windowScale,
+    const int startW = PortConfig_WideWidth(sConfig.widescreen == PORT_WIDE_AUTO ? PORT_WIDE_OFF : sConfig.widescreen, 1.5f);
+    if (!SDL_CreateWindowAndRenderer("Metroid: Zero Mission", startW * sConfig.windowScale,
                                      GBA_SCREEN_HEIGHT * sConfig.windowScale, flags, &sWindow, &sRenderer)) {
         Port_Log("SDL_CreateWindowAndRenderer: %s", SDL_GetError());
         return false;
     }
-    sTexture = SDL_CreateTexture(sRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING,
-                                 GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT);
-    if (!sTexture) {
-        Port_Log("SDL_CreateTexture: %s", SDL_GetError());
+    if (!SetFrameWidth(GBA_SCREEN_WIDTH))
         return false;
-    }
 
     if (sConfig.volume > 0)
         OpenAudio();
@@ -1288,6 +1348,8 @@ bool Port_HostPresent(const uint32_t* abgr, int width, int height)
     if (!PumpEvents())
         return false;
 
+    if (!SetFrameWidth(width))
+        return false;
     // Frame blending keeps the previous frame in a second texture. Only on
     // screens clearly faster than the GBA (at 60 Hz there is nothing to mix).
     sBlendActive = sConfig.frameBlend && sPrevTexture && !sSyncDivisor && !FastForwarding() && sRefreshNs > 0 &&
@@ -1300,9 +1362,12 @@ bool Port_HostPresent(const uint32_t* abgr, int width, int height)
     } else {
         sPrevValid = false;
     }
-    memcpy(sLastFrame, abgr, sizeof(sLastFrame));
+    memcpy(sLastFrame, abgr, (size_t)width * GBA_SCREEN_HEIGHT * sizeof(uint32_t));
     SDL_UpdateTexture(sTexture, NULL, abgr, width * (int)sizeof(uint32_t));
     (void)height;
+    // "auto" widescreen follows the window (the next frame uses it).
+    if (sConfig.widescreen == PORT_WIDE_AUTO)
+        Port_WideSetWidth(WantedFrameWidth());
     sFrameShownNs = SDL_GetTicksNS();
     DrawScene(true, sBlendActive ? PortPacing_BlendAlpha(sFrameShownNs + sRefreshNs, sFrameShownNs, GBA_FRAME_NS)
                                  : 1.0f);

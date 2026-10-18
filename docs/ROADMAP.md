@@ -45,7 +45,8 @@
 
 ## M5 — Mejoras
 
-- [ ] Pantalla panorámica (como Picori con Minish Cap)
+- [x] Pantalla panorámica (como Picori con Minish Cap): opcional, desactivada
+      por defecto
 - [x] 60 FPS de lógica / interpolación: sincronización con pantallas de
       60/120 Hz (sonido reajustado) y mezcla de fotogramas en 90/144 Hz
       (opcionales; la interpolación real de posiciones se descartó, ver

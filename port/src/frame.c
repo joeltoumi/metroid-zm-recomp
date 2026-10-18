@@ -13,6 +13,8 @@
 //   3. Sound: play the frame's audio (DirectSound FIFOs + PSG).
 //   4. Present the frame, read input, wait for the next tick (before that,
 //      the extras read the game state: rumble, second screen).
+//
+// With the widescreen option the frame is wider than 240 px (widescreen.c).
 #include "port.h"
 #include "port_game.h"
 
@@ -127,14 +129,14 @@ void Port_PpuInit(void)
     virtuappu_mode1_pre_line_callback = PreLine;
 }
 
-const uint32_t* Port_PpuRenderFrame(void)
+const uint32_t* Port_PpuRenderFrame(int width)
 {
     static PPUMemory sPpu;
     const uint16_t dispcnt = Port_IoRead16(IO_DISPCNT);
     const int gbaMode = dispcnt & 7;
 
-    sPpu.frame_width = GBA_SCREEN_WIDTH;
-    sPpu.frame_pitch = GBA_SCREEN_WIDTH;
+    sPpu.frame_width = (uint16_t)width;
+    sPpu.frame_pitch = (uint16_t)width;
     switch (gbaMode) {
     case 0:
         sPpu.mode = 1;
@@ -168,6 +170,7 @@ static void UpdateKeys(void)
 void Port_RunFrame(void)
 {
     const uint32_t* frame;
+    int width;
 
     if (sInFrame) {
         // A VBlank/HBlank handler waiting for VBlank would recurse forever.
@@ -188,14 +191,14 @@ void Port_RunFrame(void)
     }
 
     // 2. Draw the frame. PreLine() replays scanline 0..159 events.
-    frame = Port_PpuRenderFrame();
+    frame = Port_WideRenderFrame(&width);
 
     // 3. Sound.
     Port_ApuRunFrame();
 
     // 4. Rumble and second screen, then present + input + pacing.
     Port_ExtrasFrame();
-    if (!Port_HostPresent(frame, GBA_SCREEN_WIDTH, GBA_SCREEN_HEIGHT))
+    if (!Port_HostPresent(frame, width, GBA_SCREEN_HEIGHT))
         Port_RequestQuit();
     UpdateKeys();
     Port_FlushSave();

@@ -80,6 +80,7 @@ add_library(mzm_game STATIC ${MZM_GAME_COMPILE_SOURCES} ${MZM_DATA_WRAPPERS}
     port/game/audio_engine.c
     port/game/warp.c
     port/game/status.c
+    port/game/widescreen.c
     port/game/sound_data.c)
 # The zero-filled .inc stubs shadow any real `make extract` output.
 target_include_directories(mzm_game PRIVATE "${MZM_GEN_DIR}/stub" "${CMAKE_SOURCE_DIR}/include")
@@ -116,6 +117,7 @@ add_library(mzm_port STATIC
     port/src/bios.c
     port/src/apu.c
     port/src/warp.c
+    port/src/widescreen.c
     port/src/frame.c
     port/src/main.c
     port/src/savestate.c

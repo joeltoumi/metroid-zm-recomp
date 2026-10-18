@@ -139,6 +139,11 @@ u32 InGameHandler(void)
             break;
     }
 
+#ifdef PLATFORM_PC
+    s32 portHudEnd = 0;
+    s32 portDrewOam = TRUE;
+#endif // PLATFORM_PC
+
     if (gSubGameMode1 == SUB_GAME_MODE_DYING)
     {
         SamusCallGfxFunctions();
@@ -161,6 +166,9 @@ u32 InGameHandler(void)
     
         ProjectileUpdate();
         HudDraw();
+#ifdef PLATFORM_PC
+        portHudEnd = gNextOamSlot; // the HUD always starts at slot 0
+#endif // PLATFORM_PC
     
         SpriteDrawAll_HighPriority();
         ParticleProcessAll();
@@ -181,6 +189,13 @@ u32 InGameHandler(void)
         if (gSubGameMode1 == SUB_GAME_MODE_PLAYING)
             SamusCallCheckLowHealth();
     }
+#ifdef PLATFORM_PC
+    else
+        portDrewOam = FALSE;
+
+    // Widescreen: extra tilemap columns and placement of this frame's OAM.
+    Port_WideInGameFrame(portHudEnd, portDrewOam);
+#endif // PLATFORM_PC
 
 #ifdef DEBUG
     if (gDebugMode == 1)

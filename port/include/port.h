@@ -17,6 +17,8 @@
 
 #define GBA_SCREEN_WIDTH 240
 #define GBA_SCREEN_HEIGHT 160
+// Widest frame the port renders (widescreen option, 2:1).
+#define PORT_MAX_SCREEN_WIDTH 320
 
 // ---- I/O register helpers (gPortIo is the 0x04000000 region) -------------
 static inline uint16_t Port_IoRead16(uint32_t off)
@@ -69,7 +71,17 @@ void Port_ApuReset(void);
 void Port_ApuRunFrame(void);
 
 void Port_PpuInit(void);
-const uint32_t* Port_PpuRenderFrame(void); // ABGR8888, 240x160, pitch 240
+// ABGR8888, width x 160, pitch = width. 240 = the GBA screen.
+const uint32_t* Port_PpuRenderFrame(int width);
+
+// Widescreen (port/src/widescreen.c). The width is a setting: 240 (off) or a
+// wider even number up to PORT_MAX_SCREEN_WIDTH. The game tells the port
+// each in-game frame where the camera is (Port_WideSetFrame, platform.h);
+// other frames (menus, cutscenes) are drawn at 240 px, centered.
+void Port_WideSetWidth(int width);
+int Port_WideWidth(void);
+// Renders this frame's picture; *width is its width (Port_WideWidth()).
+const uint32_t* Port_WideRenderFrame(int* width);
 
 // One GBA frame: VBlank IRQ, scanline render with HBlank/VCount IRQs,
 // present, input, pacing. Called from the game's Halt/VBlankIntrWait.

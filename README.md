@@ -63,7 +63,8 @@ Sin ventana (pruebas/CI): `-DMZM_HOST=headless`, que vuelca fotogramas a PPM:
 ```
 
 `--state-save FRAME:FICHERO` y `--state-load FRAME:FICHERO` guardan o cargan un
-estado en ese frame (para pruebas reproducibles).
+estado en ese frame (para pruebas reproducibles). `--width 284` dibuja en
+panorámico (16:9).
 
 ## Controles y ajustes
 
@@ -76,7 +77,10 @@ Android o con el botón `=` de arriba del mando táctil. Desde ahí:
 - **Controles**: cambiar cualquier botón del teclado o del mando (pulsa la
   casilla y luego la tecla/botón nuevo) y la zona muerta del stick.
 - **Vídeo**: pantalla completa, escalado entero, filtro suave, efecto LCD
-  (rejilla de píxeles) o CRT (líneas de barrido) y VSync.
+  (rejilla de píxeles) o CRT (líneas de barrido), VSync y **pantalla
+  panorámica** (16:10, 16:9, 2:1 o como la pantalla; desactivada por
+  defecto): se ve más sala a los lados en vez de bandas negras, sin cambiar
+  el juego. Menús, mapa y cinemáticas siguen en 3:2 en el centro.
 - **Fluidez** (en Vídeo): *ajustar la velocidad a la pantalla* quita los
   tirones en pantallas de 60/120 Hz (el juego va un 0,46 % más rápido, el
   sonido se ajusta solo) y *mezclar fotogramas* suaviza el movimiento en

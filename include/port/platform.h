@@ -160,6 +160,35 @@ void Port_GameStatus(struct PortGameStatus* status);
  * energy, poses... isn't reported as an event. */
 void Port_GameStatusReset(void);
 
+/* Widescreen (port/src/widescreen.c). Extra columns the frame has on each
+ * side of the GBA screen (0 = option off). */
+int Port_WideExtra(void);
+/* Display column where GBA x = 0 was drawn in the last wide frame (between 0
+ * and 2 * Port_WideExtra()); the game uses it to draw the sprites that are
+ * visible in the extra columns. */
+int Port_WideOrigin(void);
+/* Game side (port/game/widescreen.c), called at the end of every in-game
+ * frame: refreshes the extra tilemap columns and reports the frame. */
+void Port_WideInGameFrame(int hudEnd, int drewOam);
+/* Sprite status for drawing: the GBA status, plus "on screen" when the
+ * sprite is in the extra columns of a wide frame. */
+struct SpriteData;
+unsigned short Port_WideSpriteStatus(struct SpriteData* pSprite);
+/* OAM entries [from, to) belong to a sprite with a screen position. */
+void Port_WideMarkCenter(int from, int to);
+/* Port side: one in-game frame. `oamTags` gives the placement of each of the
+ * 128 OAM entries (PORT_WIDE_OAM_*); cameraX is the left edge of the GBA
+ * screen and [left, right) the part of the room the camera may show, in
+ * pixels of the room. */
+enum {
+    PORT_WIDE_OAM_SCREEN,    /* drawn like on the GBA, clipped to its screen */
+    PORT_WIDE_OAM_WORLD,     /* follows the room, visible in the extra columns */
+    PORT_WIDE_OAM_HUD_LEFT,  /* anchored to the left edge of the picture */
+    PORT_WIDE_OAM_HUD_RIGHT, /* anchored to the right edge */
+    PORT_WIDE_OAM_CENTER,    /* centered on the frame (banners) */
+};
+void Port_WideSetFrame(const unsigned char* oamTags, int cameraX, int left, int right);
+
 void Port_Log(const char* fmt, ...);
 
 #endif /* PLATFORM_PC */

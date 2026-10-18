@@ -320,6 +320,20 @@ void PageVideo()
     changed |= ImGui::Combo("Efecto", &cfg.filter, kFilters, PORT_FILTER_COUNT);
     changed |= ImGui::Checkbox("Sincronización vertical (VSync)", &cfg.vsync);
     Hint("Con VSync la imagen no se corta, pero puede añadir algo de retraso.");
+
+    ImGui::Spacing();
+    ImGui::SeparatorText("Fluidez");
+    changed |= ImGui::Checkbox("Ajustar la velocidad a la pantalla", &cfg.syncToDisplay);
+    Hint("En pantallas de 60, 120 o 240 Hz el juego va un 0,46 % más rápido para coincidir con la "
+         "pantalla: sin tirones. El sonido se ajusta solo. Activa VSync.");
+    changed |= ImGui::Checkbox("Mezclar fotogramas (90, 144 Hz...)", &cfg.frameBlend);
+    Hint("Si la pantalla no va a 60 Hz ni a un múltiplo, cada refresco mezcla los dos últimos fotogramas "
+         "para suavizar el movimiento (deja una ligera estela). Activa VSync.");
+    if (sHost.syncStatus) {
+        char status[160];
+        sHost.syncStatus(status, sizeof(status));
+        Hint(status);
+    }
     if (changed)
         sHost.applyConfig();
 }

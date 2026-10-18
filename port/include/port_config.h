@@ -86,6 +86,8 @@ typedef struct PortConfig {
     bool integerScaling;
     bool smoothScaling;
     int filter; // PORT_FILTER_*
+    bool syncToDisplay; // game speed locked to the refresh rate (port_pacing.h)
+    bool frameBlend;    // mix the last two frames on 90/144 Hz... screens
     // [audio]
     int volume; // percent, 0 = muted
     // [input]

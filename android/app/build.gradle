@@ -29,7 +29,7 @@ android {
 
     // One APK per ROM region: the game code differs between versions
     // (#ifdef REGION_*), so each build only accepts its own dump. The
-    // application ids differ, so both can be installed side by side.
+    // application ids differ, so all of them can be installed side by side.
     flavorDimensions 'region'
     productFlavors {
         eu {
@@ -39,6 +39,16 @@ android {
             externalNativeBuild {
                 cmake {
                     arguments '-DMZM_REGION=eu'
+                }
+            }
+        }
+        jp {
+            dimension 'region'
+            applicationIdSuffix '.jp'
+            resValue 'string', 'app_name', 'Zero Mission (JP)'
+            externalNativeBuild {
+                cmake {
+                    arguments '-DMZM_REGION=jp'
                 }
             }
         }

@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        region: [us, eu]
+        region: [us, eu, jp]
     steps:
       - uses: actions/checkout@v5
       - name: Install tools

@@ -21,20 +21,23 @@ por región, y cada uno solo acepta su ROM:
 | --- | --- | --- |
 | Europa | `eu` | `0fd107445a42e6f3a3e5ce8c865f412583179903` |
 | USA | `us` | `5de8536afe1f0078ee6fe1089f890e8c7aa0a6e8` |
+| Japón | `jp` | `096f07685a3dc9286e71aa0b761f233b5efa2fcd` |
 
 La ROM se copia al almacenamiento privado de la app y los gráficos, niveles y
 textos se cargan de ella en cada arranque. La versión europea arranca con la
-selección de idioma, como en la GBA.
+selección de idioma, como en la GBA. El build japonés compila y pasa el smoke
+test, pero aún no se ha probado con la ROM real (ver docs/PORT.md).
 
 ## Instalar en Android
 
-Cada push a `main` genera dos APK en **Actions → build → Artifacts →
-`mzm-android-apk`** (arm64 + x86_64): `app-eu-release.apk` para la ROM europea
-y `app-us-release.apk` para la americana. Se pueden instalar los dos a la vez.
-Instala el de tu región, abre *Zero Mission (EU)* o *(US)* y elige tu `.gba`
-con el selector de archivos.
+Cada push a `main` genera tres APK en **Actions → build → Artifacts →
+`mzm-android-apk`** (arm64 + x86_64): `app-eu-release.apk` para la ROM europea,
+`app-us-release.apk` para la americana y `app-jp-release.apk` para la japonesa.
+Se pueden instalar a la vez. Instala el de tu región, abre *Zero Mission (EU)*,
+*(US)* o *(JP)* y elige tu `.gba` con el selector de archivos.
 
-Para compilar solo uno: `./gradlew assembleEuRelease` o `assembleUsRelease`.
+Para compilar solo uno: `./gradlew assembleEuRelease`, `assembleUsRelease` o
+`assembleJpRelease`.
 
 ## Compilar en PC (Linux)
 
@@ -44,12 +47,13 @@ instalado, CMake lo descarga y compila).
 ```sh
 cmake -B build -G Ninja                 # ROM USA
 cmake -B build -G Ninja -DMZM_REGION=eu # ROM europea
+cmake -B build -G Ninja -DMZM_REGION=jp # ROM japonesa
 cmake --build build
 ./build/mzm ruta/a/tu_rom.gba
 ```
 
 En PC todos los builds comparten carpeta de datos, así que cada región guarda
-su partida y su copia de la ROM por separado (`mzm_eu.sav`, `rom_eu.gba`).
+su partida y su copia de la ROM por separado (`mzm_eu.sav`, `rom_eu.gba`, `mzm_jp.sav`...).
 
 Sin ventana (pruebas/CI): `-DMZM_HOST=headless`, que vuelca fotogramas a PPM:
 

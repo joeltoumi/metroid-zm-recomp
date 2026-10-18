@@ -46,7 +46,10 @@
 ## M5 — Mejoras
 
 - [ ] Pantalla panorámica (como Picori con Minish Cap)
-- [ ] 60 FPS de lógica / interpolación
+- [x] 60 FPS de lógica / interpolación: sincronización con pantallas de
+      60/120 Hz (sonido reajustado) y mezcla de fotogramas en 90/144 Hz
+      (opcionales; la interpolación real de posiciones se descartó, ver
+      docs/PORT.md)
 - [ ] Segunda pantalla de la AYN Thor: mapa o estado de Samus
 - [ ] Vibración
 - [x] Build EU (APK propio, CI con las dos regiones)

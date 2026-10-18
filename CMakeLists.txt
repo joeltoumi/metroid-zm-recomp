@@ -118,6 +118,7 @@ add_library(mzm_port STATIC
     port/src/frame.c
     port/src/main.c
     port/src/savestate.c
+    port/src/pacing.c
     port/ppu/src/virtuappu.c
     port/ppu/src/mode1.c)
 target_include_directories(mzm_port PUBLIC port/include PRIVATE port/ppu/include)
@@ -146,6 +147,11 @@ if(MZM_HOST STREQUAL "headless")
     add_executable(mzm_headless port/src/host_headless.c)
     target_compile_options(mzm_headless PRIVATE -std=gnu11 -Wall -Wextra)
     target_link_libraries(mzm_headless PRIVATE mzm_port mzm_game mzm_port)
+    # Frame pacing / sound rate control test (no ROM needed).
+    add_executable(mzm_pacing_test tools/port/pacing_test.c port/src/pacing.c)
+    target_include_directories(mzm_pacing_test PRIVATE port/include)
+    target_compile_options(mzm_pacing_test PRIVATE -std=gnu11 -Wall -Wextra)
+    target_link_libraries(mzm_pacing_test PRIVATE m)
 elseif(MZM_HOST STREQUAL "sdl")
     if(NOT ANDROID)
         find_package(SDL3 CONFIG QUIET)

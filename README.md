@@ -11,6 +11,10 @@ layer in `port/`.
 > natively; a full playthrough with the real ROM still has to be validated.
 > See [docs/ROADMAP.md](docs/ROADMAP.md).
 
+> **AI notice:** this project was developed with the help of AI tools
+> (Anthropic's Claude), which wrote most of the code and documentation under
+> my direction and review.
+
 ## You need your own ROM
 
 The repository and the APKs **do not contain any game data**. On first launch

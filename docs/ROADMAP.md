@@ -1,62 +1,60 @@
-# Hoja de ruta
+# Roadmap
 
-## M1 — Build nativo ✅
+## M1 — Native build ✅
 
-- [x] La decompilación compila en x86-64 / ARM64 (`PLATFORM_PC`)
-- [x] Mapa de memoria de la GBA en buffers del host
-- [x] DMA (inmediata, HBlank, VBlank), BIOS en C, bucle de frame con IRQs
-- [x] PPU por software, host headless, smoke test en CI
-- [x] Guardado con el layout exacto de la GBA (32 KiB, compatible con mGBA)
+- [x] The decompilation builds on x86-64 / ARM64 (`PLATFORM_PC`)
+- [x] GBA memory map in host buffers
+- [x] DMA (immediate, HBlank, VBlank), BIOS in C, frame loop with IRQs
+- [x] Software PPU, headless host, smoke test in CI
+- [x] Saving with the exact GBA layout (32 KiB, mGBA-compatible)
 
-## M2 — Jugable en PC y Android (en curso)
+## M2 — Playable on PC and Android (in progress)
 
-- [x] Datos del juego cargados de la ROM del jugador (verificada por SHA-1)
-- [x] Frontend SDL3: escalado, pantalla completa, teclado, mando, táctil,
-      avance rápido, `settings.ini`
-- [x] Proyecto Android + APK en CI
-- [x] Validar con la ROM real (EU, en headless): idioma, intro, título,
-      selección de partida, primera sala de Brinstar y mapa de pausa
-- [x] Modo de prueba `MZM_WARP` para cargar cualquier sala, cinemática o
-      huida (ver docs/PORT.md)
-- [x] Las 324 salas, las 14 cinemáticas, las huidas, los créditos y las demos
-      se cargan y se ven bien (ROM EU)
-- [x] Lecturas y escrituras fuera de rango que detecta AddressSanitizer
-      (salas, mapa, intro, pausa, paletas de Samus, escombros, huida de
-      Tourian): ahora leen de la ROM como en la GBA
-- [ ] Partida completa jugada a mano (en el móvil) para encontrar lo que las
-      pruebas automáticas no ven
-
-## M3 — Sonido ✅
-
-- [x] Traducir `asm/audio_internal.s` y `asm/soundcode.s` a C
-- [x] Datos de sonido (`sound/*.s`) leídos de la ROM del jugador
-- [x] Emular los canales PSG (1-4) y el FIFO A/B; salida por SDL_AudioStream
-- [x] Comparado con mGBA (intro y Brinstar, ROM EU)
-
-## M4 — Menú de opciones en el juego ✅
-
-- [x] Overlay (ImGui) accesible con Select+Start, Esc/F1, Atrás o un botón táctil
-- [x] Remapeo de controles desde el menú (teclado, mando, táctil)
-- [x] Vídeo: escalado entero, filtro, efectos LCD/CRT, sincronización
-- [x] Guardados rápidos (save states, 4 ranuras con miniatura) y avance
-      rápido configurable (velocidad, mantener/alternar)
-- [x] Editor de posición/tamaño/opacidad del mando táctil
-- [ ] Probar el menú con mando y táctil en un dispositivo real (AYN Thor)
-
-## M5 — Mejoras
-
-- [x] Pantalla panorámica (como Picori con Minish Cap): opcional, desactivada
-      por defecto
-- [x] 60 FPS de lógica / interpolación: sincronización con pantallas de
-      60/120 Hz (sonido reajustado) y mezcla de fotogramas en 90/144 Hz
-      (opcionales; la interpolación real de posiciones se descartó, ver
+- [x] Game data loaded from the player's ROM (verified by SHA-1)
+- [x] SDL3 frontend: scaling, fullscreen, keyboard, gamepad, touch,
+      fast-forward, `settings.ini`
+- [x] Android project + APK in CI
+- [x] Validate with the real ROM (EU, headless): language, intro, title,
+      file select, first Brinstar room and pause map
+- [x] `MZM_WARP` test mode to load any room, cutscene or escape (see
       docs/PORT.md)
-- [x] Segunda pantalla de la AYN Thor: mapa o estado de Samus
-- [x] Vibración
-- [x] Build EU (APK propio, CI con las dos regiones)
-- [x] Build JP (APK propio y CI; sin probar aún con la ROM japonesa real)
+- [x] All 324 rooms, the 14 cutscenes, the escapes, the credits and the demos
+      load and render correctly (EU ROM)
+- [x] Out-of-bounds reads and writes caught by AddressSanitizer (rooms, map,
+      intro, pause, Samus palettes, debris, Tourian escape): they now read
+      from the ROM as on the GBA
+- [ ] Full playthrough by hand (on a phone) to find what the automated tests
+      do not see
 
-## No soportado
+## M3 — Sound ✅
 
-- Metroid original (NES) desbloqueable: es un emulador ARM de GBA embebido.
-- Conexión con Metroid Fusion por cable link.
+- [x] Translate `asm/audio_internal.s` and `asm/soundcode.s` to C
+- [x] Sound data (`sound/*.s`) read from the player's ROM
+- [x] Emulate the PSG channels (1-4) and FIFO A/B; output via SDL_AudioStream
+- [x] Compared against mGBA (intro and Brinstar, EU ROM)
+
+## M4 — In-game options menu ✅
+
+- [x] Overlay (ImGui) opened with Select+Start, Esc/F1, Back or a touch button
+- [x] Control remapping from the menu (keyboard, gamepad, touch)
+- [x] Video: integer scaling, filter, LCD/CRT effects, sync
+- [x] Quick saves (save states, 4 slots with thumbnail) and configurable
+      fast-forward (speed, hold/toggle)
+- [x] Touch controls position/size/opacity editor
+- [ ] Test the menu with gamepad and touch on a real device (AYN Thor)
+
+## M5 — Enhancements
+
+- [x] Widescreen (like Picori with Minish Cap): optional, off by default
+- [x] 60 FPS logic / interpolation: sync with 60/120 Hz displays (sound
+      resampled) and frame blending on 90/144 Hz (optional; real position
+      interpolation was ruled out, see docs/PORT.md)
+- [x] AYN Thor second screen: map or Samus status
+- [x] Rumble
+- [x] EU build (its own APK, CI with both regions)
+- [x] JP build (its own APK and CI; not yet tested with the real Japanese ROM)
+
+## Not supported
+
+- The unlockable original Metroid (NES): it is an embedded GBA ARM emulator.
+- Link cable connection with Metroid Fusion.

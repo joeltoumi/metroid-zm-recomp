@@ -1,344 +1,339 @@
-# Notas técnicas del port
+# Port technical notes
 
-## Cómo arranca
+## How it boots
 
-1. `port/src/main.c` (`Port_Main`) sustituye a `asm/crt0.s`: inicia el host,
-   carga la ROM, resetea la "consola" y llama a `agbmain()` en bucle (el juego
-   sale de `agbmain` al hacer *soft reset*).
-2. El bucle del juego termina cada frame con `SYSCALL(2)` (Halt). En nativo eso
-   es `Port_RunFrame()` (`port/src/frame.c`), que reproduce un frame de
-   hardware: VBlank (DMA de VBlank + IRQ de VBlank del juego), las 160 líneas
-   visibles con sus eventos de HBlank/VCount, el render del PPU, presentar,
-   leer controles y esperar al siguiente tick (59,73 Hz).
+1. `port/src/main.c` (`Port_Main`) replaces `asm/crt0.s`: it starts the host,
+   loads the ROM, resets the "console" and calls `agbmain()` in a loop (the
+   game returns from `agbmain` on a *soft reset*).
+2. The game loop ends each frame with `SYSCALL(2)` (Halt). Natively that is
+   `Port_RunFrame()` (`port/src/frame.c`), which reproduces one hardware
+   frame: VBlank (VBlank DMA + the game's VBlank IRQ), the 160 visible lines
+   with their HBlank/VCount events, the PPU render, presenting, reading input
+   and waiting for the next tick (59.73 Hz).
 
-## Memoria
+## Memory
 
-`include/gba/memory.h` redefine `EWRAM_BASE`, `REG_BASE`, `VRAM_BASE`... con
-`PLATFORM_PC` para que apunten a buffers del host (`gPortEwram`, `gPortIo`...).
-El código del juego no cambia: escribe en registros como siempre y el PPU lee
-esos mismos buffers. Los símbolos que `linker.ld` coloca en EWRAM en direcciones
-fijas se convierten en macros sobre `gPortEwram` + offset, así siguen
-solapándose como en la GBA.
+`include/gba/memory.h` redefines `EWRAM_BASE`, `REG_BASE`, `VRAM_BASE`... under
+`PLATFORM_PC` so they point to host buffers (`gPortEwram`, `gPortIo`...). The
+game code does not change: it writes to registers as always and the PPU reads
+those same buffers. The symbols that `linker.ld` places in EWRAM at fixed
+addresses become macros over `gPortEwram` + offset, so they still overlap as on
+the GBA.
 
-Lo que no cabe en un registro de 32 bits (punteros de 64 bits en DMA) pasa por
-`Port_DmaSet` en lugar de escribir los registros DMA.
+Whatever does not fit in a 32-bit register (64-bit pointers in DMA) goes
+through `Port_DmaSet` instead of writing the DMA registers.
 
-Las esperas activas sobre `REG_VCOUNT` avanzan un contador virtual
-(`READ_16` en `include/io.h`).
+Busy-waits on `REG_VCOUNT` advance a virtual counter (`READ_16` in
+`include/io.h`).
 
-## Datos del juego
+## Game data
 
-`tools/port/gen_assets.py` (lo ejecuta CMake):
+`tools/port/gen_assets.py` (run by CMake):
 
-- escribe stubs `.inc` llenos de ceros con el número exacto de elementos de
-  `database.json`, así cada array tiene su tamaño real;
-- preprocesa cada `src/data/**.c` para ver qué `#include "extracted/..."` están
-  activos en la región elegida y genera un wrapper que incluye el original y
-  registra (dirección del array, offset en la ROM, tamaño) en un constructor;
-- los wrappers se compilan con `-Dconst=` para que los arrays sean escribibles
-  (casi todos acaban en `.bss`).
+- writes zero-filled `.inc` stubs with the exact element count from
+  `database.json`, so every array has its real size;
+- preprocesses each `src/data/**.c` to see which `#include "extracted/..."`
+  are active for the chosen region, and generates a wrapper that includes the
+  original and registers (array address, ROM offset, size) in a constructor;
+- the wrappers are compiled with `-Dconst=` so the arrays are writable (almost
+  all of them end up in `.bss`).
 
-Al arrancar, `port/src/assets.c` verifica el SHA-1 de la ROM y copia cada
-bloque. `MZM_DEV_SKIP_ROM_CHECK=1` permite arrancar con una imagen falsa
-(solo para el smoke test de CI).
+At startup, `port/src/assets.c` verifies the ROM's SHA-1 and copies each
+block. `MZM_DEV_SKIP_ROM_CHECK=1` allows booting with a fake image (only for
+the CI smoke test).
 
-### Lecturas más allá del final de un array
+### Reads past the end of an array
 
-Hay sitios donde el juego lee más bytes de los que tiene el array (copias de
-tamaño fijo, índices que se pasan: el mapa, las tablas de colisión, la paleta
-común, la intro, la huida de Tourian...). En la GBA eso lee los datos que
-siguen en la ROM; en nativo cada array es una variable aparte. Para leer lo
-mismo:
+There are places where the game reads more bytes than the array holds
+(fixed-size copies, indices that overshoot: the map, the collision tables, the
+common palette, the intro, the Tourian escape...). On the GBA that reads the
+data that follows in the ROM; natively each array is a separate variable. To
+read the same thing:
 
-- `ROM_DATA(ptr)` (`include/macros.h`) devuelve el mismo dato dentro de la
-  copia de la ROM, usando la tabla de assets (`Port_RomMirror`).
-- `ROM_DATA_ARRAY(array)` hace lo mismo con arrays que están compilados en el
-  juego en vez de extraídos: los localiza en la ROM por su contenido
-  (`Port_RomFind`, que exige que aparezcan una sola vez).
+- `ROM_DATA(ptr)` (`include/macros.h`) returns the same data inside the ROM
+  copy, using the asset table (`Port_RomMirror`).
+- `ROM_DATA_ARRAY(array)` does the same for arrays that are compiled into the
+  game instead of extracted: it locates them in the ROM by their contents
+  (`Port_RomFind`, which requires them to appear exactly once).
 
-Cuando lo que se lee de más no se usa nunca (las tablas de colisión, las
-paletas de Samus fuera de su pose, un escombro sin hueco libre) se recorta la
-lectura o se descarta la escritura.
+When the extra data read is never used (the collision tables, Samus palettes
+outside her pose, a debris particle with no free slot) the read is trimmed or
+the write is discarded.
 
-## Sonido
+## Sound
 
-El motor de MZM es casi todo C (`src/audio.c`, `src/audio_wrappers.c`,
-`src/music_wrappers.c`); sus rutinas internas y los bucles de mezcla estaban
-en ensamblador ARM y están traducidos en `port/game/audio_engine.c`,
-manteniendo la aritmética exacta.
+The MZM engine is almost entirely C (`src/audio.c`, `src/audio_wrappers.c`,
+`src/music_wrappers.c`); its internal routines and the mixing loops were in
+ARM assembly and are translated in `port/game/audio_engine.c`, keeping the
+exact arithmetic.
 
-Las pistas, los voicegroups y las muestras son datos en ensamblador con
-punteros de 32 bits entre ellos, así que no se copian: la ROM del jugador se
-queda en memoria y el motor lee los scripts y las muestras en su sitio
-(`Port_RomPointer`). Solo se reconstruye lo que cambia de forma en 64 bits:
+The tracks, voicegroups and samples are assembly data with 32-bit pointers
+between them, so they are not copied: the player's ROM stays in memory and the
+engine reads the scripts and samples in place (`Port_RomPointer`). Only what
+changes shape on 64-bit is rebuilt:
 
-- `sSoundDataEntries` (punteros a las cabeceras de pista). Su dirección
-  cambia según la región, así que se localiza en la ROM: es la única
-  secuencia de 708 entradas válidas seguidas.
-- Los voicegroups (`struct Voice` ocupa 12 bytes en la GBA y 24 en nativo).
-- Los punteros dentro de los scripts (lista de pistas, GOTO/PATT) se traducen
-  al leerlos.
+- `sSoundDataEntries` (pointers to the track headers). Its address changes by
+  region, so it is located in the ROM: it is the only run of 708 consecutive
+  valid entries.
+- The voicegroups (`struct Voice` is 12 bytes on the GBA and 24 natively).
+- The pointers inside the scripts (track list, GOTO/PATT) are translated as
+  they are read.
 
-El hardware lo emula `port/src/apu.c`: cada frame reproduce las muestras que
-la DMA 1/2 llevaría a los FIFO A/B (lanzando la IRQ de DMA 2 cada 16, como la
-consola) y los cuatro canales PSG a partir de sus registros. Sale a 48 kHz
-estéreo por `SDL_AudioStream`; el host headless puede grabarlo con `--wav`.
+The hardware is emulated by `port/src/apu.c`: each frame it plays the samples
+that DMA 1/2 would feed to FIFO A/B (raising the DMA 2 IRQ every 16, like the
+console) and the four PSG channels from their registers. Output is 48 kHz
+stereo via `SDL_AudioStream`; the headless host can record it with `--wav`.
 
-Se ha comparado con mGBA grabando lo mismo en los dos (intro y Brinstar con
-la ROM europea): la forma de onda coincide (correlación 0,98-0,99 en la
-música de Brinstar) y el volumen también.
+It has been compared against mGBA by recording the same thing on both (intro
+and Brinstar with the European ROM): the waveform matches (correlation
+0.98-0.99 on the Brinstar music) and so does the volume.
 
 ## Save states
 
-`port/src/savestate.c`. El estado de la máquina es la memoria de la GBA
-(EWRAM, IWRAM, I/O, paletas, VRAM, OAM; la SRAM no, para no tocar la partida
-real) más la sección `mzm_state`: con `PLATFORM_PC`, `IWRAM_DATA` mete ahí
-todas las variables globales del juego, y `PORT_STATE` las del port que forman
-parte del "hardware" (canales DMA, chip de sonido).
+`port/src/savestate.c`. The machine state is the GBA memory (EWRAM, IWRAM,
+I/O, palettes, VRAM, OAM; not SRAM, so the real save is not touched) plus the
+`mzm_state` section: under `PLATFORM_PC`, `IWRAM_DATA` puts all the game's
+global variables there, and `PORT_STATE` the port's own variables that are
+part of the "hardware" (DMA channels, sound chip).
 
-Solo se guarda o carga en el `Halt` del final del bucle de `agbmain` (el único
-`SWI 2` del juego; el host recibe `Port_HostFrameBoundary`), donde la pila de
-C es siempre la misma y no hace falta guardarla. Por eso el menú se ejecuta
-ahí, con el juego en pausa.
+Saving and loading only happen at the `Halt` at the end of the `agbmain` loop
+(the game's only `SWI 2`; the host receives `Port_HostFrameBoundary`), where
+the C stack is always the same and does not need to be saved. That is why the
+menu runs there, with the game paused.
 
-En nativo muchas variables son punteros (al código y datos del ejecutable o a
-la ROM del jugador, que el motor de sonido lee en su sitio), y esas direcciones
-cambian en cada ejecución (ASLR, `malloc`). El estado guarda dónde estaban y al
-cargar desliza cada valor de 64 bits que cae en uno de esos rangos. Un estado
-de otro build (otra versión de la app) se rechaza. Los voicegroups convertidos
-se reconstruyen en el mismo orden a partir de sus direcciones.
+Natively many variables are pointers (to the executable's code and data, or to
+the player's ROM, which the sound engine reads in place), and those addresses
+change on every run (ASLR, `malloc`). The state records where they were and,
+on load, slides every 64-bit value that falls into one of those ranges. A
+state from another build (another app version) is rejected. The converted
+voicegroups are rebuilt in the same order from their addresses.
 
-Probado con `mzm_headless`: un estado guardado en un proceso y cargado en otro
-produce exactamente los mismos fotogramas, y los dos estados difieren solo en
-los punteros reubicados.
+Tested with `mzm_headless`: a state saved in one process and loaded in another
+produces exactly the same frames, and the two states differ only in the
+relocated pointers.
 
-## Modo de prueba (warp)
+## Test mode (warp)
 
-Para probar zonas sin jugar hasta ellas, la variable de entorno `MZM_WARP`
-empieza una partida nueva directamente en una sala, con todos los objetos
-(`port/src/warp.c` y `port/game/warp.c`):
+To test areas without playing up to them, the `MZM_WARP` environment variable
+starts a new game directly in a room, with all items (`port/src/warp.c` and
+`port/game/warp.c`):
 
 ```sh
-MZM_WARP=kraid:3 ./mzm                      # una sala
+MZM_WARP=kraid:3 ./mzm                      # one room
 MZM_WARP=norfair:* MZM_WARP_FRAMES=150 \
-  ./mzm_headless --dump-every 150 ...        # todas las salas de una zona
-MZM_WARP=cutscene:* MZM_WARP_FRAMES=1500 ...  # las 14 cinemáticas
-MZM_WARP=tourianescape:0                     # también chozodiaescape, credits
+  ./mzm_headless --dump-every 150 ...        # every room in an area
+MZM_WARP=cutscene:* MZM_WARP_FRAMES=1500 ...  # the 14 cutscenes
+MZM_WARP=tourianescape:0                     # also chozodiaescape, credits
 ```
 
-Las zonas van por nombre (`brinstar`, `kraid`, `norfair`, `ridley`,
-`tourian`, `crateria`, `chozodia`) o número. Con varias salas, cada una dura
-`MZM_WARP_FRAMES` frames (300 por defecto).
+Areas are given by name (`brinstar`, `kraid`, `norfair`, `ridley`,
+`tourian`, `crateria`, `chozodia`) or number. With several rooms, each one
+lasts `MZM_WARP_FRAMES` frames (300 by default).
 
-Con esto se han cargado las 324 salas de las 7 zonas, las 14 cinemáticas, las
-dos huidas, los créditos y las demos de la pantalla de título con
-AddressSanitizer, sin errores.
+With this, all 324 rooms of the 7 areas, the 14 cutscenes, both escapes, the
+credits and the title screen demos have been loaded under AddressSanitizer
+with no errors.
 
-## Vibración y segunda pantalla
+## Rumble and second screen
 
-`port/game/status.c` lee una vez por frame (desde `Port_RunFrame`, antes de
-presentar) las variables globales del juego: energía, munición, equipo, pose
-y posición de Samus, bombas y power bombs, el temblor de pantalla y el mapa
-de la zona que el juego mantiene para el minimapa. Solo lee; el código del
-juego no cambia. Comparando con el frame anterior detecta los eventos: daño
-(energía perdida + frames de invencibilidad), pérdida continua (lava, ácido,
-metroides), bomba o power bomb que explota, caída desde más de 7 bloques,
-choque de un shinespark, muerte de Samus y objeto recogido. El temblor de
-pantalla (jefes, terremotos de las huidas) vibra mientras dura. Esa copia del
-frame anterior no es estado de la máquina: al cargar un save state se olvida
-para no ver eventos falsos.
+`port/game/status.c` reads, once per frame (from `Port_RunFrame`, before
+presenting), the game's global variables: Samus's energy, ammo, equipment,
+pose and position, bombs and power bombs, screen shake and the area map that
+the game keeps for the minimap. It only reads; the game code does not change.
+By comparing with the previous frame it detects events: damage (energy lost +
+invincibility frames), continuous drain (lava, acid, metroids), a bomb or
+power bomb exploding, a fall of more than 7 blocks, a shinespark crash,
+Samus's death and an item pickup. Screen shake (bosses, escape earthquakes)
+rumbles while it lasts. That copy of the previous frame is not machine state:
+it is forgotten when a save state is loaded so no false events are seen.
 
-- **Vibración** (`port/src/extras.c`): cada evento lanza un efecto corto; el
-  más fuerte manda en los dos motores del mando (`SDL_RumbleGamepad`). El
-  vibrador del dispositivo (en Android es el dispositivo háptico
-  `VIBRATOR_SERVICE` de SDL) solo admite pulsos, así que recibe uno cada vez
-  que la vibración empieza o sube. `MZM_RUMBLE_LOG=1` escribe cada evento en
-  el log (también con `mzm_headless`, para probarlo con `MZM_WARP` y `--press`).
-- **Segunda pantalla** (`port/src/second_screen.c`): se dibuja por software
-  en un lienzo de 256 píxeles de ancho. El mapa usa los tiles y paletas del
-  mapa de pausa con las salas exploradas/descargadas
-  (`gDecompressedMinimapVisitedTiles`), encuadrado en las salas de la zona, y
-  la casilla de Samus parpadea; el estado es texto con una fuente 8x8. En PC
-  es una segunda ventana SDL (en otro monitor si lo hay; cerrarla la
-  desactiva). En Android, SDL solo tiene una ventana, así que `MzmActivity`
-  busca un display secundario (`DisplayManager`, primero los de categoría
-  *presentation*), muestra ahí una `Presentation` que nunca toma el foco y
-  recoge la imagen por JNI (`host_sdl.c`) en cada refresco. Sin segunda
-  pantalla no hace nada. `mzm_headless --screen2 map|status` vuelca también
-  esa imagen con cada captura.
+- **Rumble** (`port/src/extras.c`): each event triggers a short effect; the
+  strongest one drives both gamepad motors (`SDL_RumbleGamepad`). The device
+  vibrator (on Android, SDL's `VIBRATOR_SERVICE` haptic device) only supports
+  pulses, so it gets one each time the rumble starts or increases.
+  `MZM_RUMBLE_LOG=1` writes each event to the log (also with `mzm_headless`,
+  to test it with `MZM_WARP` and `--press`).
+- **Second screen** (`port/src/second_screen.c`): drawn in software on a
+  canvas 256 pixels wide. The map uses the pause map's tiles and palettes with
+  the explored/downloaded rooms (`gDecompressedMinimapVisitedTiles`), framed
+  on the area's rooms, and Samus's tile blinks; the status is text in an 8x8
+  font. On PC it is a second SDL window (on another monitor if there is one;
+  closing it turns it off). On Android SDL only has one window, so
+  `MzmActivity` looks for a secondary display (`DisplayManager`,
+  *presentation* category first), shows a `Presentation` there that never
+  takes focus, and fetches the image via JNI (`host_sdl.c`) on every refresh.
+  Without a second screen it does nothing. `mzm_headless --screen2 map|status`
+  also dumps that image with each capture.
 
-Opciones en `settings.ini` (`[rumble] gamepad, device, strength` y
-`[second_screen] mode = off | map | status`) y en el menú. La vibración viene
-desactivada; la segunda pantalla, en Android, muestra el mapa (solo hace algo
-si hay un segundo display) y en PC está apagada.
+Options in `settings.ini` (`[rumble] gamepad, device, strength` and
+`[second_screen] mode = off | map | status`) and in the menu. Rumble is off by
+default; the second screen shows the map on Android (it only does something if
+there is a second display) and is off on PC.
 
-## Fluidez: 60/120 Hz y mezcla de fotogramas
+## Smoothness: 60/120 Hz and frame blending
 
-La GBA dibuja 59,7275 fotogramas por segundo y casi todas las pantallas van a
-60 Hz (o 90, 120, 144...). Por defecto el juego sigue el reloj de la GBA
-(`Port_HostWaitFrame`), así que en una pantalla de 60 Hz con VSync cada
-~3,7 s un fotograma se ve dos veces (un tirón; sin VSync, la imagen se corta),
-y a 144 Hz los fotogramas duran 2 o 3
-refrescos de forma irregular. Hay dos opciones en `settings.ini` (`[video]`) y
-en el menú (Vídeo → Fluidez), las dos desactivadas por defecto y solo en el
-frontend SDL (`port/src/host_sdl.c` + `port/src/pacing.c`):
+The GBA draws 59.7275 frames per second and almost all displays run at 60 Hz
+(or 90, 120, 144...). By default the game follows the GBA clock
+(`Port_HostWaitFrame`), so on a 60 Hz display with VSync one frame is shown
+twice every ~3.7 s (a stutter; without VSync, the image tears), and at 144 Hz
+frames last 2 or 3 refreshes irregularly. There are two options in
+`settings.ini` (`[video]`) and in the menu (Video → Smoothness), both off by
+default and only in the SDL frontend (`port/src/host_sdl.c` +
+`port/src/pacing.c`):
 
-- `sync_to_display = true` (*Ajustar la velocidad a la pantalla*): si la
-  frecuencia de la pantalla es un múltiplo de ~59,73 Hz con un margen del 1 %
-  (59,94, 60, 120, 180, 240 Hz...), el juego hace un fotograma cada N
-  refrescos y lo marca el VSync: a 60 Hz va un 0,46 % más rápido y cada
-  fotograma dura exactamente un refresco. El sonido se reproduce ese mismo
-  0,46 % más rápido (`SDL_SetAudioStreamFrequencyRatio`) con un control
-  dinámico de ±0,5 % que mantiene la cola de audio en un nivel fijo (40-70 ms),
-  así no se vacía ni se llena (los dos casos suenan como un chasquido). Si
-  presentar no espera al VSync (ventana oculta, driver que lo ignora) un reloj
-  a la frecuencia de la pantalla toma el relevo, y si el VSync va a otra
-  frecuencia de la que dice el sistema (un móvil que anuncia 120 Hz y da 60 a
-  la app) se mide y se usa la real. En pantallas que no son múltiplo (50, 75,
-  90, 144 Hz) se sigue el reloj de la GBA.
-- `frame_blend = true` (*Mezclar fotogramas*): en pantallas que no se pueden
-  sincronizar, cada refresco mezcla los dos últimos fotogramas según el
-  momento en que se ve (`PortPacing_BlendAlpha`), con dos texturas en la GPU.
-  Reparte el movimiento de forma uniforme a cambio de una ligera estela y de
-  medio fotograma más de retraso. No hace nada a 60 Hz ni con la opción
-  anterior activa.
+- `sync_to_display = true` (*Match speed to display*): if the display refresh
+  rate is a multiple of ~59.73 Hz within a 1% margin (59.94, 60, 120, 180,
+  240 Hz...), the game runs one frame every N refreshes, paced by VSync: at
+  60 Hz it runs 0.46% faster and every frame lasts exactly one refresh. Sound
+  is played that same 0.46% faster (`SDL_SetAudioStreamFrequencyRatio`) with
+  a dynamic ±0.5% control that keeps the audio queue at a fixed level
+  (40-70 ms), so it neither drains nor fills up (both cases sound like a
+  click). If presenting does not wait for VSync (hidden window, a driver that
+  ignores it) a clock at the display rate takes over, and if VSync runs at a
+  different rate than the system reports (a phone that advertises 120 Hz and
+  gives the app 60) the real rate is measured and used. On displays that are
+  not a multiple (50, 75, 90, 144 Hz) the GBA clock is followed.
+- `frame_blend = true` (*Frame blending*): on displays that cannot be synced,
+  each refresh blends the last two frames according to the moment it is shown
+  (`PortPacing_BlendAlpha`), with two textures on the GPU. It spreads motion
+  evenly at the cost of a slight trail and half a frame of extra latency. It
+  does nothing at 60 Hz or with the previous option enabled.
 
-Las dos activan VSync. Ninguna toca la lógica: el juego, sus fotogramas y sus
-muestras de sonido son los mismos (comprobado con `mzm_headless`, fotogramas y
-WAV idénticos byte a byte); solo cambia cuándo se presenta y a qué velocidad se
-reproduce el sonido. `mzm_pacing_test` (se compila con el host headless y corre
-en CI) simula 10 minutos de sonido a 60, 59,94, 120 y 59,73 Hz con relojes de
-tarjeta de sonido desviados ±0,1 % y buffers de 256 y 1024 muestras: la cola
-nunca se vacía ni llega al límite; sin el control dinámico, a 60 Hz se
-descartaría sonido 161 veces. Para depurar: `MZM_SYNC_LOG=1` imprime cada 5 s
-los fps del juego, el nivel de la cola de audio y la relación de velocidad, y
-`MZM_REFRESH_HZ=N` finge otra frecuencia de pantalla.
+Both enable VSync. Neither touches the logic: the game, its frames and its
+sound samples are the same (checked with `mzm_headless`, frames and WAV
+byte-for-byte identical); only when frames are presented and the speed at
+which sound plays change. `mzm_pacing_test` (built with the headless host and
+run in CI) simulates 10 minutes of sound at 60, 59.94, 120 and 59.73 Hz with
+sound card clocks off by ±0.1% and buffers of 256 and 1024 samples: the queue
+never drains or hits the limit; without the dynamic control, at 60 Hz sound
+would be dropped 161 times. For debugging: `MZM_SYNC_LOG=1` prints the game
+fps, audio queue level and speed ratio every 5 s, and `MZM_REFRESH_HZ=N` fakes
+a different display refresh rate.
 
-**Interpolación real de posiciones (no hecha).** Se estudió volver a dibujar
-fotogramas intermedios con el scroll de los fondos y las posiciones de los
-sprites interpolados (el PPU por software lo permitiría guardando los
-registros de cada línea y la OAM de dos fotogramas), pero en esta arquitectura
-no compensa:
+**Real position interpolation (not done).** Redrawing intermediate frames with
+interpolated background scroll and sprite positions was studied (the software
+PPU would allow it by saving each line's registers and the OAM of two frames),
+but in this architecture it is not worth it:
 
-- a resolución nativa (240x160) las posiciones intermedias se redondean a
-  píxeles enteros: a velocidad de paseo (1-2 px por fotograma) el fotograma
-  intermedio repite uno de los dos, así que solo ayudaría a gran velocidad;
-  para medios píxeles habría que dibujar a más resolución (otro PPU);
-- el juego carga en la VRAM la columna/fila nueva del mapa justo fuera de la
-  pantalla, y con el scroll de un fotograma anterior aparecerían en el borde
-  tiles ya sobrescritos;
-- la OAM se reordena cada fotograma (los sprites cambian de ranura), así que
-  emparejar sprites entre fotogramas es heurístico, y los efectos por línea
-  (HBlank DMA del agua, ventanas) no se interpolan bien.
+- at native resolution (240x160) intermediate positions round to whole
+  pixels: at walking speed (1-2 px per frame) the intermediate frame repeats
+  one of the two, so it would only help at high speed; half pixels would need
+  rendering at a higher resolution (another PPU);
+- the game loads the new map column/row into VRAM just off-screen, and with
+  the previous frame's scroll already-overwritten tiles would show up at the
+  edge;
+- the OAM is reordered every frame (sprites change slots), so matching sprites
+  between frames is heuristic, and per-line effects (the water's HBlank DMA,
+  windows) do not interpolate well.
 
-La mezcla de fotogramas da la mitad del beneficio sin ninguno de esos
-artefactos. Si un día el PPU dibuja a 2x o más, la interpolación del scroll
-de los fondos sería el siguiente paso.
+Frame blending gives half the benefit without any of those artifacts. If the
+PPU ever renders at 2x or more, background scroll interpolation would be the
+next step.
 
-## Pantalla panorámica
+## Widescreen
 
-Opción `widescreen` (`off | auto | 16:10 | 16:9 | 2:1`, menú Vídeo; `--width N`
-en headless). La imagen pasa de 240 a 256, 284 o 320 px de ancho con los
-mismos 160 de alto. **El juego no cambia**: su cámara, su pantalla de 240 px,
-el estado "en pantalla" de los sprites (que lee la IA) y la lógica son los de
-la GBA, así que una partida o una demo hace exactamente lo mismo con la opción
-o sin ella. Solo se dibuja más:
+The `widescreen` option (`off | auto | 16:10 | 16:9 | 2:1`, Video menu;
+`--width N` in headless). The image goes from 240 to 256, 284 or 320 px wide
+with the same 160 px height. **The game does not change**: its camera, its
+240 px screen, the sprites' "on screen" state (which the AI reads) and the
+logic are those of the GBA, so a playthrough or a demo does exactly the same
+with or without the option. It just draws more:
 
-- **PPU** (`port/ppu`, `ws_origin`/`ws_obj`): la pantalla de la GBA se dibuja
-  en la columna `origin` del fotograma ancho y los fondos siguen a los lados
-  (columna GBA `x - origin` + scroll, también con el haze por línea). Las
-  ventanas se desplazan igual, y un borde de ventana en el borde de la
-  pantalla GBA se estira hasta el borde del fotograma. Cada entrada de OAM
-  tiene su colocación: objeto de la sala, HUD pegado a la izquierda o a la
-  derecha, rótulo centrado, o "como en la GBA" (recortada a sus 240 px; lo
-  que no es del juego en curso).
-- **Tilemaps** (`port/game/widescreen.c`): las salas son un anillo de 32x16
-  bloques en VRAM que el juego rellena para su pantalla (bloques x-2..x+16).
-  Cada frame se reescriben desde los datos de la sala las columnas que faltan
-  para el ancho elegido (como hace `RoomUpdateHorizontalTilemap`).
-- **Sprites**: `SpriteDrawAll_*` dibujan también los que están en las
-  columnas extra (`Port_WideSpriteStatus`, sin tocar su estado), dejando 32
-  entradas de OAM libres para Samus y los disparos, que se dibujan después.
-  Partículas y proyectiles ya tienen margen suficiente.
-- **Encuadre** (`port/src/widescreen.c`): el juego dice dónde está la cámara
-  y qué parte de la sala puede enseñar (los límites de scroll actuales, o la
-  sala sin su borde de 2 bloques). Normalmente la pantalla GBA queda centrada;
-  cerca de un borde la imagen se para en el borde y la pantalla GBA se
-  desplaza (hasta `2 * extra` px, suavizado 2 px por frame si cambian los
-  límites); si la zona es más estrecha que la imagen (pozos verticales,
-  salas de jefe) se centra con negro a los lados. Nunca se enseña lo que la
-  cámara de la GBA no podría enseñar. El HUD va pegado a los bordes de lo
-  visible.
-- Lo que no es el bucle de juego (título, menús, mapa, cinemáticas,
-  créditos) se dibuja a 240 px en el centro. Los save states no cambian
-  (la miniatura es el centro de la imagen).
+- **PPU** (`port/ppu`, `ws_origin`/`ws_obj`): the GBA screen is drawn at
+  column `origin` of the wide frame and the backgrounds continue on the sides
+  (GBA column `x - origin` + scroll, also with the per-line haze). Windows are
+  shifted the same way, and a window edge at the edge of the GBA screen is
+  stretched to the edge of the frame. Each OAM entry has its placement: room
+  object, HUD anchored left or right, centered label, or "as on the GBA"
+  (clipped to its 240 px; whatever is not part of the gameplay in progress).
+- **Tilemaps** (`port/game/widescreen.c`): rooms are a ring of 32x16 blocks
+  in VRAM that the game fills for its screen (blocks x-2..x+16). Every frame
+  the columns missing for the chosen width are rewritten from the room data
+  (as `RoomUpdateHorizontalTilemap` does).
+- **Sprites**: `SpriteDrawAll_*` also draw the ones in the extra columns
+  (`Port_WideSpriteStatus`, without touching their state), leaving 32 OAM
+  entries free for Samus and her shots, which are drawn afterwards. Particles
+  and projectiles already have enough headroom.
+- **Framing** (`port/src/widescreen.c`): the game says where the camera is
+  and which part of the room it may show (the current scroll limits, or the
+  room without its 2-block border). Normally the GBA screen stays centered;
+  near an edge the image stops at the edge and the GBA screen shifts (up to
+  `2 * extra` px, smoothed 2 px per frame if the limits change); if the area
+  is narrower than the image (vertical shafts, boss rooms) it is centered with
+  black on the sides. Nothing the GBA camera could not show is ever shown.
+  The HUD is anchored to the edges of the visible area.
+- Whatever is not the gameplay loop (title, menus, map, cutscenes, credits)
+  is drawn at 240 px in the center. Save states do not change (the thumbnail
+  is the center of the image).
 
-Con la opción desactivada los fotogramas son idénticos byte a byte a los de
-antes (recorrido de `MZM_WARP` por las 7 zonas, las cinemáticas, la huida y el
-arranque; la única diferencia es la cinemática de Kraid, cuyo humo ya varía de
-una ejecución a otra en el build anterior). Activada (16:9), la parte de 240 px
-de la GBA coincide píxel a píxel con la imagen original salvo el HUD y los
-rótulos, que se recolocan.
+With the option off, frames are byte-for-byte identical to before (`MZM_WARP`
+run through the 7 areas, the cutscenes, the escape and boot; the only
+difference is the Kraid cutscene, whose smoke already varies from run to run
+in the previous build). When enabled (16:9), the 240 px GBA part matches the
+original image pixel for pixel except for the HUD and labels, which are
+repositioned.
 
-## Guardado
+## Saving
 
-`struct Sram` tiene el mismo tamaño y layout que en la GBA (32 608 bytes). El
-único puntero que había dentro (`EnvironmentalEffect.pOamFrame`, un puntero a
-ROM) se guarda como un `u32` opaco y los efectos activos se descartan al cargar,
-porque en 64 bits no puede reconstruirse. Resultado: los `.sav` son
-intercambiables con mGBA.
+`struct Sram` has the same size and layout as on the GBA (32,608 bytes). The
+only pointer inside it (`EnvironmentalEffect.pOamFrame`, a ROM pointer) is
+stored as an opaque `u32`, and active effects are discarded on load because it
+cannot be rebuilt on 64-bit. Result: `.sav` files are interchangeable with
+mGBA.
 
-## Regiones (US, EU, JP)
+## Regions (US, EU, JP)
 
-Cada región es un build distinto (`-DMZM_REGION=us|eu|jp`, un sabor de
-producto en Android): el código del juego cambia con `#ifdef REGION_*`, los
-offsets de los datos salen de la columna de la región en `database.json` y
-el SHA-1 esperado de `mzm_<región>.sha1`. La cabecera se comprueba solo por
-el prefijo `ZEROMISSION` (`...E`, `...P`, `...J`). El layout de EWRAM de
-`linker.ld` es igual en las tres.
+Each region is a separate build (`-DMZM_REGION=us|eu|jp`, a product flavor on
+Android): the game code changes with `#ifdef REGION_*`, data offsets come from
+the region's column in `database.json`, and the expected SHA-1 from
+`mzm_<region>.sha1`. The header is checked only by the `ZEROMISSION` prefix
+(`...E`, `...P`, `...J`). The EWRAM layout in `linker.ld` is the same in all
+three.
 
-El build JP compila, enlaza y pasa el smoke test (`MZM_DEV_SKIP_ROM_CHECK`),
-y la tabla de assets de JP no tiene solapes y cabe en la ROM, pero **no se ha
-probado con la ROM japonesa**. Lo que se busca en la ROM por contenido y solo
-se ha verificado con la europea:
+The JP build compiles, links and passes the smoke test
+(`MZM_DEV_SKIP_ROM_CHECK`), and the JP asset table has no overlaps and fits in
+the ROM, but **it has not been tested with the Japanese ROM**. Things that are
+looked up in the ROM by content and have only been verified with the European
+one:
 
-- `sSoundDataEntries`: se busca la primera racha de 708 entradas válidas. La
-  tabla es la misma en todas las regiones, va justo antes de las muestras
-  (`direct_sound_samples/080908e4.bin`) y la precede `music_track_data`, con
-  punteros a IWRAM que no pasan por entradas válidas. En JP debería salir
-  `0x0808F31C` (EU: `0x0808FF4C`).
-- `ROM_DATA_ARRAY` sobre arrays compilados en el juego, que deben aparecer
-  una sola vez en la ROM (offsets esperados en JP, calculados a partir de
-  los assets vecinos en `database.json`): `sTourianEscape_47ce20`
-  (`0x47CE7C`), `sTourianEscape_47cf50` (`0x47CFAC`), `sSpriteYHalfRadius`
-  (`0x45FD8C`), `sBossIcons` (`0x40D254` o `0x40D25C`) y
-  `sRandomNumberTable` (`~0x8C9F8`). Los arrays extraídos (`ROM_DATA`, dígitos
-  de energía del HUD...) salen de la tabla de assets y no dependen de esto.
-- Los textos y fuentes japoneses (incluido el hiragana) son datos extraídos
-  con offset JP en `database.json`; las únicas cadenas `SHIFT_JIS()` del
-  código son del menú de depuración.
+- `sSoundDataEntries`: the first run of 708 valid entries is searched for. The
+  table is the same in all regions, sits just before the samples
+  (`direct_sound_samples/080908e4.bin`) and is preceded by `music_track_data`,
+  with pointers to IWRAM that do not count as valid entries. On JP it should
+  come out at `0x0808F31C` (EU: `0x0808FF4C`).
+- `ROM_DATA_ARRAY` on arrays compiled into the game, which must appear only
+  once in the ROM (expected JP offsets, computed from the neighboring assets in
+  `database.json`): `sTourianEscape_47ce20` (`0x47CE7C`),
+  `sTourianEscape_47cf50` (`0x47CFAC`), `sSpriteYHalfRadius` (`0x45FD8C`),
+  `sBossIcons` (`0x40D254` or `0x40D25C`) and `sRandomNumberTable`
+  (`~0x8C9F8`). Extracted arrays (`ROM_DATA`, HUD energy digits...) come from
+  the asset table and do not depend on this.
+- The Japanese text and fonts (including hiragana) are extracted data with a JP
+  offset in `database.json`; the only `SHIFT_JIS()` strings in the code belong
+  to the debug menu.
 
-Al probar con la ROM JP: el log debe decir `sound: 708 sounds (table at
-0x0808F31C)` y no debe aparecer ningún `Port_RomFind: ... not found` ni
-`... more than once`; después, el recorrido de `MZM_WARP` con AddressSanitizer
-(salas, cinemáticas, huidas) y la pantalla de mapa en hiragana y katakana.
+When testing with the JP ROM: the log should say `sound: 708 sounds (table at
+0x0808F31C)` and no `Port_RomFind: ... not found` or `... more than once`
+should appear; after that, the `MZM_WARP` run under AddressSanitizer (rooms,
+cutscenes, escapes) and the map screen in hiragana and katakana.
 
-## Cambios en la decompilación
+## Changes to the decompilation
 
-Todos van entre `#ifdef PLATFORM_PC` salvo dos que no alteran la ROM:
+All of them are inside `#ifdef PLATFORM_PC` except two that do not alter the
+ROM:
 
-- `static` eliminado de unas 85 definiciones de datos que su cabecera declara
-  `extern` (GCC moderno lo rechaza, agbcc no).
-- `.pOamFrame = NULL` → `= 0` en `src/data/demo_data.c` (idéntico en GBA).
+- `static` removed from about 85 data definitions that their header declares
+  `extern` (modern GCC rejects it, agbcc does not).
+- `.pOamFrame = NULL` → `= 0` in `src/data/demo_data.c` (identical on GBA).
 
-Código de la GBA que no tiene sentido en nativo y se sustituye:
+GBA code that makes no sense natively and is replaced:
 
-| Original | Nativo |
+| Original | Native |
 | --- | --- |
 | `asm/crt0.s`, `asm/intr_main.s` | `port/src/main.c`, `port/src/frame.c` |
 | `asm/syscalls.s` (BIOS) | `port/src/bios.c` |
 | `src/dma.c` | `port/src/dma.c` |
-| copias de código a RAM (SRAM, sonido, colisiones, haze, HBlank de la huida de Chozodia) | llamadas directas |
-| `asm/audio_internal.s`, `asm/soundcode.s` | `port/game/audio_engine.c` (traducción a C) |
-| `MultiBootWaitCycles` (cable link) | no-op |
-| Metroid NES embebido | no incluido |
+| code copies to RAM (SRAM, sound, collisions, haze, Chozodia escape HBlank) | direct calls |
+| `asm/audio_internal.s`, `asm/soundcode.s` | `port/game/audio_engine.c` (C translation) |
+| `MultiBootWaitCycles` (link cable) | no-op |
+| embedded NES Metroid | not included |

@@ -1,140 +1,141 @@
 # mzm-android
 
-Port nativo de **Metroid: Zero Mission** (GBA) a Android y PC, construido sobre
-la decompilación [metroidret/mzm](https://github.com/metroidret/mzm).
+Native port of **Metroid: Zero Mission** (GBA) to Android and PC, built on top
+of the [metroidret/mzm](https://github.com/metroidret/mzm) decompilation.
 
-No es un emulador: el código C del juego se compila directamente para ARM64 /
-x86-64 y la "consola" (vídeo, DMA, interrupciones, BIOS) la pone una capa fina
-en `port/`.
+It is not an emulator: the game's C code is compiled directly for ARM64 /
+x86-64, and the "console" (video, DMA, interrupts, BIOS) is provided by a thin
+layer in `port/`.
 
-> **Estado: en desarrollo temprano.** El juego compila, arranca y suena en
-> nativo; falta validar todo el recorrido con la ROM real.
-> Ver [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Status: early development.** The game builds, boots and plays sound
+> natively; a full playthrough with the real ROM still has to be validated.
+> See [docs/ROADMAP.md](docs/ROADMAP.md).
 
-## Necesitas tu propia ROM
+## You need your own ROM
 
-El repositorio y los APK **no contienen ningún dato del juego**. Al arrancar por
-primera vez la app te pide tu dump de *Metroid - Zero Mission*. Hay un build
-por región, y cada uno solo acepta su ROM:
+The repository and the APKs **do not contain any game data**. On first launch
+the app asks for your dump of *Metroid - Zero Mission*. There is one build per
+region, and each one only accepts its own ROM:
 
-| Región | Build | SHA-1 |
+| Region | Build | SHA-1 |
 | --- | --- | --- |
-| Europa | `eu` | `0fd107445a42e6f3a3e5ce8c865f412583179903` |
+| Europe | `eu` | `0fd107445a42e6f3a3e5ce8c865f412583179903` |
 | USA | `us` | `5de8536afe1f0078ee6fe1089f890e8c7aa0a6e8` |
-| Japón | `jp` | `096f07685a3dc9286e71aa0b761f233b5efa2fcd` |
+| Japan | `jp` | `096f07685a3dc9286e71aa0b761f233b5efa2fcd` |
 
-La ROM se copia al almacenamiento privado de la app y los gráficos, niveles y
-textos se cargan de ella en cada arranque. La versión europea arranca con la
-selección de idioma, como en la GBA. El build japonés compila y pasa el smoke
-test, pero aún no se ha probado con la ROM real (ver docs/PORT.md).
+The ROM is copied to the app's private storage, and the graphics, levels and
+text are loaded from it on every launch. The European version starts with the
+language selection, as on the GBA. The Japanese build compiles and passes the
+smoke test, but has not been tested with the real ROM yet (see docs/PORT.md).
 
-## Instalar en Android
+## Installing on Android
 
-Cada push a `main` genera tres APK en **Actions → build → Artifacts →
-`mzm-android-apk`** (arm64 + x86_64): `app-eu-release.apk` para la ROM europea,
-`app-us-release.apk` para la americana y `app-jp-release.apk` para la japonesa.
-Se pueden instalar a la vez. Instala el de tu región, abre *Zero Mission (EU)*,
-*(US)* o *(JP)* y elige tu `.gba` con el selector de archivos.
+Every push to `main` produces three APKs under **Actions → build → Artifacts →
+`mzm-android-apk`** (arm64 + x86_64): `app-eu-release.apk` for the European
+ROM, `app-us-release.apk` for the American one and `app-jp-release.apk` for the
+Japanese one. They can be installed side by side. Install the one for your
+region, open *Zero Mission (EU)*, *(US)* or *(JP)* and pick your `.gba` with
+the file picker.
 
-Para compilar solo uno: `./gradlew assembleEuRelease`, `assembleUsRelease` o
+To build just one: `./gradlew assembleEuRelease`, `assembleUsRelease` or
 `assembleJpRelease`.
 
-## Compilar en PC (Linux)
+## Building on PC (Linux)
 
-Requisitos: CMake ≥ 3.22, Ninja, Python 3, un compilador C11 y SDL3 (si no está
-instalado, CMake lo descarga y compila).
+Requirements: CMake ≥ 3.22, Ninja, Python 3, a C11 compiler and SDL3 (if it is
+not installed, CMake downloads and builds it).
 
 ```sh
-cmake -B build -G Ninja                 # ROM USA
-cmake -B build -G Ninja -DMZM_REGION=eu # ROM europea
-cmake -B build -G Ninja -DMZM_REGION=jp # ROM japonesa
+cmake -B build -G Ninja                 # USA ROM
+cmake -B build -G Ninja -DMZM_REGION=eu # European ROM
+cmake -B build -G Ninja -DMZM_REGION=jp # Japanese ROM
 cmake --build build
-./build/mzm ruta/a/tu_rom.gba
+./build/mzm path/to/your_rom.gba
 ```
 
-En PC todos los builds comparten carpeta de datos, así que cada región guarda
-su partida y su copia de la ROM por separado (`mzm_eu.sav`, `rom_eu.gba`, `mzm_jp.sav`...).
+On PC all builds share the same data folder, so each region keeps its save and
+its copy of the ROM separately (`mzm_eu.sav`, `rom_eu.gba`, `mzm_jp.sav`...).
 
-Sin ventana (pruebas/CI): `-DMZM_HOST=headless`, que vuelca fotogramas a PPM:
+Without a window (tests/CI): `-DMZM_HOST=headless`, which dumps frames to PPM:
 
 ```sh
 ./build/mzm_headless --rom mzm_us_baserom.gba --frames 1200 --dump-every 60 \
-    --press 400:S:5      # pulsa Start en el frame 400 durante 5 frames
+    --press 400:S:5      # press Start at frame 400 for 5 frames
 ```
 
-`--state-save FRAME:FICHERO` y `--state-load FRAME:FICHERO` guardan o cargan un
-estado en ese frame (para pruebas reproducibles). `--width 284` dibuja en
-panorámico (16:9).
+`--state-save FRAME:FILE` and `--state-load FRAME:FILE` save or load a state at
+that frame (for reproducible tests). `--width 284` renders in widescreen
+(16:9).
 
-## Controles y ajustes
+## Controls and settings
 
-El menú de opciones pausa el juego y se abre con **Esc** o **F1**, con
-**Select+Start** (o el botón Guía) en el mando, con el botón **Atrás** de
-Android o con el botón `=` de arriba del mando táctil. Desde ahí:
+The options menu pauses the game and opens with **Esc** or **F1**, with
+**Select+Start** (or the Guide button) on a gamepad, with the Android **Back**
+button, or with the `=` button at the top of the touch controls. From there:
 
-- **Guardados rápidos**: 4 ranuras con miniatura y fecha. `F5` guarda y `F8`
-  carga la última ranura usada. No tocan la partida normal (`.sav`).
-- **Controles**: cambiar cualquier botón del teclado o del mando (pulsa la
-  casilla y luego la tecla/botón nuevo) y la zona muerta del stick.
-- **Vídeo**: pantalla completa, escalado entero, filtro suave, efecto LCD
-  (rejilla de píxeles) o CRT (líneas de barrido), VSync y **pantalla
-  panorámica** (16:10, 16:9, 2:1 o como la pantalla; desactivada por
-  defecto): se ve más sala a los lados en vez de bandas negras, sin cambiar
-  el juego. Menús, mapa y cinemáticas siguen en 3:2 en el centro.
-- **Fluidez** (en Vídeo): *ajustar la velocidad a la pantalla* quita los
-  tirones en pantallas de 60/120 Hz (el juego va un 0,46 % más rápido, el
-  sonido se ajusta solo) y *mezclar fotogramas* suaviza el movimiento en
-  pantallas de 90/144 Hz. Las dos vienen desactivadas; ver
-  [docs/PORT.md](docs/PORT.md#fluidez-60120-hz-y-mezcla-de-fotogramas).
-- **Sonido y velocidad**: volumen, velocidad del avance rápido (x2-x10) y si
-  su botón se mantiene o activa/desactiva.
-- **Mando táctil**: cuándo se muestra, opacidad y un editor para mover cada
-  botón, cambiar su tamaño y qué botón de la GBA pulsa.
-- **Mapa y vibración**: vibración del mando y del dispositivo (con su
-  intensidad) y qué muestra la segunda pantalla: el mapa de la zona con la
-  posición de Samus o su estado (energía, tanques, munición y equipo). En la
-  AYN Thor va en la pantalla de abajo; en PC abre una segunda ventana.
+- **Quick saves**: 4 slots with thumbnail and date. `F5` saves and `F8` loads
+  the last slot used. They do not touch the normal save (`.sav`).
+- **Controls**: rebind any keyboard or gamepad button (tap the box, then the
+  new key/button) and the stick dead zone.
+- **Video**: fullscreen, integer scaling, smooth filter, LCD effect (pixel
+  grid) or CRT (scanlines), VSync and **widescreen** (16:10, 16:9, 2:1 or
+  match the display; off by default): you see more of the room on the sides
+  instead of black bars, without changing the game. Menus, map and cutscenes
+  stay at 3:2 in the center.
+- **Smoothness** (under Video): *match speed to display* removes stutter on
+  60/120 Hz displays (the game runs 0.46% faster, sound adjusts
+  automatically) and *frame blending* smooths motion on 90/144 Hz displays.
+  Both are off by default; see
+  [docs/PORT.md](docs/PORT.md#smoothness-60120-hz-and-frame-blending).
+- **Sound and speed**: volume, fast-forward speed (x2-x10) and whether its
+  button is held or toggles.
+- **Touch controls**: when they are shown, opacity, and an editor to move
+  each button, change its size and which GBA button it presses.
+- **Map and rumble**: gamepad and device rumble (with its strength) and what
+  the second screen shows: the area map with Samus's position, or her status
+  (energy, tanks, ammo and equipment). On the AYN Thor it goes on the bottom
+  screen; on PC it opens a second window.
 
-Los ajustes se guardan en `settings.ini`, en la carpeta de datos de la app
-(Linux: `~/.local/share/mzm-android/mzm/`), que también se puede editar a mano.
-Se crea con los valores por defecto la primera vez.
+Settings are stored in `settings.ini`, in the app's data folder
+(Linux: `~/.local/share/mzm-android/mzm/`), which can also be edited by hand.
+It is created with the default values the first time.
 
-| GBA | Teclado | Mando |
+| GBA | Keyboard | Gamepad |
 | --- | --- | --- |
-| A / B | X / Z | botón derecho / inferior |
-| L / R | A / S | bumpers o gatillos |
-| Start / Select | Enter / Retroceso | Start / Back |
-| Cruceta | flechas | cruceta o stick izquierdo |
-| Avance rápido | Tab (mantener) | clic del stick derecho |
+| A / B | X / Z | right / bottom face button |
+| L / R | A / S | bumpers or triggers |
+| Start / Select | Enter / Backspace | Start / Back |
+| D-pad | arrow keys | D-pad or left stick |
+| Fast-forward | Tab (hold) | right stick click |
 
-`F11` alterna la pantalla completa. En pantallas táctiles aparece un mando
-virtual (`touch_controls = auto | on | off`) que se oculta al usar un mando
-físico, como los controles de la AYN Thor. Select+Start abre el menú; el reset
-del juego (A+B+Select+Start) sigue funcionando si A y B se pulsan antes.
+`F11` toggles fullscreen. On touchscreens a virtual gamepad appears
+(`touch_controls = auto | on | off`) that hides when a physical controller is
+used, such as the AYN Thor's built-in controls. Select+Start opens the menu;
+the game's reset (A+B+Select+Start) still works if A and B are pressed first.
 
-Las partidas se guardan en `mzm.sav` con el mismo formato que la GBA, así que
-un `.sav` de mGBA de la versión USA sirve tal cual.
+Saves are stored in `mzm.sav` with the same format as the GBA, so an mGBA
+`.sav` of the USA version works as-is.
 
-## Cómo está hecho
+## How it is built
 
-- `src/`, `include/`: la decompilación. Los cambios para el build nativo van
-  entre `#ifdef PLATFORM_PC` y no alteran la ROM de GBA.
-- `port/src/`: memoria emulada, DMA, BIOS en C, bucle de frame con IRQs de
-  VBlank/HBlank/VCount, carga de la ROM, save states y frontends (SDL3 con el
-  menú en [Dear ImGui](https://github.com/ocornut/imgui), y headless).
-- `port/ppu/`: PPU por software de [Project Picori](https://github.com/999sian/tmc)
-  (el port nativo de Minish Cap).
-- `tools/port/gen_assets.py`: compila los datos de `src/data` a cero y genera
-  el registro que los rellena desde la ROM al arrancar.
-- `android/`: proyecto Gradle (SDL3 + `libmain.so`).
+- `src/`, `include/`: the decompilation. Changes for the native build are
+  wrapped in `#ifdef PLATFORM_PC` and do not alter the GBA ROM.
+- `port/src/`: emulated memory, DMA, BIOS in C, frame loop with
+  VBlank/HBlank/VCount IRQs, ROM loading, save states and frontends (SDL3 with
+  the menu in [Dear ImGui](https://github.com/ocornut/imgui), and headless).
+- `port/ppu/`: software PPU from [Project Picori](https://github.com/999sian/tmc)
+  (the native port of Minish Cap).
+- `tools/port/gen_assets.py`: compiles the data in `src/data` zero-filled and
+  generates the registry that fills it from the ROM at startup.
+- `android/`: Gradle project (SDL3 + `libmain.so`).
 
-Detalles en [docs/PORT.md](docs/PORT.md).
+Details in [docs/PORT.md](docs/PORT.md).
 
-## Licencias
+## Licenses
 
-La decompilación es MIT ([LICENSE](LICENSE)); la capa del port es GPL-3.0
-([port/LICENSE](port/LICENSE)). Metroid es propiedad de Nintendo; este proyecto
-no incluye ni distribuye nada de su propiedad.
+The decompilation is MIT ([LICENSE](LICENSE)); the port layer is GPL-3.0
+([port/LICENSE](port/LICENSE)). Metroid is property of Nintendo; this project
+does not include or distribute any of its property.
 
-El README original de la decompilación está en
+The decompilation's original README is in
 [docs/UPSTREAM_README.md](docs/UPSTREAM_README.md).

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/title.png" alt="Metroid: Zero Mission title screen" width="60%">
+  <img src="docs/images/logo.jpg" alt="Metroid: Zero Mission Recomp logo" width="80%">
 </p>
 
 <h1 align="center">metroid-zm-recomp</h1>

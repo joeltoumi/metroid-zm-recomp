@@ -129,7 +129,9 @@ jobs:
           fi
           mkdir dist
           # app-eu-release.apk -> Metroid_Zero_Mission-eu.apk
-          for apk in artifacts/mzm-android-apk/*/release/*.apk; do
+          # With a single artifact, download-artifact extracts it straight into
+          # artifacts/ (no folder named after it), so search the whole tree.
+          for apk in $(find artifacts -path '*/release/*.apk'); do
             region=$(basename "$(dirname "$(dirname "$apk")")")
             cp "$apk" "dist/Metroid_Zero_Mission-$region.apk"
           done

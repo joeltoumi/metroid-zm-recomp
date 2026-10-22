@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/joeltoumi/metroid-zm-recomp/actions/workflows/build.yml"><img src="https://github.com/joeltoumi/metroid-zm-recomp/actions/workflows/build.yml/badge.svg" alt="Build"></a>
+  <a href="https://github.com/kalasyan/metroid-zm-recomp/actions/workflows/build.yml"><img src="https://github.com/kalasyan/metroid-zm-recomp/actions/workflows/build.yml/badge.svg" alt="Build"></a>
   <img src="https://img.shields.io/badge/platform-Android%20%7C%20Linux%20%7C%20PC-blue" alt="Platforms">
   <img src="https://img.shields.io/badge/region-EU%20%7C%20US%20%7C%20JP-green" alt="Regions">
   <img src="https://img.shields.io/badge/built%20with-C%20%2B%20SDL3-orange" alt="C + SDL3">
@@ -83,13 +83,16 @@ been tested with the real ROM yet (see [docs/PORT.md](docs/PORT.md)).
 
 ## 🚀 Installation (Android)
 
-Every push to `main` builds three APKs. Open
-**[Actions → build](https://github.com/joeltoumi/metroid-zm-recomp/actions/workflows/build.yml)**,
-pick the latest run and download the `mzm-android-apk` artifact:
+Download an APK from the
+**[latest release](https://github.com/kalasyan/metroid-zm-recomp/releases/latest)**:
 
-- `app-eu-release.apk` for the European ROM
-- `app-us-release.apk` for the American ROM
-- `app-jp-release.apk` for the Japanese ROM
+- `Metroid_Zero_Mission-eu.apk` for the European ROM
+- `Metroid_Zero_Mission-us.apk` for the American ROM
+- `Metroid_Zero_Mission-jp.apk` for the Japanese ROM
+
+Builds of every push to `main` are also in
+**[Actions → build](https://github.com/kalasyan/metroid-zm-recomp/actions/workflows/build.yml)**
+(the `mzm-android-apk` artifact of the latest run).
 
 They can be installed side by side. Open *Zero Mission (EU)*, *(US)* or *(JP)*
 and pick your ROM with the file picker. ▶️
@@ -178,7 +181,7 @@ Details in [docs/PORT.md](docs/PORT.md).
   [docs/UPSTREAM_README.md](docs/UPSTREAM_README.md).
 - Port layer: GPL-3.0 ([port/LICENSE](port/LICENSE)).
 - Software PPU: [Project Picori](https://github.com/999sian/tmc).
-- Sister project: [metroid-fs-recomp](https://github.com/joeltoumi/metroid-fs-recomp) (Metroid Fusion).
+- Sister project: [metroid-fs-recomp](https://github.com/kalasyan/metroid-fs-recomp) (Metroid Fusion).
 
 Metroid is a trademark of Nintendo. This project is not affiliated with
 Nintendo and does not include or distribute any of its property.

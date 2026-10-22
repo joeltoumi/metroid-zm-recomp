@@ -30,10 +30,6 @@ provides the "console" (video, DMA, interrupts, BIOS).
 The graphics, levels, text and sound are read from **your own ROM** at
 startup, so the repository and the APKs contain no game data.
 
-> 🚧 **Early development.** The game builds, boots, plays sound and every room
-> loads; a full playthrough by hand with the real ROM still has to be
-> validated. See [docs/ROADMAP.md](docs/ROADMAP.md).
-
 > 🤖 **AI notice:** this project was developed with the help of AI tools
 > (Anthropic's Claude), which wrote most of the code and documentation under
 > my direction and review.
